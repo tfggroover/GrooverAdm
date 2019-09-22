@@ -3,4 +3,25 @@
   <div class="container">
     <router-outlet></router-outlet>
   </div>
+
+  <!-- The core Firebase JS SDK is always required and must be listed first -->
+  <script src="https://www.gstatic.com/firebasejs/6.6.2/firebase-app.js"></script>
+
+  <!-- TODO: Add SDKs for Firebase products that you want to use
+       https://firebase.google.com/docs/web/setup#available-libraries -->
+
+  <script>
+  // Your web app's Firebase configuration
+  var firebaseConfig = {
+    apiKey: "AIzaSyASCdn-XXWI2uQmRDvTHJauYN0Qca07-oE",
+    authDomain: "groover-3b82a.firebaseapp.com",
+    databaseURL: "https://groover-3b82a.firebaseio.com",
+    projectId: "groover-3b82a",
+    storageBucket: "groover-3b82a.appspot.com",
+    messagingSenderId: "427397483542",
+    appId: "1:427397483542:web:9468e5b824c4f97a"
+  };
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  </script>
 </body>
