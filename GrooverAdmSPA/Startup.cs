@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -5,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SpaServices.AngularCli;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
 
 namespace GrooverAdmSPA
 {
@@ -26,6 +28,20 @@ namespace GrooverAdmSPA
             services.AddSpaStaticFiles(configuration =>
             {
                 configuration.RootPath = "ClientApp/dist";
+            });
+
+            services.AddAuthentication().AddJwtBearer(option => 
+            {
+                option.IncludeErrorDetails = true;
+                option.Authority = "https://securetoken.google.com/groover-3b82a";
+                option.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidIssuer = "https://securetoken.google.com/groover-3b82a",
+                    ValidateAudience = true,
+                    ValidAudience = "groover-3b82a",
+                    ValidateLifetime = true,
+                };
             });
         }
 
@@ -53,6 +69,8 @@ namespace GrooverAdmSPA
                     name: "default",
                     template: "{controller}/{action=Index}/{id?}");
             });
+
+            app.UseAuthentication();
 
             app.UseSpa(spa =>
             {
