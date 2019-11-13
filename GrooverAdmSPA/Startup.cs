@@ -1,3 +1,6 @@
+using FirebaseAdmin;
+using Google.Apis.Auth.OAuth2;
+using Google.Cloud.Firestore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -43,6 +46,10 @@ namespace GrooverAdmSPA
                     ValidateLifetime = true,
                 };
             });
+
+            services.AddSingleton(typeof(FirebaseApp), FirebaseApp.Create());
+
+            services.AddSingleton(typeof(FirestoreDb), FirestoreDb.Create("groover-3b82a"));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
