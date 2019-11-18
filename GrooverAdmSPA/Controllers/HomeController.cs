@@ -68,11 +68,14 @@ namespace GrooverAdmSPA.Controllers
                 {
                     var spotiCredentials = await AuthRequest(code, client);
 
-                    var token = await RequestUserDataAndGenerateToken(client, spotiCredentials);
+                    var userData = await UserInfoRequest(client, spotiCredentials);
+
+                    var token = await RequestUserDataAndGenerateToken(client, spotiCredentials, userData);
 
                     result = new
                     {
                         Spotify = spotiCredentials,
+                        SpotifyUserData = userData,
                         Firebase = token
                     };
 
@@ -90,11 +93,14 @@ namespace GrooverAdmSPA.Controllers
             {
                 var spotiCredentials = await RefreshAuthRequest(refresh_token, client);
 
-                var token = await RequestUserDataAndGenerateToken(client, spotiCredentials);
+                var userData = await UserInfoRequest(client, spotiCredentials);
+
+                var token = await RequestUserDataAndGenerateToken(client, spotiCredentials, userData);
 
                 result = new
                 {
                     Spotify = spotiCredentials,
+                    SpotifyUserData = userData,
                     Firebase = token
                 };
             }
@@ -126,6 +132,7 @@ namespace GrooverAdmSPA.Controllers
             var redirectUri = Configuration["RedirectURI"];
             var clientID = Configuration["ClientID"];
             var authEndpoint = Configuration["AuthEndpoint"];
+            var scopes = Configuration["Scopes"];
 
 
             var spotifyCall = $"{authEndpoint}?client_id={UrlEncoder.Default.Encode(clientID)}&response_type=code&redirect_uri={UrlEncoder.Default.Encode(redirectUri)}&state={UrlEncoder.Default.Encode(nonce)}&scope={UrlEncoder.Default.Encode("user-read-private user-read-email")}";
@@ -133,9 +140,8 @@ namespace GrooverAdmSPA.Controllers
             return Redirect(spotifyCall);
         }
 
-        private async Task<string> RequestUserDataAndGenerateToken(HttpClient client, SpotifyAuthResponse spotiCredentials)
+        private async Task<string> RequestUserDataAndGenerateToken(HttpClient client, SpotifyAuthResponse spotiCredentials, SpotifyUserInfo userData)
         {
-            var userData = await UserInfoRequest(client, spotiCredentials);
 
             var auth = FirebaseAuth.GetAuth(firebaseApp);
 
