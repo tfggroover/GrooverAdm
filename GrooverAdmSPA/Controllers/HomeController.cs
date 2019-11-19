@@ -38,7 +38,7 @@ namespace GrooverAdmSPA.Controllers
             return View();
         }
 
-        [HttpGet("Redirect")]
+        [HttpGet("Auth")]
         public async Task<IActionResult> Auth(string refresh_token = null)
         {
             if (string.IsNullOrWhiteSpace(refresh_token))
@@ -134,8 +134,10 @@ namespace GrooverAdmSPA.Controllers
             var authEndpoint = Configuration["AuthEndpoint"];
             var scopes = Configuration["Scopes"];
 
+            Console.Error.WriteLine($"uri ={redirectUri} ; id = {clientID} ; endpoint = {authEndpoint} ; scopes = {scopes}");
 
-            var spotifyCall = $"{authEndpoint}?client_id={UrlEncoder.Default.Encode(clientID)}&response_type=code&redirect_uri={UrlEncoder.Default.Encode(redirectUri)}&state={UrlEncoder.Default.Encode(nonce)}&scope={UrlEncoder.Default.Encode("user-read-private user-read-email")}";
+
+            var spotifyCall = $"{authEndpoint}?client_id={UrlEncoder.Default.Encode(clientID)}&response_type=code&redirect_uri={UrlEncoder.Default.Encode(redirectUri)}&state={UrlEncoder.Default.Encode(nonce)}&scope={UrlEncoder.Default.Encode(scopes)}";
 
             return Redirect(spotifyCall);
         }
