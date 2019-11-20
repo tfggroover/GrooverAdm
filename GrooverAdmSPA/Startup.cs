@@ -86,10 +86,10 @@ namespace GrooverAdmSPA
 
                 spa.Options.SourcePath = "ClientApp";
 
-                //if (env.IsDevelopment())
-                //{
-                //    spa.UseAngularCliServer(npmScript: "start");
-                //}
+                if (env.IsDevelopment())
+                {
+                    spa.UseAngularCliServer(npmScript: "start");
+                }
             });
         }
     }
