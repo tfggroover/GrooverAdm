@@ -70,7 +70,7 @@ namespace GrooverAdmSPA.Controllers
 
                     var userData = await UserInfoRequest(client, spotiCredentials);
 
-                    var token = await RequestUserDataAndGenerateToken(client, spotiCredentials, userData);
+                    var token = await GenerateToken(userData);
 
                     result = new
                     {
@@ -95,7 +95,7 @@ namespace GrooverAdmSPA.Controllers
 
                 var userData = await UserInfoRequest(client, spotiCredentials);
 
-                var token = await RequestUserDataAndGenerateToken(client, spotiCredentials, userData);
+                var token = await GenerateToken(userData);
 
                 result = new
                 {
@@ -110,14 +110,9 @@ namespace GrooverAdmSPA.Controllers
 
         private IActionResult AuthorizationCodeFlow()
         {
-            var cookieNonce = Request.Cookies["State"];
-            string nonce;
-            if (string.IsNullOrEmpty(cookieNonce))
-            {
-                nonce = Guid.NewGuid().ToString("N");
-            }
-            else
-                nonce = cookieNonce;
+
+            var  nonce = Guid.NewGuid().ToString("N");
+
             //string.IsNullOrEmpty(cookieNonce) ? RandomNumberGenerator.Create().GetBytes(byteNonce) :  Encoding.UTF32.GetBytes(cookieNonce.ToCharArray(), byteNonce);
 
             var secure = Request.Host.Host == "localhost";
@@ -126,8 +121,9 @@ namespace GrooverAdmSPA.Controllers
             {
                 MaxAge = new TimeSpan(30, 0, 0, 0),
                 Secure = secure,
+                Domain = HttpContext.Request.Host.Host,
                 HttpOnly = true
-            });
+        });
 
             var redirectUri = Configuration["RedirectURI"];
             var clientID = Configuration["ClientID"];
@@ -142,7 +138,7 @@ namespace GrooverAdmSPA.Controllers
             return Redirect(spotifyCall);
         }
 
-        private async Task<string> RequestUserDataAndGenerateToken(HttpClient client, SpotifyAuthResponse spotiCredentials, SpotifyUserInfo userData)
+        private async Task<string> GenerateToken(SpotifyUserInfo userData)
         {
 
             var auth = FirebaseAuth.GetAuth(firebaseApp);
@@ -155,7 +151,7 @@ namespace GrooverAdmSPA.Controllers
                     Email = userData.Email,
                     DisplayName = userData.Display_name,
                     Uid = userData.Id,
-                    PhotoUrl = userData.Images.FirstOrDefault()
+                    PhotoUrl = userData.Images.FirstOrDefault()?.Url
                 });
             }
             catch (FirebaseAuthException)
@@ -165,9 +161,10 @@ namespace GrooverAdmSPA.Controllers
                     Email = userData.Email,
                     DisplayName = userData.Display_name,
                     Uid = userData.Id,
-                    PhotoUrl = userData.Images.FirstOrDefault()
+                    PhotoUrl = userData.Images.FirstOrDefault()?.Url
                 });
             }
+
 
             var token = await auth.CreateCustomTokenAsync(userData.Id);
             return token;
