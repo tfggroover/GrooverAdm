@@ -169,7 +169,12 @@ namespace GrooverAdmSPA.Controllers
                     PhotoUrl = userData.Images.FirstOrDefault()?.Url
                 });
             }
-
+            var user = new User(userData);
+            var reference = firestoreDb.Collection("users").Document($"{userData.Id}");
+            if ((await reference.GetSnapshotAsync()).Exists)
+                await reference.UpdateAsync(user.ToDictionary());
+            else
+                await reference.CreateAsync(user.ToDictionary());
 
             var token = await auth.CreateCustomTokenAsync(userData.Id);
             return token;
