@@ -49,8 +49,9 @@ namespace GrooverAdmSPA.Controllers
 
 
         [HttpGet("callback")]
-        public async Task<IActionResult> AuthCallback(string code)
+        public async Task<IActionResult> AuthCallback(string code, string nonce = null)
         {
+
             if (string.IsNullOrEmpty(Request.Cookies["State"]))
             {
                 return BadRequest("State cookie not set or expired. Maybe you took too long to authorize. Please try again.");
@@ -93,6 +94,10 @@ namespace GrooverAdmSPA.Controllers
             {
                 var spotiCredentials = await RefreshAuthRequest(refresh_token, client);
 
+                if(spotiCredentials == null)
+                {
+                    return BadRequest(new { error = "invalid_grant", errorDescription = "Refresh Token revoked" });
+                }
                 var userData = await UserInfoRequest(client, spotiCredentials);
 
                 var token = await GenerateToken(userData);
@@ -204,10 +209,16 @@ namespace GrooverAdmSPA.Controllers
 
             var response = await client.SendAsync(authRequest);
 
-            var responseContent = await response.Content.ReadAsStringAsync();
+            if (response.IsSuccessStatusCode)
+            {
+                var responseContent = await response.Content.ReadAsStringAsync();
 
-            var spotiCredentials = JsonConvert.DeserializeObject<SpotifyRefreshTokenResponse>(responseContent);
-            return spotiCredentials;
+                var spotiCredentials = JsonConvert.DeserializeObject<SpotifyRefreshTokenResponse>(responseContent);
+                return spotiCredentials;
+            } else
+            {
+                return null;
+            }
         }
 
         private async Task<SpotifyAuthorizationCodeFlowResponse> AuthRequest(string code, HttpClient client)
@@ -234,9 +245,5 @@ namespace GrooverAdmSPA.Controllers
             return spotiCredentials;
         }
 
-        public IActionResult AuthResponse(string access_token, string token_type, string expires_in, string state)
-        {
-            throw new NotImplementedException();
-        }
     }
 }
