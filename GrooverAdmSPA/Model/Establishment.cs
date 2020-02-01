@@ -6,16 +6,39 @@ using System.Threading.Tasks;
 
 namespace GrooverAdmSPA.Model
 {
-    public class Establishment : FirestoreEntity
+    [FirestoreData(ConverterType = typeof(FirestoreEntityConverter<Establishment>))]
+    public class Establishment : FirestoreEntity<Establishment>
     {
+        public Establishment()
+        {
+            Ratings = new List<Rating>();
+            Owners = new List<User>();
+            Recognized = new Dictionary<string, int>();
+            Timetables = new List<Timetable>();
+        }
+
+        [FirestoreDocumentId]
+        public string Id { get; set; }
+        [FirestoreProperty]
+        public string Address { get; set; }
+        [FirestoreProperty]
         public string DisplayName { get; set; }
+        [FirestoreProperty]
         public GeoPoint Location { get; set; }
-        public string Playlist { get; set; }
+        [FirestoreProperty(ConverterType = typeof(FirestoreEntityConverter<Playlist>))]
+        public Playlist Playlist { get; set; }
+        [FirestoreProperty(ConverterType = typeof(FirestoreEntityListConverter<Rating>))]
         public List<Rating> Ratings { get; set; }
-        public User Owner{ get; set; }
+        [FirestoreProperty(ConverterType = typeof(FirestoreEntityListConverter<User>))]
+        public List<User> Owners{ get; set; }
+        [FirestoreProperty]
         public string Phone { get; set; }
+        [FirestoreProperty]
         public string Geohash { get; set; }
-        public List<Recognition> Recognized { get; set; }
+        [FirestoreProperty]
+        public Dictionary<string, int> Recognized{ get; set; }
+        [FirestoreProperty]
+        public List<Timetable> Timetables { get; set; }
 
     }
 }

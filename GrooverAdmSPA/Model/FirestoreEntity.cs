@@ -7,12 +7,13 @@ using System.Threading.Tasks;
 
 namespace GrooverAdmSPA.Model
 {
-    public abstract class FirestoreEntity<T> where T : FirestoreEntity<T>, new()
+
+    public abstract class FirestoreEntity
     {
-        public T GetInstance()
-        {
-            return new T();
-        }
+
+    }
+    public abstract class FirestoreEntity<T> : FirestoreEntity where T : FirestoreEntity<T>, new()
+    {
         public Dictionary<string, object> ToDictionary()
         {
             var result = new Dictionary<string, object>();
@@ -22,9 +23,9 @@ namespace GrooverAdmSPA.Model
             {
                 if (prop.PropertyType.IsPrimitive || prop.PropertyType == typeof(string))
                 {
-                    result[prop.Name] = prop.GetValue(this);
+                    result[prop.Name.ToLower()] = prop.GetValue(this);
                 }
-                else if (prop.PropertyType == typeof(IEnumerable<object>))
+                else if (typeof(IEnumerable<object>).IsAssignableFrom(prop.PropertyType))
                 {
                     var type = prop.GetValue(this).GetType().GetTypeInfo().GenericTypeArguments[0];
                     if (type.IsPrimitive || type == typeof(string))
@@ -32,11 +33,10 @@ namespace GrooverAdmSPA.Model
                     else
                     {
                         var cast = prop.GetValue(this) as IEnumerable<object>;
-
+                        var method = type.GetMethod("ToDictionary");
                         result[prop.Name.ToLower()] = cast.Select(item =>
                         {
-                            var castItem = item as FirestoreEntity<T>;
-                            return castItem.ToDictionary();
+                            return method.Invoke(item, new object[] { });
                         }).ToList();
                     }
                 }
@@ -45,30 +45,61 @@ namespace GrooverAdmSPA.Model
                     var cast = prop.GetValue(this) as GeoPoint?;
                     result[prop.Name.ToLower()] = cast.Value;
                 }
+                else if (typeof(Dictionary<, >).IsAssignableFrom(prop.PropertyType))
+                {
+                    result[prop.Name.ToLower()] = prop.GetValue(this);
+                }
                 else
                 {
-                    var cast = prop.GetValue(this) as FirestoreEntity<T>;
-                    result[prop.Name.ToLower()] = cast.ToDictionary();
+                    var type = prop.PropertyType;
+                    var cast = prop.GetValue(this);
+                    if (cast != null && type.GetMethod("ToDictionary") != null)
+                        result[prop.Name.ToLower()] = type.GetMethod("ToDictionary").Invoke(cast, new object[] { });
                 }
             }
 
             return result;
         }
+
+        public static T FromDictionary(IDictionary<string, object> map)
+        {
+
+            var result = new T();
+            var props = result.GetType().GetProperties();
+            foreach (var prop in props)
+            {
+                if (map.ContainsKey(prop.Name.ToLower()))
+                    if (map[prop.Name.ToLower()]?.GetType() == prop.PropertyType)
+                        prop.SetValue(result, map[prop.Name.ToLower()]);
+                    else if (map[prop.Name.ToLower()]?.GetType() == typeof(Dictionary<string, object>)) //We have an object inside
+                    {
+                        if (prop.PropertyType.GetMethod("FromDictionary", BindingFlags.Static | BindingFlags.Public | BindingFlags.FlattenHierarchy) != null)
+                        {
+                            var obj = prop.PropertyType.GetMethod("FromDictionary", BindingFlags.Static | BindingFlags.Public | BindingFlags.FlattenHierarchy).Invoke(null, new object[] { map[prop.Name.ToLower()] });
+                            prop.SetValue(result, obj);
+                        }
+                    }
+                    else if (map[prop.Name.ToLower()]?.GetType() == typeof(List<object>))
+                    {
+                        if(map[prop.Name.ToLower()] != null)
+                        {
+
+                        }
+                    }
+            }
+
+            return result;
+        }
+
     }
 
     public class FirestoreEntityConverter<T> : IFirestoreConverter<T> where T : FirestoreEntity<T>, new()
     {
         public T FromFirestore(object value)
         {
-            if(value is IDictionary<string, object> map)
+            if (value is IDictionary<string, object> map)
             {
-                var result = new T();
-                var props = result.GetType().GetProperties();
-                foreach (var prop in props)
-                {
-                    if(map.ContainsKey(prop.Name.ToLower()))
-                        prop.SetValue(result, map[prop.Name.ToLower()]);
-                }
+                var result = FirestoreEntity<T>.FromDictionary(map);
                 return result;
 
             }
@@ -76,7 +107,7 @@ namespace GrooverAdmSPA.Model
         }
 
         public object ToFirestore(T value) => value.ToDictionary();
-        
+
     }
 
     public class FirestoreEntityListConverter<T> : IFirestoreConverter<List<T>> where T : FirestoreEntity<T>, new()
