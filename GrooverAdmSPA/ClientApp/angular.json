@@ -24,8 +24,8 @@
               "src/assets"
             ],
             "styles": [
-              "node_modules/bootstrap/dist/css/bootstrap.min.css",
-              "src/styles.css"
+              "node_modules/bootstrap-sass/stylesheets/_bootstrap.scss",
+              "src/styles.scss"
             ],
             "scripts": []
           },
@@ -74,7 +74,7 @@
             "tsConfig": "src/tsconfig.spec.json",
             "karmaConfig": "src/karma.conf.js",
             "styles": [
-              "styles.css"
+              "styles.scss"
             ],
             "scripts": [],
             "assets": [
@@ -145,5 +145,8 @@
       }
     }
   },
-  "defaultProject": "WebApplication1"
+  "defaultProject": "WebApplication1",
+  "cli": {
+    "analytics": "4aae4167-77d6-48d4-b612-0d512a92e1d6"
+  }
 }
