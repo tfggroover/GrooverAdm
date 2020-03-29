@@ -1,0 +1,23 @@
+<form (ngSubmit)="this.onSubmit()" #form="ngForm">
+
+  <div class="formcontrol">
+    <label for="Name">Name</label>
+    <input name="Name" [(ngModel)]="this.place.displayName" />
+  </div>
+  <div class="formcontrol">
+    <label for="Address">Address</label>
+    <input name="Address" [(ngModel)]="this.place.address" />
+  </div>
+  <div class="formcontrol">
+    <label for="Latitude">Latitude</label>
+    <input name="Latitude" [(ngModel)]="this.place.location.latitude" />
+  </div>
+  <div class="formcontrol">
+    <label for="Longitude">Longitude</label>
+    <input name="Longitude" [(ngModel)]="this.place.location.longitude" />
+  </div>
+  <div class="formcontrol">
+    <label for="Phone">Phone</label>
+    <input name="Phone" [(ngModel)]="this.place.phone" />
+  </div>
+</form>

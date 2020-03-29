@@ -1,0 +1,36 @@
+
+<h2>Lista de locales</h2>
+
+
+<hr/>
+<table class="table table-striped">
+  <thead>
+    <th>
+      Nombre
+    </th>
+    <th>
+      Dirección
+    </th>
+    <th>
+      Phone
+    </th>
+    <th><button class="btn btn-success" (click)="addPlace()">+</button>
+    </th>
+  </thead>
+  <tbody>
+    <tr class="items" *ngFor="let item of items | async">
+      <td>
+        {{item.displayname}}
+      </td>
+      <td>
+        {{item.address}}
+      </td>
+      <td>
+        {{item.phonenumber}}
+      </td>
+      <td>
+        <button class="btn btn-success"  (click)="editPlace(item)">Edit</button>
+      </td>
+    </tr>
+  </tbody>
+</table>

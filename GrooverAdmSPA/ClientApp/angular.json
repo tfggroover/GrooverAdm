@@ -119,6 +119,10 @@
               "vendorChunk": false
             }
           }
+        },
+        "deploy": {
+          "builder": "@angular/fire:deploy",
+          "options": {}
         }
       }
     },
@@ -148,5 +152,10 @@
   "defaultProject": "WebApplication1",
   "cli": {
     "analytics": "4aae4167-77d6-48d4-b612-0d512a92e1d6"
+  },
+  "schematics": {
+    "@schematics/angular:component": {
+      "styleext": "scss"
+    }
   }
 }
