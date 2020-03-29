@@ -1,23 +1,26 @@
 <form (ngSubmit)="this.onSubmit()" #form="ngForm">
-
+<div class="two-cols">
   <div class="formcontrol">
-    <label for="Name">Name</label>
-    <input name="Name" [(ngModel)]="this.place.displayName" />
+    <label class="col-md-2" for="Name">Name</label>
+    <input class="col-md-4" name="Name" [(ngModel)]="this.place.displayName" />
   </div>
   <div class="formcontrol">
-    <label for="Address">Address</label>
-    <input name="Address" [(ngModel)]="this.place.address" />
+    <label class="col-md-2" for="Address">Address</label>
+    <input class="col-md-4" name="Address" [(ngModel)]="this.place.address" />
   </div>
   <div class="formcontrol">
-    <label for="Latitude">Latitude</label>
-    <input name="Latitude" [(ngModel)]="this.place.location.latitude" />
+    <label class="col-md-2" for="Latitude">Latitude</label>
+    <input class="col-md-4" name="Latitude" [(ngModel)]="this.place.location.latitude" />
   </div>
   <div class="formcontrol">
-    <label for="Longitude">Longitude</label>
-    <input name="Longitude" [(ngModel)]="this.place.location.longitude" />
+    <label class="col-md-2" for="Longitude">Longitude</label>
+    <input class="col-md-4" name="Longitude" [(ngModel)]="this.place.location.longitude" />
   </div>
   <div class="formcontrol">
-    <label for="Phone">Phone</label>
-    <input name="Phone" [(ngModel)]="this.place.phone" />
+    <label class="col-md-2" for="Phone">Phone</label>
+    <input class="col-md-4" name="Phone" [(ngModel)]="this.place.phone" />
   </div>
+  <hr/>
+  <button class="btn btn-success" type="submit">Submit</button>
+</div>
 </form>

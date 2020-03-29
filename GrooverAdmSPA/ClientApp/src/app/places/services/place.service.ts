@@ -19,12 +19,16 @@ export class PlaceService {
     return this.firestore.doc('places/' + placeId).get();
   }
 
-  public createPlace(place: Place) {
-    return this.firestore.collection('places').add(place);
+  public async createPlace(place: Place) {
+    const promise = this.firestore.collection('places').add(place.toJson());
+    if (place.playlist) {
+      const ref = await promise;
+      ref.collection('placeMusic').doc('mainPlaylist').set(place.playlist.toJson());
+    }
   }
 
   public updatePlace(place: Place) {
-    this.firestore.doc('places/' + place.id).set(place);
+    this.firestore.doc('places/' + place.id).set(place.toJson());
   }
 
   public deletePlace(place: Place) {

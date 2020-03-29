@@ -13,7 +13,7 @@ export class PlaceFormComponent implements OnInit {
 
 
   @Output()
-  public submit: EventEmitter<Place> = new EventEmitter();
+  public placeUpdateListener: EventEmitter<Place> = new EventEmitter();
 
   constructor() {   }
 
@@ -21,7 +21,8 @@ export class PlaceFormComponent implements OnInit {
   }
 
   public onSubmit() {
-    this.submit.next(this.place);
+    this.placeUpdateListener.next(this.place);
+    return false;
   }
 
 }
