@@ -10,6 +10,11 @@ namespace GrooverAdmSPA.Controllers
     [Route("api/[controller]")]
     public class GenreController : Controller
     {
+        /// <summary>
+        /// Receives a list of Songs for us to call LastFM and return the genres
+        /// </summary>
+        /// <param name="songs"></param>
+        /// <returns></returns>
         [HttpGet]
         public IActionResult Index(List<Song> songs)
         {
