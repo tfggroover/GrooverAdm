@@ -14,7 +14,13 @@ namespace GrooverAdmSPA
     {
         public static void Main(string[] args)
         {
-            CreateWebHostBuilder(args).Build().Run();
+            if (File.Exists("./appsettings.json"))
+            {
+                CreateWebHostBuilder(args).Build().Run();
+            } else
+            {
+                throw new ArgumentNullException("No appsettings file found");
+            }
         }
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args)
@@ -23,6 +29,10 @@ namespace GrooverAdmSPA
             string url = String.Concat("http://0.0.0.0:", port);
 
             return WebHost.CreateDefaultBuilder(args)
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    config.AddJsonFile("./appsettings.json");
+                })
                 .UseStartup<Startup>().UseUrls(url);
         }
     }

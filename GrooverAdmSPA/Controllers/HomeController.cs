@@ -38,7 +38,7 @@ namespace GrooverAdmSPA.Controllers
             return View();
         }
 
-        [HttpGet("Redirect")]
+        [HttpGet("Auth")]
         public async Task<IActionResult> Auth(string refresh_token = null)
         {
             if (string.IsNullOrWhiteSpace(refresh_token))
@@ -49,8 +49,9 @@ namespace GrooverAdmSPA.Controllers
 
 
         [HttpGet("callback")]
-        public async Task<IActionResult> AuthCallback(string code)
+        public async Task<IActionResult> AuthCallback(string code, string nonce = null)
         {
+
             if (string.IsNullOrEmpty(Request.Cookies["State"]))
             {
                 return BadRequest("State cookie not set or expired. Maybe you took too long to authorize. Please try again.");
@@ -70,7 +71,7 @@ namespace GrooverAdmSPA.Controllers
 
                     var userData = await UserInfoRequest(client, spotiCredentials);
 
-                    var token = await RequestUserDataAndGenerateToken(client, spotiCredentials, userData);
+                    var token = await GenerateToken(userData);
 
                     result = new
                     {
@@ -93,9 +94,13 @@ namespace GrooverAdmSPA.Controllers
             {
                 var spotiCredentials = await RefreshAuthRequest(refresh_token, client);
 
+                if(spotiCredentials == null)
+                {
+                    return BadRequest(new { error = "invalid_grant", errorDescription = "Refresh Token revoked" });
+                }
                 var userData = await UserInfoRequest(client, spotiCredentials);
 
-                var token = await RequestUserDataAndGenerateToken(client, spotiCredentials, userData);
+                var token = await GenerateToken(userData);
 
                 result = new
                 {
@@ -110,14 +115,9 @@ namespace GrooverAdmSPA.Controllers
 
         private IActionResult AuthorizationCodeFlow()
         {
-            var cookieNonce = Request.Cookies["State"];
-            string nonce;
-            if (string.IsNullOrEmpty(cookieNonce))
-            {
-                nonce = Guid.NewGuid().ToString("N");
-            }
-            else
-                nonce = cookieNonce;
+
+            var  nonce = Guid.NewGuid().ToString("N");
+
             //string.IsNullOrEmpty(cookieNonce) ? RandomNumberGenerator.Create().GetBytes(byteNonce) :  Encoding.UTF32.GetBytes(cookieNonce.ToCharArray(), byteNonce);
 
             var secure = Request.Host.Host == "localhost";
@@ -126,21 +126,24 @@ namespace GrooverAdmSPA.Controllers
             {
                 MaxAge = new TimeSpan(30, 0, 0, 0),
                 Secure = secure,
+                Domain = HttpContext.Request.Host.Host,
                 HttpOnly = true
-            });
+        });
 
             var redirectUri = Configuration["RedirectURI"];
             var clientID = Configuration["ClientID"];
             var authEndpoint = Configuration["AuthEndpoint"];
             var scopes = Configuration["Scopes"];
 
+            Console.Error.WriteLine($"uri ={redirectUri} ; id = {clientID} ; endpoint = {authEndpoint} ; scopes = {scopes}");
 
-            var spotifyCall = $"{authEndpoint}?client_id={UrlEncoder.Default.Encode(clientID)}&response_type=code&redirect_uri={UrlEncoder.Default.Encode(redirectUri)}&state={UrlEncoder.Default.Encode(nonce)}&scope={UrlEncoder.Default.Encode("user-read-private user-read-email")}";
+
+            var spotifyCall = $"{authEndpoint}?client_id={UrlEncoder.Default.Encode(clientID)}&response_type=code&redirect_uri={UrlEncoder.Default.Encode(redirectUri)}&state={UrlEncoder.Default.Encode(nonce)}&scope={UrlEncoder.Default.Encode(scopes)}";
 
             return Redirect(spotifyCall);
         }
 
-        private async Task<string> RequestUserDataAndGenerateToken(HttpClient client, SpotifyAuthResponse spotiCredentials, SpotifyUserInfo userData)
+        private async Task<string> GenerateToken(SpotifyUserInfo userData)
         {
 
             var auth = FirebaseAuth.GetAuth(firebaseApp);
@@ -153,7 +156,7 @@ namespace GrooverAdmSPA.Controllers
                     Email = userData.Email,
                     DisplayName = userData.Display_name,
                     Uid = userData.Id,
-                    PhotoUrl = userData.Images.FirstOrDefault()
+                    PhotoUrl = userData.Images.FirstOrDefault()?.Url
                 });
             }
             catch (FirebaseAuthException)
@@ -163,9 +166,15 @@ namespace GrooverAdmSPA.Controllers
                     Email = userData.Email,
                     DisplayName = userData.Display_name,
                     Uid = userData.Id,
-                    PhotoUrl = userData.Images.FirstOrDefault()
+                    PhotoUrl = userData.Images.FirstOrDefault()?.Url
                 });
             }
+            var user = new User(userData);
+            var reference = firestoreDb.Collection("users").Document($"{userData.Id}");
+            if ((await reference.GetSnapshotAsync()).Exists)
+                await reference.UpdateAsync(user.ToDictionary());
+            else
+                await reference.CreateAsync(user.ToDictionary());
 
             var token = await auth.CreateCustomTokenAsync(userData.Id);
             return token;
@@ -205,10 +214,16 @@ namespace GrooverAdmSPA.Controllers
 
             var response = await client.SendAsync(authRequest);
 
-            var responseContent = await response.Content.ReadAsStringAsync();
+            if (response.IsSuccessStatusCode)
+            {
+                var responseContent = await response.Content.ReadAsStringAsync();
 
-            var spotiCredentials = JsonConvert.DeserializeObject<SpotifyRefreshTokenResponse>(responseContent);
-            return spotiCredentials;
+                var spotiCredentials = JsonConvert.DeserializeObject<SpotifyRefreshTokenResponse>(responseContent);
+                return spotiCredentials;
+            } else
+            {
+                return null;
+            }
         }
 
         private async Task<SpotifyAuthorizationCodeFlowResponse> AuthRequest(string code, HttpClient client)
@@ -235,9 +250,5 @@ namespace GrooverAdmSPA.Controllers
             return spotiCredentials;
         }
 
-        public IActionResult AuthResponse(string access_token, string token_type, string expires_in, string state)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

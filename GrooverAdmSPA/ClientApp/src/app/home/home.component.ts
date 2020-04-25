@@ -12,6 +12,6 @@ export class HomeComponent {
   }
 
   public redirect(){
-    window.open(this.baseUrl + '/home/redirect', 'firebaseAuth');
+    window.open(this.baseUrl + 'home/auth', 'firebaseAuth');
   }
 }
