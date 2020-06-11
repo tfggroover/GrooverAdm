@@ -1,17 +1,18 @@
-using FirebaseAdmin;
-using Google.Apis.Auth.OAuth2;
-using Google.Cloud.Firestore;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI;
 using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SpaServices.AngularCli;
+using Microsoft.EntityFrameworkCore;
+using Fake.Data;
+using Fake.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.IdentityModel.Tokens;
 
-namespace GrooverAdmSPA
+namespace Fake
 {
     public class Startup
     {
@@ -25,31 +26,25 @@ namespace GrooverAdmSPA
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Latest);
+            services.AddDbContext<ApplicationDbContext>(options =>
+                options.UseSqlServer(
+                    Configuration.GetConnectionString("DefaultConnection")));
 
+            services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
+                .AddEntityFrameworkStores<ApplicationDbContext>();
+
+            services.AddIdentityServer()
+                .AddApiAuthorization<ApplicationUser, ApplicationDbContext>();
+
+            services.AddAuthentication()
+                .AddIdentityServerJwt();
+            services.AddControllersWithViews();
+            services.AddRazorPages();
             // In production, the Angular files will be served from this directory
             services.AddSpaStaticFiles(configuration =>
             {
                 configuration.RootPath = "ClientApp/dist";
             });
-
-            services.AddAuthentication().AddJwtBearer(option => 
-            {
-                option.IncludeErrorDetails = true;
-                option.Authority = "https://securetoken.google.com/groover-3b82a";
-                option.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuer = true,
-                    ValidIssuer = "https://securetoken.google.com/groover-3b82a",
-                    ValidateAudience = true,
-                    ValidAudience = "groover-3b82a",
-                    ValidateLifetime = true,
-                };
-            });
-
-            services.AddSingleton(typeof(FirebaseApp), FirebaseApp.Create());
-
-            services.AddSingleton(typeof(FirestoreDb), FirestoreDb.Create("groover-3b82a"));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -58,6 +53,7 @@ namespace GrooverAdmSPA
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                app.UseDatabaseErrorPage();
             }
             else
             {
@@ -68,9 +64,23 @@ namespace GrooverAdmSPA
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-            app.UseSpaStaticFiles();
+            if (!env.IsDevelopment())
+            {
+                app.UseSpaStaticFiles();
+            }
+
+            app.UseRouting();
 
             app.UseAuthentication();
+            app.UseIdentityServer();
+            app.UseAuthorization();
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllerRoute(
+                    name: "default",
+                    pattern: "{controller}/{action=Index}/{id?}");
+                endpoints.MapRazorPages();
+            });
 
             app.UseSpa(spa =>
             {

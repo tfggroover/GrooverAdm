@@ -20,7 +20,7 @@ namespace GrooverAdmSPA.Controllers
         {
             _db = db;
         }
-        [HttpGet("")]
+        [HttpGet]
         public async Task<IEnumerable<Place>> GetEstablishments(double lat, double lon, double distance)
         {
             var center = new GeoPoint(lat, lon);
@@ -171,9 +171,13 @@ namespace GrooverAdmSPA.Controllers
 
         }
 
-        [HttpPost("")]
-        public async Task<Place> CreateEstablishment(Place establishment)
+        [HttpPost]
+        public async Task<Place> CreateEstablishment([FromBody] Place establishment)
         {
+            var userId = HttpContext.User.Identity.Name;
+
+            var docRef = PlaceService.CreatePlace(establishment);
+
             //TODO
             throw new NotImplementedException();
         }
