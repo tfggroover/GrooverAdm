@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace GrooverAdmSPA.Model
 {
-    [FirestoreData(ConverterType = typeof(FirestoreEntityConverter<Establishment>))]
-    public class Establishment : FirestoreEntity<Establishment>
+    [FirestoreData(ConverterType = typeof(FirestoreEntityConverter<Place>))]
+    public class Place : FirestoreEntity<Place>
     {
-        public Establishment()
+        public Place()
         {
             Ratings = new List<Rating>();
             Owners = new List<User>();

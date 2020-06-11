@@ -71,7 +71,7 @@ namespace GrooverAdmSPA.Controllers
 
                     var userData = await UserInfoRequest(client, spotiCredentials);
 
-                    var token = await GenerateToken(userData);
+                    var token = await GenerateToken(userData, spotiCredentials);
 
                     result = new
                     {
@@ -100,7 +100,7 @@ namespace GrooverAdmSPA.Controllers
                 }
                 var userData = await UserInfoRequest(client, spotiCredentials);
 
-                var token = await GenerateToken(userData);
+                var token = await GenerateToken(userData, spotiCredentials);
 
                 result = new
                 {
@@ -128,7 +128,7 @@ namespace GrooverAdmSPA.Controllers
                 Secure = secure,
                 Domain = HttpContext.Request.Host.Host,
                 HttpOnly = true
-        });
+            });
 
             var redirectUri = Configuration["RedirectURI"];
             var clientID = Configuration["ClientID"];
@@ -143,7 +143,7 @@ namespace GrooverAdmSPA.Controllers
             return Redirect(spotifyCall);
         }
 
-        private async Task<string> GenerateToken(SpotifyUserInfo userData)
+        private async Task<string> GenerateToken(SpotifyUserInfo userData, SpotifyAuthResponse credentials)
         {
 
             var auth = FirebaseAuth.GetAuth(firebaseApp);
@@ -169,7 +169,7 @@ namespace GrooverAdmSPA.Controllers
                     PhotoUrl = userData.Images.FirstOrDefault()?.Url
                 });
             }
-            var user = new User(userData);
+            var user = new User(userData, credentials.Access_token, credentials.Expires_in, DateTime.UtcNow);
             var reference = firestoreDb.Collection("users").Document($"{userData.Id}");
             if ((await reference.GetSnapshotAsync()).Exists)
                 await reference.UpdateAsync(user.ToDictionary());

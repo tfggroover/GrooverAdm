@@ -21,7 +21,7 @@ namespace GrooverAdm.Test.Model
             var now = DateTime.Now;
             var notNow = now.AddHours(3);
 
-            var place = new Establishment()
+            var place = new Place()
             {
                 Address = "Test",
                 DisplayName = "Testeroni",
