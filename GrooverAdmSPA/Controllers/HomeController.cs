@@ -96,7 +96,7 @@ namespace GrooverAdmSPA.Controllers
 
                 if(spotiCredentials == null)
                 {
-                    return BadRequest(new { error = "invalid_grant", errorDescription = "Refresh Token revoked" });
+                    return AuthorizationCodeFlow();
                 }
                 var userData = await UserInfoRequest(client, spotiCredentials);
 
