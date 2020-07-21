@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace GrooverAdm.Entities.Application
 {
-    public class Place 
+    public class Place : IApplicationEntity
     {
         public Place()
         {

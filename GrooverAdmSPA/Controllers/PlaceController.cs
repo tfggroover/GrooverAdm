@@ -4,8 +4,9 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Google.Cloud.Firestore;
-using GrooverAdmSPA.Model;
-using GrooverAdmSPA.Services;
+using GrooverAdm.Business.Services.Places;
+using GrooverAdm.Entities.Application;
+using GrooverAdmSPA.Business.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,18 +17,25 @@ namespace GrooverAdmSPA.Controllers
     public class PlaceController : Controller
     {
         private readonly FirestoreDb _db;
-        public PlaceController(FirestoreDb db)
+        private readonly IPlacesService _placesService;
+        public PlaceController(FirestoreDb db, IPlacesService placesService)
         {
             _db = db;
+            _placesService = placesService;
         }
         [HttpGet]
         public async Task<IEnumerable<Place>> GetEstablishments(double lat, double lon, double distance)
         {
-            var center = new GeoPoint(lat, lon);
-            var geohashes = DistanceService.GeohashQueries(center, distance);
-            var places = _db.Collection("places");
+            var location = new Geolocation
+            {
+                Latitude = lat,
+                Longitude = lon
+            };
+            var result = await _placesService.GetPlaces(0, 25, location, distance);
+
 
 #if DEBUG
+            var places = _db.Collection("places");
             await places.ListDocumentsAsync().ForEachAsync(async d =>
             {
                 var doc = (await d.GetSnapshotAsync());
@@ -109,21 +117,7 @@ namespace GrooverAdmSPA.Controllers
                 await d.SetAsync(est);
             });
 #endif
-            //TODO check
-            var uniquePlaces = geohashes
-                .Select(hash =>
-                    places.WhereGreaterThanOrEqualTo("geohash", hash.Item1)
-                    .WhereLessThanOrEqualTo("geohash", hash.Item2)) // Create the queries
-                .Select(async a => {
-                    var snapshot = await a.GetSnapshotAsync();
-                    return snapshot;
-                }) //Get the snapshot
-                .SelectMany(r => r.Result.Documents.Select(doc => doc.ConvertTo<Place>())) //Resolve the establishments
-                .ToHashSet(); //Erase duplicates
-
-
-
-            var result = uniquePlaces.Where(p => DistanceService.Distance(p.Location, center) < distance).ToList();
+            
             return result;
         }
 
@@ -176,9 +170,8 @@ namespace GrooverAdmSPA.Controllers
         {
             var userId = HttpContext.User.Identity.Name;
 
-            var docRef = PlaceService.CreatePlace(establishment);
+            var docRef = await  _placesService.CreatePlace(establishment);
 
-            //TODO
             throw new NotImplementedException();
         }
 

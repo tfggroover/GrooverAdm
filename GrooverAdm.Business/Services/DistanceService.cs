@@ -1,11 +1,12 @@
 ﻿using Google.Cloud.Firestore;
+using GrooverAdm.Entities.Application;
 using NGeoHash;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace GrooverAdmSPA.Services
+namespace GrooverAdmSPA.Business.Services
 {
     public class DistanceService
     {
@@ -20,7 +21,7 @@ namespace GrooverAdmSPA.Services
         private const int EARTH_MERI_CIRCUMFERENCE = 40007860;
 
 
-        public static double Distance(GeoPoint point1, GeoPoint point2)
+        public static double Distance(Geolocation point1, Geolocation point2)
         {
             GeopointService.ValidateGeopoint(point1);
             GeopointService.ValidateGeopoint(point2);
@@ -55,7 +56,7 @@ namespace GrooverAdmSPA.Services
         /// <param name="center">The center</param>
         /// <param name="radius">The radius specified in metres</param>
         /// <returns>The eight bounding box points (And the center)</returns>
-        public static List<Coordinates> BoundingBoxCoordinates(GeoPoint center, double radius)
+        public static List<Coordinates> BoundingBoxCoordinates(Geolocation center, double radius)
         {
             var latitude = radius / METERS_PER_DEGREE_LATITUDE;
             var latitudeNorth = Math.Min(90, center.Latitude + latitude);
@@ -100,7 +101,7 @@ namespace GrooverAdmSPA.Services
             }
         }
 
-        public static List<Tuple<string, string>> GeohashQueries(GeoPoint center, double radius)
+        public static List<Tuple<string, string>> GeohashQueries(Geolocation center, double radius)
         {
             GeopointService.ValidateGeopoint(center);
             var queryBits = Math.Max(1, BoundingBoxBits(center, radius));
@@ -156,7 +157,7 @@ namespace GrooverAdmSPA.Services
                 }
         }
 
-        private static int BoundingBoxBits(GeoPoint coordinate, double radius)
+        private static int BoundingBoxBits(Geolocation coordinate, double radius)
         {
             var latDeltaDegrees = radius/ METERS_PER_DEGREE_LATITUDE;
             var latitudeNorth = Math.Min(90, coordinate.Latitude + latDeltaDegrees);

@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Google.Cloud.Firestore;
 using GrooverAdmSPA.Model;
-using GrooverAdmSPA.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GrooverAdmSPA.Controllers

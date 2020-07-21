@@ -1,16 +1,17 @@
 ﻿using Google.Cloud.Firestore;
+using GrooverAdm.Entities.Application;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace GrooverAdmSPA.Services
+namespace GrooverAdmSPA.Business.Services
 {
     public class GeopointService
     {
 
 
-        public static void ValidateGeopoint(GeoPoint point){
+        public static void ValidateGeopoint(Geolocation point){
             string error ="";
 
 

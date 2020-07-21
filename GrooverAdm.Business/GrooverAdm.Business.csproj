@@ -1,12 +1,18 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="NGeoHash" Version="1.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\GrooverAdm.DataAccess.Firestore.Model\GrooverAdm.DataAccess.Firestore.csproj" />
+    <ProjectReference Include="..\GrooverAdm.DataAccess\GrooverAdm.DataAccess.csproj" />
     <ProjectReference Include="..\GrooverAdm.Entities\GrooverAdm.Entities.csproj" />
+    <ProjectReference Include="..\GrooverAdm.Mappers\GrooverAdm.Mappers.csproj" />
   </ItemGroup>
 
 </Project>
