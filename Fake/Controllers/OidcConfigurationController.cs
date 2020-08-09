@@ -15,7 +15,11 @@ namespace Fake.Controllers
         }
 
         public IClientRequestParametersProvider ClientRequestParametersProvider { get; }
-
+        /// <summary>
+        /// IGNORA ESTO
+        /// </summary>
+        /// <param name="clientId"></param>
+        /// <returns></returns>
         [HttpGet("_configuration/{clientId}")]
         public IActionResult GetClientRequestParameters([FromRoute]string clientId)
         {

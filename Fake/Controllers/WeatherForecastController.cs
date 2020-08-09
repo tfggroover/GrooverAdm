@@ -24,7 +24,10 @@ namespace Fake.Controllers
         {
             _logger = logger;
         }
-
+        /// <summary>
+        /// IGNORA ESTO
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
         public IEnumerable<WeatherForecast> Get()
         {

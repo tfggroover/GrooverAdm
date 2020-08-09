@@ -52,7 +52,7 @@ namespace GrooverAdm.Business.Services.Places
         /// <param name="location"></param>
         /// <param name="distance"></param>
         /// <returns></returns>
-        Task<IEnumerable<Place>> GetPlaces(int offset, int quantity, Geolocation location, double distance);
+        Task<IEnumerable<Place>> GetPlaces(int offset, int quantity, Geolocation location, double distance, bool includePlaylist);
         /// <summary>
         /// Gets all the places between those geohashes
         /// </summary>

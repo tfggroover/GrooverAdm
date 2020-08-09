@@ -6,5 +6,6 @@ namespace GrooverAdm.Entities.Application
 {
     public interface IApplicationEntity
     {
+
     }
 }

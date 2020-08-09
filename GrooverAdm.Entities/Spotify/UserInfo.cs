@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace GrooverAdmSPA.Model
+namespace GrooverAdm.Entities.Spotify
 {
-    public class SpotifyUserInfo
+    public class UserInfo
     {
         public string Country { get; set; }
         public string Display_name { get; set; }

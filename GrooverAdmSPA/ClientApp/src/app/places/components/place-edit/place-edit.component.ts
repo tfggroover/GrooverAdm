@@ -18,9 +18,7 @@ export class PlaceEditComponent implements OnInit {
 
   ngOnInit(): void {
     const placeId = window.localStorage.getItem('editPlaceId');
-    this.firestore.getPlace(placeId).subscribe(snap => {
-      this.place = new Place(snap.data());
-    });
+
   }
 
 }

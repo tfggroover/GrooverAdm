@@ -11,14 +11,14 @@ namespace GrooverAdmSPA.Model
     {
         public User() {
         }
-        public User(SpotifyUserInfo userInfo, string currentToken, int expiresIn, DateTime dateTime)
-        {
-            DisplayName = userInfo.Display_name;
-            Id = userInfo.Id;
-            CurrentToken = currentToken;
-            ExpiresIn = expiresIn;
-            TokenEmissionTime = dateTime;
-        }
+        //public User(SpotifyUserInfo userInfo, string currentToken, int expiresIn, DateTime dateTime)
+        //{
+        //    DisplayName = userInfo.Display_name;
+        //    Id = userInfo.Id;
+        //    CurrentToken = currentToken;
+        //    ExpiresIn = expiresIn;
+        //    TokenEmissionTime = dateTime;
+        //}
         [FirestoreProperty]
         public int Born { get; set; }
         [FirestoreProperty]

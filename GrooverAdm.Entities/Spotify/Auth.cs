@@ -3,18 +3,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace GrooverAdmSPA.Model
+namespace GrooverAdm.Entities.Spotify
 {
-    public class SpotifyAuthorizationCodeFlowResponse : SpotifyAuthResponse
+    public class AuthorizationCodeFlowResponse : AuthResponse
     {
         public string Refresh_token { get; set; }
     }
 
-    public class SpotifyRefreshTokenResponse : SpotifyAuthResponse
+    public class RefreshTokenResponse : AuthResponse
     {
     }
 
-    public class SpotifyAuthResponse
+    public class AuthResponse
     {
         public string Access_token { get; set; }
         public string Token_type { get; set; }

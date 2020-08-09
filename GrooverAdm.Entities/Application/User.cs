@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace GrooverAdm.Entities.Application
 {
-    public class User
+    public class User :IApplicationEntity
     {
         public User() {
         }
-        public User(SpotifyUserInfo userInfo, string currentToken, int expiresIn, DateTime dateTime)
+        public User(UserInfo userInfo, string currentToken, int expiresIn, DateTime dateTime)
         {
             DisplayName = userInfo.Display_name;
             Id = userInfo.Id;

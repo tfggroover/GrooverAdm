@@ -84,7 +84,7 @@ namespace GrooverAdm.DataAccess.Firestore.PlacesDao
 
         public async Task<Place> UpdatePlace(Place place)
         {
-            var res = await _db.Collection(COLLECTION_REF).Document(place.Reference.Id).SetAsync(place);
+            var res = await place.Reference.SetAsync(place);
 
             if (res.UpdateTime != null)
                 return place;

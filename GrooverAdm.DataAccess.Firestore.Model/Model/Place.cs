@@ -10,15 +10,15 @@ namespace GrooverAdm.DataAccess.Firestore.Model
     {
         [FirestoreDocumentId]
         public DocumentReference Reference { get; set; }
-        [FirestoreProperty]
+        [FirestoreProperty("address")]
         public string Address { get; set; }
-        [FirestoreProperty]
+        [FirestoreProperty("displayname")]
         public string DisplayName { get; set; }
-        [FirestoreProperty]
+        [FirestoreProperty("location")]
         public GeoPoint Location { get; set; }
         [FirestoreProperty]
         public string Phone { get; set; }
-        [FirestoreProperty]
+        [FirestoreProperty("geohash")]
         public string Geohash { get; set; }
 
     }

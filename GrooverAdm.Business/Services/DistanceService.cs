@@ -29,7 +29,7 @@ namespace GrooverAdmSPA.Business.Services
             var R = 6371e3; // metres
             var φ1 = DegreesToRadians(point1.Latitude);
             var φ2 = DegreesToRadians(point2.Latitude);
-            var Δφ = DegreesToRadians(point2.Latitude - point1.Longitude);
+            var Δφ = DegreesToRadians(point2.Latitude - point1.Latitude);
             var Δλ = DegreesToRadians(point2.Longitude - point1.Longitude);
 
             var a = Math.Sin(Δφ / 2) * Math.Sin(Δφ / 2) +

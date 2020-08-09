@@ -1,4 +1,5 @@
-﻿using GrooverAdm.DataAccess.Dao;
+﻿using GrooverAdm.Business.Services.Playlist;
+using GrooverAdm.DataAccess.Dao;
 using GrooverAdm.DataAccess.Firestore.Model;
 using GrooverAdm.Entities.Application;
 using GrooverAdm.Mappers.Firestore;
@@ -18,17 +19,25 @@ namespace GrooverAdm.Business.Services.Places
     {
         private readonly IPlacesDao<DataAccess.Firestore.Model.Place> _dao;
         private readonly IPlaceMapper<DataAccess.Firestore.Model.Place> _mapper;
+        private readonly IRatingDao<DataAccess.Firestore.Model.Rating> _ratingDao;
+        private readonly IRatingMapper<DataAccess.Firestore.Model.Rating> _ratingMapper;
+        private readonly IPlaylistService playlistService;
 
-        public PlacesService(IPlacesDao<DataAccess.Firestore.Model.Place> dao, IPlaceMapper<DataAccess.Firestore.Model.Place> mapper)
+
+        public PlacesService(IPlacesDao<DataAccess.Firestore.Model.Place> dao, IPlaceMapper<DataAccess.Firestore.Model.Place> mapper,
+            IPlaylistService playlistService)
         {
             _dao = dao;
             _mapper = mapper;
+            this.playlistService = playlistService;
         }
 
         public async Task<Place> CreatePlace(Place place)
         {
             var converted = _mapper.ToDbEntity(place);
             var dbResult = await _dao.CreatePlace(converted);
+
+
 
             return _mapper.ToApplicationEntity(dbResult);
         }
@@ -59,12 +68,21 @@ namespace GrooverAdm.Business.Services.Places
             return dbResult.Select(p => _mapper.ToApplicationEntity(p));
         }
 
-        public async Task<IEnumerable<Place>> GetPlaces(int offset, int quantity, Geolocation location, double distance)
+        public async Task<IEnumerable<Place>> GetPlaces(int offset, int quantity, Geolocation location, double distance, bool includePlaylist)
         {
             var geohashes = DistanceService.GeohashQueries(location, distance);
             var dbResult = (await _dao.GetPlaces(offset, quantity, geohashes)).Select(p => _mapper.ToApplicationEntity(p));
             
-            return dbResult.Where(p => DistanceService.Distance(p.Location, location) < distance).ToList();
+            var results = dbResult.Where(p => DistanceService.Distance(p.Location, location) < distance).ToList();
+            if (includePlaylist)
+                results.ForEach(async r =>
+                {
+                    var p = await playlistService.GetMainPlaylistFromPlace(r.Id, true, 1, int.MaxValue);
+                    r.MainPlaylist = p;
+                });
+
+
+            return results;
         }
 
 

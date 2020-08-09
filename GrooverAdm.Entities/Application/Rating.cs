@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace GrooverAdm.Entities.Application
 {
-    public class Rating
+    public class Rating : IApplicationEntity
     {
         public string Id { get; set; }
         public double Value { get; set; }

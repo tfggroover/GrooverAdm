@@ -10,7 +10,9 @@ using FirebaseAdmin;
 using FirebaseAdmin.Auth;
 using Google.Cloud.Firestore;
 using Google.Cloud.Firestore.V1;
-using GrooverAdmSPA.Model;
+using GrooverAdm.Business.Services;
+using GrooverAdm.Entities.Application;
+using GrooverAdm.Entities.Spotify;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
@@ -25,18 +27,16 @@ namespace GrooverAdmSPA.Controllers
         private readonly FirebaseApp firebaseApp;
         private readonly IConfiguration Configuration;
         private readonly FirestoreDb firestoreDb;
+        private readonly SpotifyService _spotifyService;
 
-        public HomeController(IConfiguration configuration, FirebaseApp app, FirestoreDb db)
+        public HomeController(IConfiguration configuration, FirebaseApp app, FirestoreDb db, SpotifyService spotifyService)
         {
             Configuration = configuration;
             firebaseApp = app;
             firestoreDb = db;
+            _spotifyService = spotifyService;
         }
 
-        public IActionResult Index()
-        {
-            return View();
-        }
 
         [HttpGet("Auth")]
         public async Task<IActionResult> Auth(string refresh_token = null)
@@ -67,9 +67,9 @@ namespace GrooverAdmSPA.Controllers
             {
                 using (HttpClient client = new HttpClient())
                 {
-                    var spotiCredentials = await AuthRequest(code, client);
+                    var spotiCredentials = await _spotifyService.AuthRequest(code, client);
 
-                    var userData = await UserInfoRequest(client, spotiCredentials);
+                    var userData = await _spotifyService.UserInfoRequest(client, spotiCredentials);
 
                     var token = await GenerateToken(userData, spotiCredentials);
 
@@ -92,13 +92,13 @@ namespace GrooverAdmSPA.Controllers
             object result = null;
             using (HttpClient client = new HttpClient())
             {
-                var spotiCredentials = await RefreshAuthRequest(refresh_token, client);
+                var spotiCredentials = await _spotifyService.RefreshAuthRequest(refresh_token, client);
 
                 if(spotiCredentials == null)
                 {
                     return AuthorizationCodeFlow();
                 }
-                var userData = await UserInfoRequest(client, spotiCredentials);
+                var userData = await _spotifyService.UserInfoRequest(client, spotiCredentials);
 
                 var token = await GenerateToken(userData, spotiCredentials);
 
@@ -143,7 +143,7 @@ namespace GrooverAdmSPA.Controllers
             return Redirect(spotifyCall);
         }
 
-        private async Task<string> GenerateToken(SpotifyUserInfo userData, SpotifyAuthResponse credentials)
+        private async Task<string> GenerateToken(UserInfo userData, AuthResponse credentials)
         {
 
             var auth = FirebaseAuth.GetAuth(firebaseApp);
@@ -169,85 +169,15 @@ namespace GrooverAdmSPA.Controllers
                     PhotoUrl = userData.Images.FirstOrDefault()?.Url
                 });
             }
-            var user = new User(userData, credentials.Access_token, credentials.Expires_in, DateTime.UtcNow);
+           // var user = new User(userData, credentials.Access_token, credentials.Expires_in, DateTime.UtcNow);
             var reference = firestoreDb.Collection("users").Document($"{userData.Id}");
-            if ((await reference.GetSnapshotAsync()).Exists)
-                await reference.UpdateAsync(user.ToDictionary());
-            else
-                await reference.CreateAsync(user.ToDictionary());
+            //if ((await reference.GetSnapshotAsync()).Exists)
+            //    await reference.UpdateAsync(user.ToDictionary());
+            //else
+            //    await reference.CreateAsync(user.ToDictionary());
 
             var token = await auth.CreateCustomTokenAsync(userData.Id);
             return token;
-        }
-
-        private static async Task<SpotifyUserInfo> UserInfoRequest(HttpClient client, SpotifyAuthResponse spotiCredentials)
-        {
-            var userDataRequest = new HttpRequestMessage()
-            {
-                RequestUri = new Uri("https://api.spotify.com/v1/me"),
-                Method = HttpMethod.Get
-            };
-
-            userDataRequest.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", spotiCredentials.Access_token);
-
-            var userDataResponse = await client.SendAsync(userDataRequest);
-
-            var userData = JsonConvert.DeserializeObject<SpotifyUserInfo>(await userDataResponse.Content.ReadAsStringAsync());
-            return userData;
-        }
-
-
-        private async Task<SpotifyRefreshTokenResponse> RefreshAuthRequest(string refresh_token, HttpClient client)
-        {
-            var authRequest = new HttpRequestMessage()
-            {
-                RequestUri = new Uri($"{Configuration["AccessEndpoint"]}"),
-                Method = HttpMethod.Post,
-                Content = new FormUrlEncodedContent(new[]
-                {
-                            new KeyValuePair<string, string>("refresh_token", refresh_token),
-                            new KeyValuePair<string, string>("grant_type", "refresh_token")
-                        })
-            };
-
-            authRequest.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", Convert.ToBase64String(Encoding.ASCII.GetBytes(Configuration["ClientID"] + ":" + Configuration["ClientSecret"])));
-
-            var response = await client.SendAsync(authRequest);
-
-            if (response.IsSuccessStatusCode)
-            {
-                var responseContent = await response.Content.ReadAsStringAsync();
-
-                var spotiCredentials = JsonConvert.DeserializeObject<SpotifyRefreshTokenResponse>(responseContent);
-                return spotiCredentials;
-            } else
-            {
-                return null;
-            }
-        }
-
-        private async Task<SpotifyAuthorizationCodeFlowResponse> AuthRequest(string code, HttpClient client)
-        {
-            var authRequest = new HttpRequestMessage()
-            {
-                RequestUri = new Uri($"{Configuration["AccessEndpoint"]}"),
-                Method = HttpMethod.Post,
-                Content = new FormUrlEncodedContent(new[]
-                {
-                            new KeyValuePair<string, string>("code", code),
-                            new KeyValuePair<string, string>("redirect_uri", Configuration["RedirectURI"]),
-                            new KeyValuePair<string, string>("grant_type", "authorization_code")
-                        })
-            };
-
-            authRequest.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", Convert.ToBase64String(Encoding.ASCII.GetBytes(Configuration["ClientID"] + ":" + Configuration["ClientSecret"])));
-
-            var response = await client.SendAsync(authRequest);
-
-            var responseContent = await response.Content.ReadAsStringAsync();
-
-            var spotiCredentials = JsonConvert.DeserializeObject<SpotifyAuthorizationCodeFlowResponse>(responseContent);
-            return spotiCredentials;
         }
 
     }

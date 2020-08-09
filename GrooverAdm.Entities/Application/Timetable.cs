@@ -10,6 +10,5 @@ namespace GrooverAdm.Entities.Application
         public string Id { get; set; }
         public List<Schedule> Schedules { get; set; }
         public DayOfWeek Day { get; set; }
-        public Playlist Playlist { get; set; }
     }
 }

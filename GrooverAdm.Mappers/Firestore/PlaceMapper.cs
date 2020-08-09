@@ -16,9 +16,12 @@ namespace GrooverAdm.Mappers.Firestore
 
         public DataAccess.Firestore.Model.Place ToDbEntity(Place entity)
         {
+            DocumentReference reference = null;
+            if (!string.IsNullOrEmpty(entity.Id))
+                reference = _db.Collection(COLLECTION_REF).Document(entity.Id);
             return new DataAccess.Firestore.Model.Place
             {
-                Reference = _db.Collection(COLLECTION_REF).Document(entity.Id),
+                Reference = reference,
                 Address = entity.Address,
                 DisplayName = entity.DisplayName,
                 Geohash = entity.Geohash,

@@ -1,7 +1,8 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Inject } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/firestore';
 import 'firebase/firestore';
 import { Place } from '../models/Place';
+import { HttpClient } from '@angular/common/http';
 
 
 @Injectable({
@@ -9,29 +10,14 @@ import { Place } from '../models/Place';
 })
 export class PlaceService {
 
-  constructor(private firestore: AngularFirestore) {}
+  public places: Place[];
+
+  constructor(public http: HttpClient, @Inject('BASE_URL') public baseUrl: string) {
+    this.baseUrl = baseUrl;
+  }
 
   public getPlaces() {
-    return this.firestore.collection('places').snapshotChanges();
+    return this.http.get<Place[]>(this.baseUrl + 'api/place?lat=31&lon=6&distance=100');
   }
 
-  public getPlace(placeId: string) {
-    return this.firestore.doc('places/' + placeId).get();
-  }
-
-  public async createPlace(place: Place) {
-    const promise = this.firestore.collection('places').add(place.toJson());
-    if (place.playlist) {
-      const ref = await promise;
-      ref.collection('placeMusic').doc('mainPlaylist').set(place.playlist.toJson());
-    }
-  }
-
-  public updatePlace(place: Place) {
-    this.firestore.doc('places/' + place.id).set(place.toJson());
-  }
-
-  public deletePlace(place: Place) {
-    this.firestore.doc('places/' + place.id).delete();
-  }
 }

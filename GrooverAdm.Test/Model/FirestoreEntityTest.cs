@@ -1,4 +1,5 @@
-﻿using GrooverAdmSPA.Model;
+﻿using GrooverAdm.Entities.Application;
+using Newtonsoft.Json;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
@@ -21,19 +22,41 @@ namespace GrooverAdm.Test.Model
             var now = DateTime.Now;
             var notNow = now.AddHours(3);
 
+            var play = new Playlist
+            {
+                Id = Guid.NewGuid().ToString(),
+                Url = "La url de la lista hacia spotify en caso de que quieras permitir al usuario abrirla",
+                Songs = new List<Song>
+                {
+                    new Song
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        Tags = new List<string>
+                        {
+                            "pop", "rock"
+                        },
+                        Data = new
+                        {
+                            Description = "Utter garbage"
+                        }
+                    }
+                },
+                SnapshotVersion = "v2"
+            };
+
             var place = new Place()
             {
                 Address = "Test",
                 DisplayName = "Testeroni",
                 Geohash = NGeoHash.GeoHash.Encode(37.3738584, -5.968221),
                 Id = Guid.NewGuid().ToString(),
-                Location = new Google.Cloud.Firestore.GeoPoint(37.3738584, -5.968221),
+                Location = new Geolocation { Latitude = 37.3738584, Longitude = -5.968221 },
                 Owners = new List<User>
                 {
                     new User
                     {
                         Born = 2000,
-                        DisplayName = "Pepito",
+                        DisplayName = "En esta lista de usuarios también puedo devolverte solo el Id de referencia, lo que prefieras, si vas a mostrar algo del dueño evidentemente te lo doy relleno",
                         Id = Guid.NewGuid().ToString()
                     },
                     new User
@@ -44,30 +67,11 @@ namespace GrooverAdm.Test.Model
                     },
                 },
                 Phone = "55555555",
-                Playlist = new Playlist
+                MainPlaylist = play,
+                WeeklyPlaylists = new Dictionary<string, Playlist>
                 {
-                    Hash = Guid.NewGuid().ToString(),
-                    Id = Guid.NewGuid().ToString(),
-                    Songs = new List<Song>
-                    {
-                        new Song
-                        {
-                            Id = Guid.NewGuid().ToString(),
-                            Tags = new List<string>
-                            {
-                                "pop", "rock"
-                            },
-                            Data = new
-                            {
-                                Description = "Utter garbage"
-                            }
-                        }
-                    },
-                    Metrics = new
-                    {
-                        Tempo = "Pretty fast"
-                    }
-
+                    { "Monday",  play },
+                    { "Tuesday", play }
                 },
                 Ratings = new List<Rating>
                 {
@@ -82,7 +86,7 @@ namespace GrooverAdm.Test.Model
                         }
                     }
                 },
-                Recognized = new Dictionary<string, int>
+                RecognizedMusic = new Dictionary<string, int>
                 {
                     { Guid.NewGuid().ToString() , 1 }
                 },
@@ -91,13 +95,6 @@ namespace GrooverAdm.Test.Model
                     new Timetable
                     {
                         Day = DayOfWeek.Monday,
-                        Id = Guid.NewGuid().ToString(),
-                        Playlist = new Playlist
-                        {
-                            Hash = Guid.NewGuid().ToString(),
-                            Id = Guid.NewGuid().ToString(),
-
-                        },
                         Schedules = new List<Schedule>
                         {
                             new Schedule
@@ -110,13 +107,6 @@ namespace GrooverAdm.Test.Model
                     new Timetable
                     {
                         Day = DayOfWeek.Tuesday,
-                        Id = Guid.NewGuid().ToString(),
-                        Playlist = new Playlist
-                        {
-                            Hash = Guid.NewGuid().ToString(),
-                            Id = Guid.NewGuid().ToString(),
-
-                        },
                         Schedules = new List<Schedule>
                         {
                             new Schedule
@@ -129,138 +119,8 @@ namespace GrooverAdm.Test.Model
                 }
             };
 
-            var expected = new Dictionary<string, object>
-            {
-                { "Address", "Test" },
-                { "DisplayName", "Testeroni"},
-                { "Geohash", NGeoHash.GeoHash.Encode(37.3738584, -5.968221) },
-                { "Id", Guid.NewGuid().ToString() },
-                { "Location", new Dictionary<string, object>
-                    {
-                        { "Latitude", 37.3738584 },
-                        { "Longitude", -5.968221 }
-                    }
-                },
-                { "Owners" , new List<Dictionary<string, object>>
-                    {
-                        new Dictionary<string, object>
-                        {
-                            { "Born" , 2000 },
-                            { "DisplayName", "Pepito" },
-                            { "Id", Guid.NewGuid().ToString() }
-                        },
-                        new Dictionary<string, object>
-                        {
-                            { "Born", 2000 },
-                            { "DisplayName", "Pepito2" },
-                            { "Id", Guid.NewGuid().ToString() }
-                        },
-                    }
-                },
-                { "Phone", "55555555" },
-                { "Playlist", new Dictionary<string, object>
-                    {
-                        { "Hash" , Guid.NewGuid().ToString() },
-                        { "Id", Guid.NewGuid().ToString() },
-                        { "Songs", new List<Dictionary<string,object>>
-                            {
-                                new Dictionary<string, object>
-                                {
-                                    {"Id", Guid.NewGuid().ToString() },
-                                    { "Tags" , new List<string>
-                                        {
-                                            "pop", "rock"
-                                        }
-                                    },
-                                    { "Data", new Dictionary<string, object>
-                                        {
-                                            { "Description", "Utter garbage" }
-                                        }
-                                    }
-                                }
-                            }
-                        },
-                        { "Metrics", new Dictionary<string, object>
-                            {
-                                { "Tempo", "Pretty fast" }
-                            }
-                        }
+            var pla = JsonConvert.SerializeObject(place);
 
-                    }
-                },
-                { "Ratings", new List<Dictionary<string, object>>
-                    {
-                        new Dictionary<string, object>
-                        {
-                            { "Id", Guid.NewGuid().ToString() },
-                            { "User", new Dictionary<string, object>
-                                {
-                                    { "Born", 2000 },
-                                    { "DisplayName", "NotPepito" },
-                                    { "Id", Guid.NewGuid().ToString() }
-                                }
-
-                            }
-                        }
-                    }
-                },
-                { "Recognized", new Dictionary<string, int>
-                    {
-                        { Guid.NewGuid().ToString() , 1 }
-                    }
-                },
-                { "Timetables", new List<Dictionary<string, object>>()
-                    {
-                        new Dictionary<string, object>
-                        {
-                            { "Day", DayOfWeek.Monday },
-                            { "Id", Guid.NewGuid().ToString() },
-                            { "Playlist", new Dictionary<string, object>
-                                {
-                                    { "Hash", Guid.NewGuid().ToString() },
-                                    { "Id", Guid.NewGuid().ToString() },
-
-                                }
-                            },
-                            { "Schedules", new List<Dictionary<string, object>>
-                                {
-                                    new Dictionary<string, object>
-                                    {
-                                        { "Start", now },
-                                        { "End", notNow }
-                                    }
-                                }
-                            }
-                        },
-                        new Dictionary<string, object>
-                        {
-                            { "Day", DayOfWeek.Tuesday },
-                            { "Id", Guid.NewGuid().ToString() },
-                            { "Playlist", new Dictionary<string, object>
-                                {
-                                    { "Hash", Guid.NewGuid().ToString() },
-                                    { "Id", Guid.NewGuid().ToString() }
-                                }
-                            },
-                            { "Schedules", new List<Dictionary<string, object>>
-                                {
-                                    new Dictionary<string, object>
-                                    {
-                                        { "Start", now },
-                                        { "End", notNow }
-                                    }
-                                }
-                            }
-
-                        }
-                    }
-                }
-            };
-
-            var result = place.ToDictionary();
-
-
-            Assert.AreEqual(result, expected);
         }
 
 

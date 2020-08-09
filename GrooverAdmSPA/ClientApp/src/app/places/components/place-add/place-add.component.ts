@@ -17,10 +17,10 @@ export class PlaceAddComponent implements OnInit {
   }
 
   public addPlace(place: Place) {
-    const result = this.placeService.createPlace(place);
-    if (result) {
-      this.router.navigateByUrl('places');
-    }
+    //const result = this.placeService.createPlace(place);
+    //if (result) {
+    //  this.router.navigateByUrl('places');
+    //}
   }
 
 }

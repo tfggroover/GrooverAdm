@@ -11,6 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\GrooverAdm.Common\GrooverAdm.Common.csproj" />
     <ProjectReference Include="..\GrooverAdm.DataAccess\GrooverAdm.DataAccess.csproj" />
   </ItemGroup>
 

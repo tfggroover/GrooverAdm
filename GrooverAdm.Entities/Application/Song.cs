@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace GrooverAdm.Entities  .Application
 {
-    public class Song 
+    public class Song : IApplicationEntity 
     {
         public Song(){
             Tags = new List<string>();
