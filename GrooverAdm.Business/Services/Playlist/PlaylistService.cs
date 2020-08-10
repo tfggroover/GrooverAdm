@@ -45,6 +45,9 @@ namespace GrooverAdm.Business.Services.Playlist
         public async Task<Entities.Application.Playlist> GetMainPlaylistFromPlace(string place, bool includeSongs, int page, int pageSize)
         {
             var dbResult = await _dao.GetPlaylist(place);
+
+            if (dbResult == null)
+                return null;
             // TODO ensure playlist is up to date with User token
 
             // If it is not up to date, update it

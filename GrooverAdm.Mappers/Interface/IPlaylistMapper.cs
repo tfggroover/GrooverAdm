@@ -8,7 +8,7 @@ namespace GrooverAdm.Mappers.Interface
 {
     public interface IPlaylistMapper<T> : IMapper<Entities.Application.Playlist, T> where T :IDbEntity
     {
-        public DataAccess.Firestore.Model.Playlist ToDbEntity(Entities.Application.Playlist entity, string placeId);
+        DataAccess.Firestore.Model.Playlist ToDbEntity(Entities.Application.Playlist entity, string placeId);
 
     }
 }

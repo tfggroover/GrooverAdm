@@ -7,6 +7,6 @@ namespace GrooverAdm.Mappers.Interface
 {
     public interface IRatingMapper<T> : IMapper<Entities.Application.Rating, T> where T: IDbEntity
     {
-        public DataAccess.Firestore.Model.Rating ToDbEntity(Entities.Application.Rating rating, string placeId);
+        DataAccess.Firestore.Model.Rating ToDbEntity(Entities.Application.Rating rating, string placeId);
     }
 }

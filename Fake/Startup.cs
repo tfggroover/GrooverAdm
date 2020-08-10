@@ -19,6 +19,9 @@ using GrooverAdm.Business.Services.Places;
 using GrooverAdm.DataAccess.Dao;
 using GrooverAdm.DataAccess.Firestore.PlacesDao;
 using GrooverAdm.Mappers.Firestore;
+using GrooverAdm.Business.Services.Playlist;
+using GrooverAdm.DataAccess.Firestore.Dao;
+using GrooverAdm.Business.Services.Song;
 
 namespace Fake
 {
@@ -72,6 +75,12 @@ namespace Fake
             services.AddScoped<IPlacesService, PlacesService>();
             services.AddScoped<IPlacesDao<GrooverAdm.DataAccess.Firestore.Model.Place>, PlacesFirestoreDao>();
             services.AddScoped<IPlaceMapper<GrooverAdm.DataAccess.Firestore.Model.Place>, PlaceMapper>();
+            services.AddScoped<IPlaylistService, PlaylistService>();
+            services.AddScoped<IPlaylistDao<GrooverAdm.DataAccess.Firestore.Model.Playlist>, PlaylistFirestoreDao>();
+            services.AddScoped<IPlaylistMapper<GrooverAdm.DataAccess.Firestore.Model.Playlist>, PlaylistMapper>();
+            services.AddScoped<ISongService, SongService>();
+            services.AddScoped<ISongDao<GrooverAdm.DataAccess.Firestore.Model.Song>, SongFirestoreDao>();
+            services.AddScoped<ISongMapper<GrooverAdm.DataAccess.Firestore.Model.Song>, SongMapper>();
             services.AddScoped<GrooverAdm.Business.Services.SpotifyService>();
             services.AddScoped<GrooverAdm.Business.Services.LastFmService>();
             services.AddScoped<GrooverAdm.Business.Services.User.IUserService, GrooverAdm.Business.Services.User.UserService>();

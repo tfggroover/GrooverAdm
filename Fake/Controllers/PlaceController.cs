@@ -195,10 +195,10 @@ namespace GrooverAdmSPA.Controllers
                 {
                     var playlistSongs = await _spotify.GetSongsFromPlaylist(client, token, playlistId);
                     
-                    GetTagsAndGenresFromSongs(client, token, playlistSongs, artistsChecked,out var lastFmTagOccurrence, out var spotifyGenreOccurrence);
+                    GetTagsAndGenresFromSongs(client, token, playlistSongs, artistsChecked, out var lastFmTagOccurrenceInner, out var spotifyGenreOccurrenceInner);
 
-                    playlistFMOccurrenceDictionary.AddOrUpdate(playlist.Id, lastFmTagOccurrence, (k, l) => lastFmTagOccurrence);
-                    playlistGenreOccurenceDictionary.AddOrUpdate(playlist.Id, spotifyGenreOccurrence, (k, l) => spotifyGenreOccurrence);
+                    playlistFMOccurrenceDictionary.AddOrUpdate(playlist.Id, lastFmTagOccurrenceInner, (k, l) => lastFmTagOccurrenceInner);
+                    playlistGenreOccurenceDictionary.AddOrUpdate(playlist.Id, spotifyGenreOccurrenceInner, (k, l) => spotifyGenreOccurrenceInner);
 
                     //UpdatePlaylist with songs, tags and genres
                 }

@@ -8,10 +8,10 @@ namespace GrooverAdm.DataAccess.Dao
 {
     public interface IUserDao<T> where T : User
     {
-        public Task<T> CreateUser(T user);
-        public Task<T> GetUser(string id);
-        public Task<T> UpdateUser(T user);
-        public Task<bool> DeleteUser(string id);
+        Task<T> CreateUser(T user);
+        Task<T> GetUser(string id);
+        Task<T> UpdateUser(T user);
+        Task<bool> DeleteUser(string id);
 
     }
 }
