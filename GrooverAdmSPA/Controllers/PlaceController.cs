@@ -46,7 +46,7 @@ namespace GrooverAdmSPA.Controllers
                 Latitude = lat,
                 Longitude = lon
             };
-            var result = await _placesService.GetPlaces(0, 25, location, distance);
+            var result = await _placesService.GetPlaces(0, 25, location, distance,  true);
 
 
 #if DEBUG
@@ -189,7 +189,7 @@ namespace GrooverAdmSPA.Controllers
             
             //Algorithm magic (Get every place surrounding that, apply the algorithm for those)
             //With today's playlist
-            var places = _placesService.GetPlaces(0, 25, new Geolocation { Latitude = lat, Longitude = lon }, distance);
+            var places = _placesService.GetPlaces(0, 25, new Geolocation { Latitude = lat, Longitude = lon }, distance, true);
 
             throw new NotImplementedException();
         }
