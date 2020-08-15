@@ -71,7 +71,7 @@ namespace GrooverAdm.DataAccess.Firestore.PlacesDao
             var res = geohashes
                 .Select(hash =>
                     _db.Collection(COLLECTION_REF).WhereGreaterThanOrEqualTo("geohash", hash.Item1)
-                    .WhereLessThanOrEqualTo("geohash", hash.Item2)) // Create the queries
+                    .WhereLessThanOrEqualTo("geohash", hash.Item2).Limit(quantity).Offset(offset)) // Create the queries
                 .Select(async a => {
                     var snapshot = await a.GetSnapshotAsync();
                     return snapshot;

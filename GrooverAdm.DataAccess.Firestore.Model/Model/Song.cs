@@ -10,12 +10,15 @@ namespace GrooverAdm.DataAccess.Firestore.Model
     {
         public Song()
         {
-            Tags = new List<string>();
+            Artists = new List<Artist>();
         }
 
         [FirestoreDocumentId]
         public DocumentReference Reference { get; set; }
         [FirestoreProperty]
-        public List<string> Tags { get; set; }
+        public string Name { get; set; }
+        [FirestoreProperty]
+        public List<Artist> Artists { get; set; }
+
     }
 }

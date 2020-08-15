@@ -129,6 +129,7 @@ namespace GrooverAdmSPA.Business.Services
             var significantBits = bits - (basic.Length * BITS_PER_CHAR);
             var unusedBits = (BITS_PER_CHAR - significantBits);
             // delete unused bits
+            //TODO Revisar por qué si consultas con 1500 metros esto peta.
             var startValue = (lastValue >> unusedBits) << unusedBits;
             var endValue = startValue + (1 << unusedBits);
             if (endValue > 31)

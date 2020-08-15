@@ -30,15 +30,7 @@ namespace GrooverAdm.Test.Model
                 {
                     new Song
                     {
-                        Id = Guid.NewGuid().ToString(),
-                        Tags = new List<string>
-                        {
-                            "pop", "rock"
-                        },
-                        Data = new
-                        {
-                            Description = "Utter garbage"
-                        }
+                        Id = Guid.NewGuid().ToString()
                     }
                 },
                 SnapshotVersion = "v2"

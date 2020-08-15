@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Google.Cloud.Firestore;
 using GrooverAdm.Business.Services;
 using GrooverAdm.Business.Services.Places;
+using GrooverAdm.Business.Services.Playlist;
 using GrooverAdm.Business.Services.User;
 using GrooverAdm.Entities.Application;
 using GrooverAdm.Entities.LastFm;
@@ -17,6 +18,7 @@ using GrooverAdm.Entities.Spotify;
 using GrooverAdmSPA.Business.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 
 namespace GrooverAdmSPA.Controllers
 {
@@ -29,14 +31,16 @@ namespace GrooverAdmSPA.Controllers
         private readonly IUserService _userService;
         private readonly SpotifyService _spotify;
         private readonly LastFmService _lastFm;
+        private readonly IConfiguration Configuration;
 
-        public PlaceController(FirestoreDb db, IPlacesService placesService, IUserService userService, SpotifyService spotify, LastFmService lastFm)
+        public PlaceController(FirestoreDb db, IPlacesService placesService, IUserService userService, SpotifyService spotify, LastFmService lastFm, IConfiguration config)
         {
             _db = db;
             _placesService = placesService;
             _userService = userService;
             _spotify = spotify;
             _lastFm = lastFm;
+            Configuration = config;
         }
 
         /// <summary>
@@ -159,7 +163,7 @@ namespace GrooverAdmSPA.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("api/place/recommended")]
-        public async Task<IEnumerable<Place>> GetRecommendedEstablishmentsForPlaylist(string playlistId, double lat, double lon, double distance, int page = 0, int pageSize = 25)
+        public async Task<IEnumerable<ComparedPlace>> GetRecommendedEstablishmentsForPlaylist(string playlistId, double lat, double lon, double distance, int page = 1, int pageSize = 25)
         {
             string userId = HttpContext.User.Identity.Name;
             var client = new HttpClient();
@@ -172,7 +176,7 @@ namespace GrooverAdmSPA.Controllers
 
             var songs = await _spotify.GetSongsFromPlaylist(client, token, playlistId);
             //Match with storedSongs in Db for tags
-            var places = await _placesService.GetPlaces(page, pageSize, new Geolocation { Latitude = lat, Longitude = lon }, distance, true);
+            var places = await _placesService.GetPlaces(1, int.MaxValue, new Geolocation { Latitude = lat, Longitude = lon }, distance, true);
 
 
             var playlistVectorsFm = new Dictionary<string, Dictionary<string, double>>();
@@ -182,14 +186,14 @@ namespace GrooverAdmSPA.Controllers
             var playlistGenreOccurenceDictionary = new ConcurrentDictionary<string, Dictionary<string, int>>();
             var artistsChecked = new ConcurrentDictionary<string, List<string>>();
 
-            Parallel.ForEach(places.Select(p => p.MainPlaylist), async (GrooverAdm.Entities.Application.Playlist playlist) =>
+            Parallel.ForEach(places, async (Place place) =>
             {
-                playlistVectorsSpoti[playlist.Id] = new Dictionary<string, double>();
-                playlistVectorsFm[playlist.Id] = new Dictionary<string, double>();
-                if (playlist.Tags.Any() && playlist.Genres.Any())
+                playlistVectorsSpoti[place.MainPlaylist.Id] = new Dictionary<string, double>();
+                playlistVectorsFm[place.MainPlaylist.Id] = new Dictionary<string, double>();
+                if (place.MainPlaylist.Tags.Any() && place.MainPlaylist.Genres.Any())
                 {
-                    playlistFMOccurrenceDictionary.AddOrUpdate(playlist.Id, playlist.Tags, (k, l) => playlist.Tags);
-                    playlistGenreOccurenceDictionary.AddOrUpdate(playlist.Id, playlist.Genres, (k, l) => playlist.Genres);
+                    playlistFMOccurrenceDictionary.AddOrUpdate(place.MainPlaylist.Id, place.MainPlaylist.Tags, (k, l) => place.MainPlaylist.Tags);
+                    playlistGenreOccurenceDictionary.AddOrUpdate(place.MainPlaylist.Id, place.MainPlaylist.Genres, (k, l) => place.MainPlaylist.Genres);
                 }
                 else
                 {
@@ -197,16 +201,18 @@ namespace GrooverAdmSPA.Controllers
                     
                     GetTagsAndGenresFromSongs(client, token, playlistSongs, artistsChecked, out var lastFmTagOccurrenceInner, out var spotifyGenreOccurrenceInner);
 
-                    playlistFMOccurrenceDictionary.AddOrUpdate(playlist.Id, lastFmTagOccurrenceInner, (k, l) => lastFmTagOccurrenceInner);
-                    playlistGenreOccurenceDictionary.AddOrUpdate(playlist.Id, spotifyGenreOccurrenceInner, (k, l) => spotifyGenreOccurrenceInner);
+                    playlistFMOccurrenceDictionary.AddOrUpdate(place.MainPlaylist.Id, lastFmTagOccurrenceInner, (k, l) => lastFmTagOccurrenceInner);
+                    playlistGenreOccurenceDictionary.AddOrUpdate(place.MainPlaylist.Id, spotifyGenreOccurrenceInner, (k, l) => spotifyGenreOccurrenceInner);
 
+                    place.MainPlaylist.Songs = playlistSongs.Items.Select(s => new GrooverAdm.Entities.Application.Song(s)).ToList();
                     //UpdatePlaylist with songs, tags and genres
+                    await _placesService.UpdatePlaylist(place, lastFmTagOccurrenceInner, spotifyGenreOccurrenceInner);
+                    
                 }
 
             });
 
 
-            //Call lastFm for the rest, if empty save with flag to not ask for it
             GetTagsAndGenresFromSongs(client, token, songs, artistsChecked, out var lastFmTagOccurrence, out var spotifyGenreOccurrence);
             playlistFMOccurrenceDictionary.AddOrUpdate(playlistId, lastFmTagOccurrence, (k, l) => lastFmTagOccurrence);
             playlistGenreOccurenceDictionary.AddOrUpdate(playlistId, spotifyGenreOccurrence, (k, l) => spotifyGenreOccurrence);
@@ -267,14 +273,23 @@ namespace GrooverAdmSPA.Controllers
                 }
             }
 
-            // ordenar según getSimilitud según la poonderación que se quiera
+            var fmSucc = double.TryParse(Configuration["FmPonderation"], out var fmCoeff);
+            var spoSucc = double.TryParse(Configuration["SpoPonderation"], out var spoCoeff);
+            // ordenar según getSimilitud según la ponderación que se quiera
+            var result = places.Select(p =>
+            {
+                var similitude = GetSimilitude(playlistVectorsFm[playlistId], playlistVectorsFm[p.MainPlaylist.Id]) * (fmSucc? fmCoeff : 0.5) + GetSimilitude(playlistVectorsSpoti[playlistId], playlistVectorsSpoti[p.MainPlaylist.Id]) * (spoSucc?spoCoeff : 0.5);
+                var res = (ComparedPlace) p;
+                res.Similitude = similitude;
+                return res;
+            }).OrderByDescending(c => c.Similitude).Skip((page - 1) * pageSize).Take(pageSize);
 
             //Update tags
 
             //Algorithm magic (Get every place surrounding that, apply the algorithm for those)
             //With today's playlist
 
-            return places;
+            return result;
         }
 
         private double GetSimilitude(Dictionary<string, double> first, Dictionary<string, double> second)
@@ -301,7 +316,7 @@ namespace GrooverAdmSPA.Controllers
         {
             var lastFmTagOccurrenceConc = new ConcurrentDictionary<string, int>();
             var spotifyGenreOccurrenceConc = new ConcurrentDictionary<string, int>();
-            var parallelresult = Parallel.ForEach(songs.Items, async (song) =>
+            Parallel.ForEach(songs.Items, async (song) =>
             {
                 var lastFmTags = await _lastFm.GetTrackTags(client, song.Track.Name, song.Track.Artists[0]?.Name);
                 lastFmTags.Toptags.Tag.Sort(new TagComparer());

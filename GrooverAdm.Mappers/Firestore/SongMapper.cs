@@ -2,6 +2,7 @@
 using GrooverAdm.Mappers.Interface;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace GrooverAdm.Mappers.Firestore
@@ -23,7 +24,8 @@ namespace GrooverAdm.Mappers.Firestore
             return new Entities.Application.Song
             {
                 Id = dbEntity.Reference.Id,
-                Tags = dbEntity.Tags
+                Name = dbEntity.Name,
+                Artists = dbEntity.Artists.Select(a => new Entities.Application.Artist { Id = a.Id, Name = a.Name}).ToList()
             };
         }
 
@@ -33,7 +35,8 @@ namespace GrooverAdm.Mappers.Firestore
             return new DataAccess.Firestore.Model.Song
             {
                 Reference = reference,
-                Tags = entity.Tags
+                Name = entity.Name,
+                Artists = entity.Artists.Select(a => new DataAccess.Firestore.Model.Artist { Id = a.Id, Name = a.Name }).ToList()
             };
         }
 
@@ -43,7 +46,8 @@ namespace GrooverAdm.Mappers.Firestore
             return new DataAccess.Firestore.Model.Song
             {
                 Reference = reference,
-                Tags = entity.Tags
+                Name = entity.Name,
+                Artists = entity.Artists.Select(a => new DataAccess.Firestore.Model.Artist { Id = a.Id, Name = a.Name }).ToList()
             };
         }
     }

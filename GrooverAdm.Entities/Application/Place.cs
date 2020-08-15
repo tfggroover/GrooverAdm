@@ -30,6 +30,9 @@ namespace GrooverAdm.Entities.Application
 
     }
 
-
+    public class ComparedPlace : Place
+    {
+        public double Similitude { get; set; }
+    }
 
 }

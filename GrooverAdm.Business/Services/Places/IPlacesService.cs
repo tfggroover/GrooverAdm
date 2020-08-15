@@ -61,5 +61,7 @@ namespace GrooverAdm.Business.Services.Places
         /// <param name="geohashes"></param>
         /// <returns></returns>
         Task<IEnumerable<Place>> GetPlaces(int offset, int quantity, List<Tuple<string, string>> geohashes);
+
+        Task<Entities.Application.Playlist> UpdatePlaylist(Place place, Dictionary<string, int> tags, Dictionary<string, int> genres);
     }
 }

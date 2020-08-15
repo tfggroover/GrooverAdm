@@ -37,6 +37,8 @@ namespace GrooverAdm.Business.Services.Places
             var converted = _mapper.ToDbEntity(place);
             var dbResult = await _dao.CreatePlace(converted);
 
+            if (place.MainPlaylist != null)
+                await this.playlistService.CreatePlaylist(place.Id, place.MainPlaylist);
 
 
             return _mapper.ToApplicationEntity(dbResult);
@@ -75,10 +77,11 @@ namespace GrooverAdm.Business.Services.Places
             
             var results = dbResult.Where(p => DistanceService.Distance(p.Location, location) < distance).ToList();
             if (includePlaylist)
-                results.ForEach(async r =>
+                results.ForEach(r =>
                 {
-                    var p = await playlistService.GetMainPlaylistFromPlace(r.Id, true, 1, int.MaxValue);
-                    r.MainPlaylist = p;
+                    var p = playlistService.GetMainPlaylistFromPlace(r.Id, true, 1, int.MaxValue);
+                    p.Wait();
+                    r.MainPlaylist = p.Result;
                 });
 
 
@@ -99,6 +102,16 @@ namespace GrooverAdm.Business.Services.Places
             var dbResult = await _dao.UpdatePlace(converted);
 
             return _mapper.ToApplicationEntity(dbResult);
+        }
+
+        public async Task<Entities.Application.Playlist> UpdatePlaylist(Place place, Dictionary<string, int> tags, Dictionary<string, int> genres)
+        {
+            var playlist = await this.playlistService.GetMainPlaylistFromPlace(place.Id, false, 0, 0);
+            playlist.Tags = tags;
+            playlist.Genres = genres;
+            await this.playlistService.SetPlaylist(place.Id, playlist);
+
+            return playlist;
         }
     }
 }
