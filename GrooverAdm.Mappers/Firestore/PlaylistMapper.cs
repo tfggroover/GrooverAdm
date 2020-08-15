@@ -28,6 +28,7 @@ namespace GrooverAdm.Mappers.Firestore
             {
                 SnapshotVersion = dbEntity.SnapshotId,
                 Id = dbEntity.Id,
+                Name = dbEntity.Name,
                 Url = dbEntity.Url,
                 ImageUrl = dbEntity.ImageUrl,
                 Tags = dbEntity.LastFmOcurrenceDictionary,
@@ -48,6 +49,7 @@ namespace GrooverAdm.Mappers.Firestore
             {
                 Reference = reference,
                 Id = entity.Id,
+                Name = entity.Name,
                 SnapshotId = entity.SnapshotVersion,
                 Url = entity.Url,
                 ImageUrl = entity.ImageUrl,

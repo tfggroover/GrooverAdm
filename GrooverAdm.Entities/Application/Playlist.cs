@@ -17,6 +17,7 @@ namespace GrooverAdm.Entities.Application
 
         public string Id { get; set; }
         public string ImageUrl { get; set; }
+        public string Name { get; set; }
         public List<Song> Songs{ get; set; }
         public Dictionary<string, int> Tags { get; set; }
         public Dictionary<string, int> Genres { get; set; }

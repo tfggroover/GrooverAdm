@@ -14,6 +14,8 @@ namespace GrooverAdm.DataAccess.Firestore.Model
         [FirestoreProperty]
         public string Id { get; set; }
         [FirestoreProperty]
+        public string Name { get; set; }
+        [FirestoreProperty]
         public string ImageUrl { get; set; }
         [FirestoreProperty]
         public string SnapshotId { get; set; }
