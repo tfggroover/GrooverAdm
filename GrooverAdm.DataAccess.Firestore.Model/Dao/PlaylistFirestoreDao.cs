@@ -41,8 +41,11 @@ namespace GrooverAdm.DataAccess.Firestore.Dao
         public async Task<Playlist> GetPlaylist(string place)
         {
             var reference = _db.Collection(PLACE_REF).Document(place).Collection(COLLECTION_REF).Document(PLAYLIST_REF);
+            var snapshot = await reference.GetSnapshotAsync();
+            if (snapshot.Exists)
+                return snapshot.ConvertTo<Playlist>();
 
-            return (await reference.GetSnapshotAsync()).ConvertTo<Playlist>();
+            return null;
         }
 
         public async Task<Playlist> UpdatePlaylist(Playlist playlist)

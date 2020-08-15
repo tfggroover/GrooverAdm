@@ -8,7 +8,7 @@ namespace GrooverAdm.DataAccess.Firestore.Exceptions
     class AlreadyExistingEntityException : GrooverException
     {
         public AlreadyExistingEntityException() : base() { }
-        public AlreadyExistingEntityException(string? message) : base(message) { }
+        public AlreadyExistingEntityException(string message) : base(message) { }
 
     }
 }
