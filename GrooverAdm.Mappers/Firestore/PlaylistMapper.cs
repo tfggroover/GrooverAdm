@@ -30,7 +30,8 @@ namespace GrooverAdm.Mappers.Firestore
                 Id = dbEntity.Id,
                 Url = dbEntity.Url,
                 ImageUrl = dbEntity.ImageUrl,
-                Tags = dbEntity.OcurrenceDictionary
+                Tags = dbEntity.LastFmOcurrenceDictionary,
+                Genres = dbEntity.SpotifyOccurrenceDictionary
             };
         }
 
@@ -50,7 +51,8 @@ namespace GrooverAdm.Mappers.Firestore
                 SnapshotId = entity.SnapshotVersion,
                 Url = entity.Url,
                 ImageUrl = entity.ImageUrl,
-                OcurrenceDictionary = entity.Tags
+                LastFmOcurrenceDictionary = entity.Tags,
+                SpotifyOccurrenceDictionary = entity.Genres
             };
         }
     }
