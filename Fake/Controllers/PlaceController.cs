@@ -20,11 +20,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 
-namespace GrooverAdmSPA.Controllers
+namespace Fake.Controllers
 {
     //[Authorize]
     [ApiController]
-    public class PlaceController : Controller
+    public class PlaceController : ControllerBase
     {
         private readonly FirestoreDb _db;
         private readonly IPlacesService _placesService;
@@ -32,6 +32,7 @@ namespace GrooverAdmSPA.Controllers
         private readonly SpotifyService _spotify;
         private readonly LastFmService _lastFm;
         private readonly IConfiguration Configuration;
+        
 
         public PlaceController(FirestoreDb db, IPlacesService placesService, IUserService userService, SpotifyService spotify, LastFmService lastFm, IConfiguration config)
         {
@@ -64,91 +65,6 @@ namespace GrooverAdmSPA.Controllers
             };
             var result = await _placesService.GetPlaces(page, pageSize, location, distance, true);
 
-            /*
-#if DEBUG
-            var places = _db.Collection("places");
-            await places.ListDocumentsAsync().ForEachAsync(async d =>
-            {
-                var doc = (await d.GetSnapshotAsync());
-                var est = doc.ConvertTo<Place>();
-                if (!est.Timetables.Any() && doc.ToDictionary().ContainsKey("open"))
-                    foreach (var t in doc.GetValue<Dictionary<string, string>>("open"))
-                    {
-                        DayOfWeek day;
-                        switch (t.Key.ToLower())
-                        {
-                            case "monday":
-                                day = DayOfWeek.Monday;
-                                break;
-                            case "tuesday":
-                                day = DayOfWeek.Tuesday;
-                                break;
-                            case "wednesday":
-                                day = DayOfWeek.Wednesday;
-                                break;
-                            case "thursday":
-                                day = DayOfWeek.Thursday;
-                                break;
-                            case "friday":
-                                day = DayOfWeek.Friday;
-                                break;
-                            case "saturday":
-                                day = DayOfWeek.Saturday;
-                                break;
-                            case "sunday":
-                                day = DayOfWeek.Sunday;
-                                break;
-                            default:
-                                throw new ArgumentException("In what type of week are you writing mate?");
-                        }
-                        var times = t.Value.Split('-');
-                        if (times.Length != 2)
-                        {
-                            CultureInfo provider = CultureInfo.InvariantCulture;
-                            est.Timetables.Add(new Timetable()
-                            {
-                                Day = day,
-                                Id = Guid.NewGuid().ToString()
-                            });
-                        }
-                        else
-                        {
-                            CultureInfo provider = CultureInfo.InvariantCulture;
-                            est.Timetables.Add(new Timetable()
-                            {
-                                Day = day,
-                                Schedules = new List<Schedule>
-                                {
-                                    new Schedule
-                                    {
-                                        Start = DateTime.ParseExact(times[0].Trim(), "HH:mm", provider),
-                                        End = DateTime.ParseExact(times[1].Trim(), "HH:mm", provider)
-                                    }
-                                },
-
-                                Id = Guid.NewGuid().ToString()
-                            });
-                        }
-                    }
-                if (!est.RecognizedMusic.Any() && doc.ToDictionary().ContainsKey("recognized"))
-                {
-                    var recognizedSongs = await _db.Collection("music_recognition").Document(doc.GetValue<string>("recognized")).GetSnapshotAsync();
-                    if (recognizedSongs.ToDictionary().ContainsKey("songs"))
-                    {
-                        est.RecognizedMusic = recognizedSongs.GetValue<Dictionary<string, int>>("songs");
-                    }
-                }
-                if (est.MainPlaylist == null && doc.ToDictionary().ContainsKey("playlist"))
-                    est.MainPlaylist = new Playlist
-                    {
-                        Id = doc.GetValue<string>("playlist")
-                    };
-                if (string.IsNullOrEmpty(est.Geohash))
-                    est.Geohash = NGeoHash.GeoHash.Encode(est.Location.Latitude, est.Location.Longitude, DistanceService.GEOHASH_PRECISION);
-                await d.SetAsync(est);
-            });
-#endif
-            */
             return result;
         }
         /// <summary>
@@ -165,7 +81,7 @@ namespace GrooverAdmSPA.Controllers
         [Route("api/place/recommended")]
         public async Task<IEnumerable<ComparedPlace>> GetRecommendedEstablishmentsForPlaylist(string playlistId, double lat, double lon, double distance, int page = 1, int pageSize = 25)
         {
-            string userId = HttpContext.User.Identity.Name;
+            string userId = GetUserId();
             var client = new HttpClient();
 
             //Get his spotify token
@@ -177,6 +93,8 @@ namespace GrooverAdmSPA.Controllers
             var songs = await _spotify.GetSongsFromPlaylist(client, token, playlistId);
             //Match with storedSongs in Db for tags
             var places = await _placesService.GetPlaces(1, int.MaxValue, new Geolocation { Latitude = lat, Longitude = lon }, distance, true);
+
+            /*
 
 
             var playlistVectorsFm = new Dictionary<string, Dictionary<string, double>>();
@@ -209,7 +127,6 @@ namespace GrooverAdmSPA.Controllers
                     await _placesService.UpdatePlaylist(place, lastFmTagOccurrenceInner, spotifyGenreOccurrenceInner);
                     
                 }
-
             });
 
 
@@ -283,70 +200,11 @@ namespace GrooverAdmSPA.Controllers
                 res.Similitude = similitude;
                 return res;
             }).OrderByDescending(c => c.Similitude).Skip((page - 1) * pageSize).Take(pageSize);
-
-            //Update tags
-
-            //Algorithm magic (Get every place surrounding that, apply the algorithm for those)
-            //With today's playlist
-
-            return result;
+            */
+            return null;
         }
 
-        private double GetSimilitude(Dictionary<string, double> first, Dictionary<string, double> second)
-        {
-            var top = 0.0;
-            var botl = 0.0;
-            var botr = 0.0;
 
-            foreach (var t in first)
-            {
-                var secondVal = 0.0;
-                if(second.ContainsKey(t.Key))
-                    secondVal = second[t.Key];
-                top += secondVal * t.Value;
-                botl += Math.Pow(t.Value, 2);
-                botr += Math.Pow(secondVal, 2);
-            }
-
-            var similitude = top / (Math.Sqrt(botl) * Math.Sqrt(botr));
-            return similitude;
-        }
-
-        private void GetTagsAndGenresFromSongs(HttpClient client, string token, GetSongsResponse songs, ConcurrentDictionary<string, List<string>> artistsChecked, out Dictionary<string, int> lastFmTagOccurrence, out Dictionary<string, int> spotifyGenreOccurrence)
-        {
-            var lastFmTagOccurrenceConc = new ConcurrentDictionary<string, int>();
-            var spotifyGenreOccurrenceConc = new ConcurrentDictionary<string, int>();
-            Parallel.ForEach(songs.Items, async (song) =>
-            {
-                var lastFmTags = await _lastFm.GetTrackTags(client, song.Track.Name, song.Track.Artists[0]?.Name);
-                lastFmTags.Toptags.Tag.Sort(new TagComparer());
-
-                lastFmTags.Toptags.Tag.Take(5).ToList().ForEach(t =>
-                {
-                    lastFmTagOccurrenceConc.AddOrUpdate(t.Name, 1, (k, i) => i++);
-                });
-
-                var artists = song.Track.Artists.Select(a => a.Id)
-                        .Where(a => !artistsChecked.ContainsKey(a));
-                artists.ToList().ForEach(a => artistsChecked.AddOrUpdate(a, new List<string>(), (k, l) => new List<string>()));
-
-
-                var stringArtists = artists.Aggregate((a, b) => a + "," + b);
-                var spotifyTags = await _spotify.GetArtists(client, token, stringArtists);
-                spotifyTags.ForEach(a =>
-                {
-                    artistsChecked.AddOrUpdate(a.Id, a.Genres.ToList(), (k, l) => a.Genres.ToList());
-                    a.Genres.ToList().ForEach(g =>
-                    {
-                        // Add Genre occurrence
-                        spotifyGenreOccurrenceConc.AddOrUpdate(g, 1, (k, l) => l++);
-                    });
-                });
-            });
-
-            lastFmTagOccurrence = new Dictionary<string, int>(lastFmTagOccurrenceConc);
-            spotifyGenreOccurrence = new Dictionary<string, int>(spotifyGenreOccurrenceConc);
-        }
 
         [HttpGet]
         [Route("api/place/recommended/top")]
@@ -418,19 +276,15 @@ namespace GrooverAdmSPA.Controllers
         /// <returns></returns>
         [HttpPost]
         [Route("api/place/{establishmentId}/song")]
-        public async Task<IActionResult> RecognizeSong(string establishmentId, GrooverAdm.Entities.Application.Song song)
+        public async Task<IActionResult> RecognizeSong(string establishmentId, [FromBody] GrooverAdm.Entities.Application.Song song)
         {
 
+            var res = await _placesService.RecognizeSong(establishmentId, song);
 
-            var songRef = _db.Collection("places").Document($"{establishmentId}").Collection("recognizedMusic").Document($"{song.Id}");
+            if(res)
+                return Ok();
 
-            var snapshot = await songRef.GetSnapshotAsync();
-
-            //Update
-
-            throw new NotImplementedException();
-
-            return Ok();
+            return BadRequest();
         }
 
         /// <summary>
