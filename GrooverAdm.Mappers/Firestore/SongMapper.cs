@@ -12,6 +12,7 @@ namespace GrooverAdm.Mappers.Firestore
         private readonly string COLLECTION_REF = "songs";
         private readonly string PLACES_REF = "places";
         private readonly string MUSIC_REF = "placeMusic";
+        private readonly string RECOGNIZED_REF = "recognizedSongs";
         private readonly FirestoreDb _db;
 
         public SongMapper(FirestoreDb db)
@@ -25,13 +26,24 @@ namespace GrooverAdm.Mappers.Firestore
             {
                 Id = dbEntity.Reference.Id,
                 Name = dbEntity.Name,
-                Artists = dbEntity.Artists.Select(a => new Entities.Application.Artist { Id = a.Id, Name = a.Name}).ToList()
+                Artists = dbEntity.Artists.Select(a => new Entities.Application.Artist { Id = a.Id, Name = a.Name }).ToList()
             };
         }
 
         public DataAccess.Firestore.Model.Song ToDbEntity(Entities.Application.Song entity)
         {
             var reference = _db.Collection(COLLECTION_REF).Document(entity.Id);
+            return new DataAccess.Firestore.Model.Song
+            {
+                Reference = reference,
+                Name = entity.Name,
+                Artists = entity.Artists.Select(a => new DataAccess.Firestore.Model.Artist { Id = a.Id, Name = a.Name }).ToList()
+            };
+        }
+
+        public DataAccess.Firestore.Model.Song ToDbEntity(Entities.Application.Song entity, string place)
+        {
+            var reference = _db.Collection(PLACES_REF).Document(place).Collection(RECOGNIZED_REF).Document(entity.Id);
             return new DataAccess.Firestore.Model.Song
             {
                 Reference = reference,

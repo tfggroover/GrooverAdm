@@ -1,4 +1,5 @@
 ﻿using GrooverAdm.Business.Services.Playlist;
+using GrooverAdm.Business.Services.Song;
 using GrooverAdm.DataAccess.Dao;
 using GrooverAdm.DataAccess.Firestore.Model;
 using GrooverAdm.Entities.Application;
@@ -22,14 +23,16 @@ namespace GrooverAdm.Business.Services.Places
         private readonly IRatingDao<DataAccess.Firestore.Model.Rating> _ratingDao;
         private readonly IRatingMapper<DataAccess.Firestore.Model.Rating> _ratingMapper;
         private readonly IPlaylistService playlistService;
+        private readonly ISongService songService;
 
 
         public PlacesService(IPlacesDao<DataAccess.Firestore.Model.Place> dao, IPlaceMapper<DataAccess.Firestore.Model.Place> mapper,
-            IPlaylistService playlistService)
+            IPlaylistService playlistService, ISongService songService)
         {
             _dao = dao;
             _mapper = mapper;
             this.playlistService = playlistService;
+            this.songService = songService;
         }
 
         public async Task<Place> CreatePlace(Place place)
@@ -94,6 +97,14 @@ namespace GrooverAdm.Business.Services.Places
             var dbResult = await _dao.GetPlaces(offset, quantity, geohashes);
 
             return dbResult.Select(p => _mapper.ToApplicationEntity(p));
+        }
+
+        public async Task<bool> RecognizeSong(string establishmentId, Entities.Application.Song song)
+        {
+            var res = await songService.RecognizeSong(establishmentId, song);
+            if (res != null)
+                return true;
+            return false;
         }
 
         public async Task<Place> UpdatePlace(Place place)

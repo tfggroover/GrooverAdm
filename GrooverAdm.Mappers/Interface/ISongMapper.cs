@@ -8,5 +8,7 @@ namespace GrooverAdm.Mappers.Interface
     public interface ISongMapper<T>: IMapper<Entities.Application.Song, T> where T : Song
     {
         DataAccess.Firestore.Model.Song ToDbEntity(Entities.Application.Song entity, string place, string playlist);
+        DataAccess.Firestore.Model.Song ToDbEntity(Entities.Application.Song entity, string place);
+
     }
 }

@@ -55,5 +55,14 @@ namespace GrooverAdm.Business.Services.Song
             await dbResult.ToAsyncEnumerable().ForEachAsync(async r => result.Add(_mapper.ToApplicationEntity(await r)));
             return result;
         }
+
+        public async Task<Entities.Application.Song> RecognizeSong(string establishmentId, Entities.Application.Song song)
+        {
+            var converted = _mapper.ToDbEntity(song, establishmentId);
+            var dbResult = await _dao.AddSong(converted);
+            var result = _mapper.ToApplicationEntity(dbResult);
+
+            return result;
+        }
     }
 }
