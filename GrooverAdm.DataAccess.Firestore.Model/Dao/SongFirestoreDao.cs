@@ -48,7 +48,7 @@ namespace GrooverAdm.DataAccess.Firestore.Dao
 
         public async Task DeletePlaylistsSongs(List<string> places)
         {
-            await places.ToAsyncEnumerable().ForEachAsync(async p =>
+            await places.ToAsyncEnumerable().ForEachAwaitAsync(async p =>
             {
                 var reference = _db.Collection(PLACES_REF).Document(p).Collection(MUSIC_REF).Document("mainPlaylist").Collection(COLLECTION_REF);
                 await reference.DeleteCollection(100);

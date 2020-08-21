@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Google.Api;
 using Google.Cloud.Firestore;
 using GrooverAdm.Business.Services;
 using GrooverAdm.Business.Services.Places;
@@ -20,6 +21,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace Fake.Controllers
 {
@@ -33,9 +35,10 @@ namespace Fake.Controllers
         private readonly SpotifyService _spotify;
         private readonly LastFmService _lastFm;
         private readonly IConfiguration Configuration;
+        private readonly ILogger log;
 
 
-        public PlaceController(FirestoreDb db, IPlacesService placesService, IUserService userService, SpotifyService spotify, LastFmService lastFm, IConfiguration config)
+        public PlaceController(FirestoreDb db, IPlacesService placesService, IUserService userService, SpotifyService spotify, LastFmService lastFm, IConfiguration config, ILogger<PlaceController> log)
         {
             _db = db;
             _placesService = placesService;
@@ -43,6 +46,7 @@ namespace Fake.Controllers
             _spotify = spotify;
             _lastFm = lastFm;
             Configuration = config;
+            this.log = log;
         }
 
         /// <summary>
@@ -99,6 +103,7 @@ namespace Fake.Controllers
             var spotiPlaylist = await _spotify.GetPlaylist(client, token, playlistId);
             if (spotiPlaylist == null)
                 return Unauthorized("Please refresh your spotify token");
+            log.LogInformation("Spoti playlist not null");
             var playlist = new GrooverAdm.Entities.Application.Playlist
             {
                 Id = playlistId,
@@ -116,7 +121,7 @@ namespace Fake.Controllers
 
             //Match with storedSongs in Db for tags
             var places = await _placesService.GetRecommendedPlaces(page, pageSize, new Geolocation(lat, lon), distance, playlist, token);
-
+            log.LogInformation(places.ToString());
             return Ok(places);
         }
 

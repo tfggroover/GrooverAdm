@@ -89,7 +89,7 @@ namespace GrooverAdm.Business.Services
         {
             var occurrences = new OccurrenceSearcher();
 
-            await places.ToAsyncEnumerable().ForEachAsync( async (Place place) =>
+            await places.ToAsyncEnumerable().ForEachAwaitAsync( async (Place place) =>
             {
                 var header = await _spotify.GetPlaylistHeader(client, spotifyToken, place.MainPlaylist.Id);
                 if (header != null)
@@ -145,7 +145,7 @@ namespace GrooverAdm.Business.Services
             var client = new HttpClient();
             var lastFmTagOccurrenceConc = new ConcurrentDictionary<string, int>();
             var spotifyGenreOccurrenceConc = new ConcurrentDictionary<string, int>();
-            await songs.ToAsyncEnumerable().ForEachAsync(async (song) =>
+            await songs.ToAsyncEnumerable().ForEachAwaitAsync(async (song) =>
             {
                 var fmSuccess = false;
                 while (!fmSuccess)

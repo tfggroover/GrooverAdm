@@ -115,6 +115,11 @@ namespace GrooverAdm.Business.Services.Places
 
             await MassUpdatePlaylists(places.Where(p => p.MainPlaylist.Changed).ToList());
 
+            compared.ForEach(c =>
+            {
+                if (double.IsNaN(c.Similitude))
+                    c.Similitude = 0;
+            });
             return compared;
         }
 
