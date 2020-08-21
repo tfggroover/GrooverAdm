@@ -24,15 +24,17 @@ namespace GrooverAdm.Business.Services.Places
         private readonly IRatingMapper<DataAccess.Firestore.Model.Rating> _ratingMapper;
         private readonly IPlaylistService playlistService;
         private readonly ISongService songService;
+        private readonly RecommendationService recommendationService;
 
 
         public PlacesService(IPlacesDao<DataAccess.Firestore.Model.Place> dao, IPlaceMapper<DataAccess.Firestore.Model.Place> mapper,
-            IPlaylistService playlistService, ISongService songService)
+            IPlaylistService playlistService, ISongService songService, RecommendationService recommendation)
         {
             _dao = dao;
             _mapper = mapper;
             this.playlistService = playlistService;
             this.songService = songService;
+            recommendationService = recommendation;
         }
 
         public async Task<Place> CreatePlace(Place place)
@@ -87,6 +89,12 @@ namespace GrooverAdm.Business.Services.Places
                     r.MainPlaylist = p.Result;
                 });
 
+            results.ForEach(r =>
+            {
+                var p = songService.GetRecognizedSongsFromPlace(r.Id);
+                p.Wait();
+                r.RecognizedMusic = p.Result;
+            });
 
             return results;
         }
@@ -99,9 +107,23 @@ namespace GrooverAdm.Business.Services.Places
             return dbResult.Select(p => _mapper.ToApplicationEntity(p));
         }
 
-        public async Task<bool> RecognizeSong(string establishmentId, Entities.Application.Song song)
+        public async Task<IEnumerable<ComparedPlace>> GetRecommendedPlaces(int offset, int quantity, Geolocation location, double distance, Entities.Application.Playlist playlist, string spotifyToken)
         {
-            var res = await songService.RecognizeSong(establishmentId, song);
+            var places = (await GetPlaces(1, int.MaxValue, location, distance, true)).Where(p => p.MainPlaylist != null).ToList();
+
+            var compared = (await recommendationService.GetSimilarPlaylistsOrdered(playlist, places, spotifyToken)).Take(quantity).Skip((offset - 1) * quantity).ToList();
+
+            await MassUpdatePlaylists(places.Where(p => p.MainPlaylist.Changed).ToList());
+
+            return compared;
+        }
+
+        public async Task<bool> RecognizeSong(string establishmentId, Entities.Application.Song song, string userId)
+        {
+            var place = await _dao.GetPlace(establishmentId);
+            if (place == null)
+                return false;
+            var res = await songService.RecognizeSong(establishmentId, song, userId);
             if (res != null)
                 return true;
             return false;
@@ -120,9 +142,18 @@ namespace GrooverAdm.Business.Services.Places
             var playlist = await this.playlistService.GetMainPlaylistFromPlace(place.Id, false, 0, 0);
             playlist.Tags = tags;
             playlist.Genres = genres;
-            await this.playlistService.SetPlaylist(place.Id, playlist);
+            await this.playlistService.SetPlaylist(place.Id, playlist, false);
 
             return playlist;
         }
+
+        public async Task<bool> MassUpdatePlaylists(List<Place> places)
+        {
+            var res = await this.playlistService.SetPlaylists(places);
+            if (res.Any())
+                return true;
+            return false;
+        }
+
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Google.Cloud.Firestore;
+using GrooverAdm.Entities.Application;
 using GrooverAdm.Mappers.Interface;
 using System;
 using System.Collections.Generic;
@@ -20,13 +21,13 @@ namespace GrooverAdm.Mappers.Firestore
             _db = db;
         }
 
-        public Entities.Application.Song ToApplicationEntity(DataAccess.Firestore.Model.Song dbEntity)
+        public Song ToApplicationEntity(DataAccess.Firestore.Model.Song dbEntity)
         {
-            return new Entities.Application.Song
+            return new Song
             {
                 Id = dbEntity.Reference.Id,
                 Name = dbEntity.Name,
-                Artists = dbEntity.Artists.Select(a => new Entities.Application.Artist { Id = a.Id, Name = a.Name }).ToList()
+                Artists = dbEntity.Artists.Select(a => new Artist { Id = a.Id, Name = a.Name }).ToList()
             };
         }
 
@@ -41,7 +42,7 @@ namespace GrooverAdm.Mappers.Firestore
             };
         }
 
-        public DataAccess.Firestore.Model.Song ToDbEntity(Entities.Application.Song entity, string place)
+        public DataAccess.Firestore.Model.Song ToDbEntity(Song entity, string place)
         {
             var reference = _db.Collection(PLACES_REF).Document(place).Collection(RECOGNIZED_REF).Document(entity.Id);
             return new DataAccess.Firestore.Model.Song
@@ -52,7 +53,7 @@ namespace GrooverAdm.Mappers.Firestore
             };
         }
 
-        public DataAccess.Firestore.Model.Song ToDbEntity(Entities.Application.Song entity, string place, string playlist)
+        public DataAccess.Firestore.Model.Song ToDbEntity(Song entity, string place, string playlist)
         {
             var reference = _db.Collection(PLACES_REF).Document(place).Collection(MUSIC_REF).Document(playlist).Collection(COLLECTION_REF).Document(entity.Id);
             return new DataAccess.Firestore.Model.Song
@@ -60,6 +61,18 @@ namespace GrooverAdm.Mappers.Firestore
                 Reference = reference,
                 Name = entity.Name,
                 Artists = entity.Artists.Select(a => new DataAccess.Firestore.Model.Artist { Id = a.Id, Name = a.Name }).ToList()
+            };
+        }
+
+        public RecognizedSong ToRecognizedSong(DataAccess.Firestore.Model.Song dbEntity)
+        {
+            return new RecognizedSong
+            {
+                Artists = dbEntity.Artists.Select(a => new Artist { Id = a.Id, Name = a.Name }).ToList(),
+                Id = dbEntity.Reference.Id,
+                Name = dbEntity.Name,
+                Count = dbEntity.Users?.Count ?? 0,
+                Users = dbEntity.Users?.Select(u => u.Id).ToHashSet()
             };
         }
     }

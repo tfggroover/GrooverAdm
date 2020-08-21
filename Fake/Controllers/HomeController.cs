@@ -11,6 +11,7 @@ using FirebaseAdmin.Auth;
 using Google.Cloud.Firestore;
 using Google.Cloud.Firestore.V1;
 using GrooverAdm.Business.Services;
+using GrooverAdm.Business.Services.User;
 using GrooverAdm.Entities.Application;
 using GrooverAdm.Entities.Spotify;
 using Microsoft.AspNetCore.Mvc;
@@ -20,6 +21,9 @@ using Newtonsoft.Json;
 
 namespace GrooverAdmSPA.Controllers
 {
+    /// <summary>
+    /// Will be renamed to authController
+    /// </summary>
     [Route("[Controller]")]
     public class HomeController : Controller
     {
@@ -28,17 +32,27 @@ namespace GrooverAdmSPA.Controllers
         private readonly IConfiguration Configuration;
         private readonly FirestoreDb firestoreDb;
         private readonly SpotifyService _spotifyService;
+        private readonly IUserService userService;
 
-        public HomeController(IConfiguration configuration, FirebaseApp app, FirestoreDb db, SpotifyService spotifyService)
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="configuration"></param>
+        /// <param name="app"></param>
+        /// <param name="db"></param>
+        /// <param name="spotifyService"></param>
+        /// <param name="userService"></param>
+        public HomeController(IConfiguration configuration, FirebaseApp app, FirestoreDb db, SpotifyService spotifyService, IUserService userService)
         {
             Configuration = configuration;
             firebaseApp = app;
             firestoreDb = db;
             _spotifyService = spotifyService;
+            this.userService = userService;
         }
 
         /// <summary>
-        /// NO LOS HE PROBADO EN LA NUEVA VERSIÓN, PERO HA SIDO COPIAR Y PEGAR, DEBERÍA IR
+        /// Autenticación para el móvil y la App
         /// </summary>
         /// <param name="refresh_token"></param>
         /// <returns></returns>
@@ -52,10 +66,10 @@ namespace GrooverAdmSPA.Controllers
         }
 
         /// <summary>
-        /// IGUAL QUE ARRIBA
+        /// Callback de spotify con un token fresco
         /// </summary>
-        /// <param name="code"></param>
-        /// <param name="nonce"></param>
+        /// <param name="code">Token</param>
+        /// <param name="nonce">Cookie de estado</param>
         /// <returns></returns>
         [HttpGet("callback")]
         public async Task<IActionResult> AuthCallback(string code, string nonce = null)
@@ -179,14 +193,11 @@ namespace GrooverAdmSPA.Controllers
                     PhotoUrl = userData.Images.FirstOrDefault()?.Url
                 });
             }
-           // var user = new User(userData, credentials.Access_token, credentials.Expires_in, DateTime.UtcNow);
-            var reference = firestoreDb.Collection("users").Document($"{userData.Id}");
-            //if ((await reference.GetSnapshotAsync()).Exists)
-            //    await reference.UpdateAsync(user.ToDictionary());
-            //else
-            //    await reference.CreateAsync(user.ToDictionary());
 
-            var token = await auth.CreateCustomTokenAsync(userData.Id);
+            var user = new User(userData, credentials.Access_token, credentials.Expires_in, DateTime.UtcNow);
+            await this.userService.CreateOrUpdateUser(user);
+            
+            var token = await auth.CreateCustomTokenAsync(user.Id);
             return token;
         }
 

@@ -22,6 +22,14 @@ using GrooverAdm.Mappers.Firestore;
 using GrooverAdm.Business.Services.Playlist;
 using GrooverAdm.DataAccess.Firestore.Dao;
 using GrooverAdm.Business.Services.Song;
+using GrooverAdm.Business.Services;
+using System.IO;
+using System;
+using System.Reflection;
+using System.Linq;
+using System.Collections.Generic;
+using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace Fake
 {
@@ -51,19 +59,21 @@ namespace Fake
             //    .AddIdentityServerJwt();
 
 
-            services.AddAuthentication().AddJwtBearer(option =>
-            {
-                option.IncludeErrorDetails = true;
-                option.Authority = "https://securetoken.google.com/groover-3b82a";
-                option.TokenValidationParameters = new TokenValidationParameters
+            services
+                .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(option =>
                 {
-                    ValidateIssuer = true,
-                    ValidIssuer = "https://securetoken.google.com/groover-3b82a",
-                    ValidateAudience = true,
-                    ValidAudience = "groover-3b82a",
-                    ValidateLifetime = true,
-                };
-            });
+                    option.IncludeErrorDetails = true;
+                    option.Authority = "https://securetoken.google.com/groover-3b82a";
+                    option.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidIssuer = "https://securetoken.google.com/groover-3b82a",
+                        ValidateAudience = true,
+                        ValidAudience = "groover-3b82a",
+                        ValidateLifetime = true,
+                    };
+                });
 
             services.AddControllersWithViews();
             services.AddRazorPages();
@@ -72,28 +82,79 @@ namespace Fake
             services.AddSingleton(typeof(FirebaseApp), FirebaseApp.Create());
 
             services.AddSingleton(typeof(FirestoreDb), FirestoreDb.Create("groover-3b82a"));
-            services.AddScoped<IPlacesService, PlacesService>();
-            services.AddScoped<IPlacesDao<GrooverAdm.DataAccess.Firestore.Model.Place>, PlacesFirestoreDao>();
-            services.AddScoped<IPlaceMapper<GrooverAdm.DataAccess.Firestore.Model.Place>, PlaceMapper>();
-            services.AddScoped<IPlaylistService, PlaylistService>();
-            services.AddScoped<IPlaylistDao<GrooverAdm.DataAccess.Firestore.Model.Playlist>, PlaylistFirestoreDao>();
-            services.AddScoped<IPlaylistMapper<GrooverAdm.DataAccess.Firestore.Model.Playlist>, PlaylistMapper>();
-            services.AddScoped<ISongService, SongService>();
-            services.AddScoped<ISongDao<GrooverAdm.DataAccess.Firestore.Model.Song>, SongFirestoreDao>();
-            services.AddScoped<ISongMapper<GrooverAdm.DataAccess.Firestore.Model.Song>, SongMapper>();
-            services.AddScoped<GrooverAdm.Business.Services.SpotifyService>();
-            services.AddScoped<GrooverAdm.Business.Services.LastFmService>();
-            services.AddScoped<GrooverAdm.Business.Services.User.IUserService, GrooverAdm.Business.Services.User.UserService>();
-            services.AddScoped<IUserDao<GrooverAdm.DataAccess.Firestore.Model.User>, GrooverAdm.DataAccess.Firestore.Dao.UserFirestoreDao>();
-            services.AddScoped<IUserMapper<GrooverAdm.DataAccess.Firestore.Model.User>, UserMapper>();
+            AddPlaceServices(services);
+            AddPlaylistServices(services);
+            AddSongServices(services);
+            AddUserServices(services);
+            services.AddScoped<SpotifyService>();
+            services.AddScoped<LastFmService>();
+            services.AddScoped<RecommendationService>();
 
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo()
+                {
+                    Title = "Groover API",
+                    Version = "1"
+                });
 
-            services.AddSwaggerGen();
+                c.AddSecurityDefinition("Bearer",
+                    new OpenApiSecurityScheme
+                    {
+                        In = ParameterLocation.Header,
+                        Description = "Please enter into field the word 'Bearer' following by space and JWT",
+                        Name = "Authorization",
+                        Type = SecuritySchemeType.ApiKey
+                    });
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        new string[] { }
+                    }
+                  });
+
+                c.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, $"{Assembly.GetExecutingAssembly().GetName().Name}.xml"));
+            });
             // In production, the Angular files will be served from this directory
             services.AddSpaStaticFiles(configuration =>
             {
                 configuration.RootPath = "ClientApp/dist";
             });
+        }
+
+        private static void AddUserServices(IServiceCollection services)
+        {
+            services.AddScoped<GrooverAdm.Business.Services.User.IUserService, GrooverAdm.Business.Services.User.UserService>();
+            services.AddScoped<IUserDao<GrooverAdm.DataAccess.Firestore.Model.User>, GrooverAdm.DataAccess.Firestore.Dao.UserFirestoreDao>();
+            services.AddScoped<IUserMapper<GrooverAdm.DataAccess.Firestore.Model.User>, UserMapper>();
+        }
+
+        private static void AddPlaceServices(IServiceCollection services)
+        {
+            services.AddScoped<IPlacesService, PlacesService>();
+            services.AddScoped<IPlacesDao<GrooverAdm.DataAccess.Firestore.Model.Place>, PlacesFirestoreDao>();
+            services.AddScoped<IPlaceMapper<GrooverAdm.DataAccess.Firestore.Model.Place>, PlaceMapper>();
+        }
+
+        private static void AddPlaylistServices(IServiceCollection services)
+        {
+            services.AddScoped<IPlaylistService, PlaylistService>();
+            services.AddScoped<IPlaylistDao<GrooverAdm.DataAccess.Firestore.Model.Playlist>, PlaylistFirestoreDao>();
+            services.AddScoped<IPlaylistMapper<GrooverAdm.DataAccess.Firestore.Model.Playlist>, PlaylistMapper>();
+        }
+
+        private static void AddSongServices(IServiceCollection services)
+        {
+            services.AddScoped<ISongService, SongService>();
+            services.AddScoped<ISongDao<GrooverAdm.DataAccess.Firestore.Model.Song>, SongFirestoreDao>();
+            services.AddScoped<ISongMapper<GrooverAdm.DataAccess.Firestore.Model.Song>, SongMapper>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -121,8 +182,8 @@ namespace Fake
             app.UseRouting();
 
             app.UseAuthentication();
-            //app.UseIdentityServer();
             app.UseAuthorization();
+
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllerRoute(

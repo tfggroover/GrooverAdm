@@ -62,6 +62,16 @@ namespace GrooverAdm.Business.Services.Places
         /// <returns></returns>
         Task<IEnumerable<Place>> GetPlaces(int offset, int quantity, List<Tuple<string, string>> geohashes);
 
+        /// <summary>
+        /// Gets the places surrounding a location checking for the distance to each place at the end of the process
+        /// </summary>
+        /// <param name="offset"></param>
+        /// <param name="quantity"></param>
+        /// <param name="location"></param>
+        /// <param name="distance"></param>
+        /// <returns></returns>
+        Task<IEnumerable<ComparedPlace>> GetRecommendedPlaces(int offset, int quantity, Geolocation location, double distance, Entities.Application.Playlist playlist, string spotifyToken);
+
         Task<Entities.Application.Playlist> UpdatePlaylist(Place place, Dictionary<string, int> tags, Dictionary<string, int> genres);
 
         /// <summary>
@@ -70,6 +80,6 @@ namespace GrooverAdm.Business.Services.Places
         /// <param name="establishmentId"></param>
         /// <param name="song"></param>
         /// <returns></returns>
-        Task<bool> RecognizeSong(string establishmentId, Entities.Application.Song song);
+        Task<bool> RecognizeSong(string establishmentId, Entities.Application.Song song, string userId);
     }
 }

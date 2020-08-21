@@ -78,10 +78,6 @@ namespace GrooverAdm.Test.Model
                         }
                     }
                 },
-                RecognizedMusic = new Dictionary<string, int>
-                {
-                    { Guid.NewGuid().ToString() , 1 }
-                },
                 Timetables = new List<Timetable>()
                 {
                     new Timetable

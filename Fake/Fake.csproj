@@ -12,6 +12,10 @@
     <BuildServerSideRenderer>false</BuildServerSideRenderer>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DocumentationFile>H:\Workspace\source\repos\GrooverAdm\Fake\Fake.xml</DocumentationFile>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="FirebaseAdmin" Version="1.15.0" />
     <PackageReference Include="Google.Cloud.Firestore" Version="2.1.0" />

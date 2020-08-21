@@ -18,10 +18,10 @@ namespace GrooverAdm.Business.Services.User
             _userMapper = userMapper;
         }
 
-        public async Task<Entities.Application.User> CreateUser(Entities.Application.User user)
+        public async Task<Entities.Application.User> CreateOrUpdateUser(Entities.Application.User user)
         {
             var converted = _userMapper.ToDbEntity(user);
-            var dbResult = await _userDao.CreateUser(converted);
+            var dbResult = await _userDao.CreateOrUpdateUser(converted);
 
             return _userMapper.ToApplicationEntity(dbResult);
         }
@@ -34,12 +34,11 @@ namespace GrooverAdm.Business.Services.User
 
         public async Task<Entities.Application.User> GetUser(string id)
         {
-            throw new NotImplementedException();
+            var dbResult = await _userDao.GetUser(id);
+            if(dbResult != null)
+                return _userMapper.ToApplicationEntity(dbResult);
+            return null;
         }
 
-        public async Task<Entities.Application.User> UpdateUser(Entities.Application.User user)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

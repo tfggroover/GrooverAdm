@@ -75,13 +75,23 @@ namespace GrooverAdm.Business.Services.Playlist
             throw new NotImplementedException();
         }
 
-        public async Task<Entities.Application.Playlist> SetPlaylist(string place, Entities.Application.Playlist playlist)
+        public async Task<Entities.Application.Playlist> SetPlaylist(string place, Entities.Application.Playlist playlist, bool withSongs)
         {
-            var converted = _mapper.ToDbEntity(playlist);
+            var converted = _mapper.ToDbEntity(playlist, place);
             var dbResult =  await _dao.UpdatePlaylist(converted);
-            await _songService.OverrideSongs(new List<Entities.Application.Song>(), place, "mainPlaylist");
+            await _songService.OverrideSongs(withSongs ? playlist.Songs : new List<Entities.Application.Song>(), place, "mainPlaylist");
 
             return _mapper.ToApplicationEntity(dbResult);
+        }
+
+        public async Task<List<Entities.Application.Playlist>> SetPlaylists(List<Place> places)
+        {
+
+            var playlists = await _dao.UpdatePlaylists(places.Select(p => _mapper.ToDbEntity(p.MainPlaylist, p.Id)).ToList());
+
+            await _songService.OverrideSongsMulti(places);
+
+            return await playlists.ToAsyncEnumerable().SelectAwait(async p => _mapper.ToApplicationEntity(await p)).ToListAsync();
         }
     }
 }

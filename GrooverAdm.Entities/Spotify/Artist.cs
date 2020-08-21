@@ -16,4 +16,9 @@ namespace GrooverAdm.Entities.Spotify
         public HashSet<string> Genres { get; set; }
         public string Id { get; set; }
     }
+
+    public class ArtistResponse
+    {
+        public List<Artist> Artists { get; set; }
+    }
 }

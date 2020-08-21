@@ -19,6 +19,9 @@ namespace GrooverAdm.DataAccess.Firestore.Model
         public string Name { get; set; }
         [FirestoreProperty]
         public List<Artist> Artists { get; set; }
+        [FirestoreProperty]
+        public List<DocumentReference> Users { get; set; }
 
     }
+
 }

@@ -4,6 +4,7 @@ using GrooverAdm.DataAccess.Firestore.Exceptions;
 using GrooverAdm.DataAccess.Firestore.Model;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -55,6 +56,20 @@ namespace GrooverAdm.DataAccess.Firestore.Dao
                 throw new AlreadyExistingEntityException("There already exists a main Playlist. Perhaps you intended to update it?");
             await reference.SetAsync(playlist);
             return (await reference.GetSnapshotAsync()).ConvertTo<Playlist>();
+        }
+
+        public async Task<IEnumerable<Task<Playlist>>> UpdatePlaylists(List<Playlist> playlist)
+        {
+
+            var batch = _db.StartBatch();
+            playlist.ForEach(p =>
+            {
+                batch.Set(p.Reference, p);
+            });
+            var results = await batch.CommitAsync();
+
+            var res = playlist.Select(async s => (await s.Reference.GetSnapshotAsync()).ConvertTo<Playlist>()).ToList();
+            return res;
         }
     }
 }

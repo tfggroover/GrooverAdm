@@ -27,6 +27,12 @@ namespace GrooverAdm.DataAccess.Dao
         /// <returns>The updated playlist</returns>
         Task<T> UpdatePlaylist(T playlist);
         /// <summary>
+        /// Updates a playlist
+        /// </summary>
+        /// <param name="playlist"></param>
+        /// <returns>The updated playlist</returns>
+        Task<IEnumerable<Task<T>>> UpdatePlaylists(List<T> playlist);
+        /// <summary>
         /// Gets a playlist by id of the place
         /// </summary>
         /// <param name="place"></param>

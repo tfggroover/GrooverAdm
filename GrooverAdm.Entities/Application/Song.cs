@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace GrooverAdm.Entities.Application
@@ -21,5 +22,12 @@ namespace GrooverAdm.Entities.Application
         public string Id { get; set; }
         public string Name { get; set; }
         public List<Artist> Artists { get; set; }
+    }
+
+    public class RecognizedSong: Song
+    {
+        [JsonIgnore]
+        public HashSet<string> Users { get; set; }
+        public int Count { get; set; }
     }
 }

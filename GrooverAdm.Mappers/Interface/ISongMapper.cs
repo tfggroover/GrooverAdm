@@ -9,6 +9,7 @@ namespace GrooverAdm.Mappers.Interface
     {
         DataAccess.Firestore.Model.Song ToDbEntity(Entities.Application.Song entity, string place, string playlist);
         DataAccess.Firestore.Model.Song ToDbEntity(Entities.Application.Song entity, string place);
+        Entities.Application.RecognizedSong ToRecognizedSong(T dbEntity);
 
     }
 }

@@ -12,7 +12,9 @@ namespace GrooverAdm.DataAccess.Dao
         Task<List<Task<T>>> AddSongs(List<T> song);
         Task<T> AddSong(T song);
         Task<bool> DeleteSong(string place, string playlist, string song);
+        Task DeletePlaylistsSongs(List<string> places);
         Task<List<Task<T>>> OverrideSongs(List<T> song, string place, string playlist);
-
+        Task<List<T>> GetRecognizedSongs(string id);
+        Task<T> RecognizeSong(T song, string userId);
     }
 }

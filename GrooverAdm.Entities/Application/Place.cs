@@ -11,7 +11,7 @@ namespace GrooverAdm.Entities.Application
         {
             Ratings = new List<Rating>();
             Owners = new List<User>();
-            RecognizedMusic = new Dictionary<string, int>();
+            RecognizedMusic = new List<RecognizedSong>();
             Timetables = new List<Timetable>();
         }
 
@@ -25,13 +25,29 @@ namespace GrooverAdm.Entities.Application
         public List<User> Owners{ get; set; }
         public string Phone { get; set; }
         public string Geohash { get; set; }
-        public Dictionary<string, int> RecognizedMusic{ get; set; }
+        public List<RecognizedSong> RecognizedMusic{ get; set; }
         public List<Timetable> Timetables { get; set; }
 
     }
 
     public class ComparedPlace : Place
     {
+        public ComparedPlace() { }
+        public ComparedPlace (Place p)
+        {
+            Id = p.Id;
+            Address = p.Address;
+            DisplayName = p.DisplayName;
+            Location = p.Location;
+            MainPlaylist = p.MainPlaylist;
+            WeeklyPlaylists = p.WeeklyPlaylists;
+            Ratings = p.Ratings;
+            Owners = p.Owners;
+            Phone = p.Phone;
+            Geohash = p.Geohash;
+            RecognizedMusic = p.RecognizedMusic;
+            Timetables = p.Timetables;
+        }
         public double Similitude { get; set; }
     }
 

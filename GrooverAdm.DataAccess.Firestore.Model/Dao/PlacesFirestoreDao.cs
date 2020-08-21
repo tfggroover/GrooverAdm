@@ -42,9 +42,10 @@ namespace GrooverAdm.DataAccess.Firestore.PlacesDao
         public async Task<Place> GetPlace(string id)
         {
             var snap = await _db.Collection(COLLECTION_REF).Document(id).GetSnapshotAsync();
-            var res = snap.ConvertTo<Place>();
+            if(snap.Exists)
+                return snap.ConvertTo<Place>();
 
-            return res;
+            return null;
         }
 
         public async Task<IEnumerable<Place>> GetPlaces()

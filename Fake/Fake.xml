@@ -1,0 +1,124 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Fake</name>
+    </assembly>
+    <members>
+        <member name="M:Fake.Controllers.ControllerBase.GetUserId">
+            <summary>
+            Get authenticated user id.        
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Fake.Controllers.OidcConfigurationController.GetClientRequestParameters(System.String)">
+            <summary>
+            IGNORA ESTO
+            </summary>
+            <param name="clientId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Fake.Controllers.PlaceController.GetEstablishments(System.Double,System.Double,System.Double,System.Int32,System.Int32)">
+            <summary>
+            Retrieves the establishments surrounding [<paramref name="lat"/>, <paramref name="lon"/>] in 
+            the distance provided
+            </summary>
+            <param name="lat">Latitude</param>
+            <param name="lon">Longitude</param>
+            <param name="distance">Distance in METERS</param>
+            <param name="page"></param>
+            <param name="pageSize"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Fake.Controllers.PlaceController.GetRecommendedEstablishmentsForPlaylist(System.String,System.Double,System.Double,System.Double,System.String,System.Int32,System.Int32)">
+            <summary>
+            Obtiene los lugares recomendados en funcion de la playlist enviada
+            </summary>
+            <param name="playlistId"></param>
+            <param name="lat"></param>
+            <param name="lon"></param>
+            <param name="distance"></param>
+            <param name="spoToken">Token de spotify</param>
+            <param name="page"></param>
+            <param name="pageSize"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Fake.Controllers.PlaceController.GetRecommendedEstablishmentsForTop(System.Double,System.Double,System.Double,System.String,System.Int32,System.Int32)">
+            <summary>
+            Obtiene los lugares recomendados en funcion del top50 del usuario
+            </summary>
+            <param name="lat"></param>
+            <param name="lon"></param>
+            <param name="distance"></param>
+            <param name="spoToken">Token de spotify</param>
+            <param name="page"></param>
+            <param name="pageSize"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Fake.Controllers.PlaceController.CreateEstablishment(GrooverAdm.Entities.Application.Place)">
+            <summary>
+            READY TO GO? NOT TESTED
+            </summary>
+            <param name="establishment"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Fake.Controllers.PlaceController.DeleteEstablishment(System.String)">
+            <summary>
+            NOT IMPLEMENTED
+            </summary>
+            <param name="establishmentId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Fake.Controllers.PlaceController.RecognizeSong(System.String,GrooverAdm.Entities.Application.Song)">
+            <summary>
+            NOT IMPLEMENTED
+            </summary>
+            <param name="establishmentId"></param>
+            <param name="song"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Fake.Controllers.PlaceController.RatePlace(System.String,System.Double)">
+            <summary>
+            NOT IMPLEMENTED
+            </summary>
+            <param name="placeId"></param>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Fake.Controllers.WeatherForecastController.Get">
+            <summary>
+            IGNORA ESTO
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:GrooverAdmSPA.Controllers.HomeController">
+            <summary>
+            Will be renamed to authController
+            </summary>
+        </member>
+        <member name="M:GrooverAdmSPA.Controllers.HomeController.#ctor(Microsoft.Extensions.Configuration.IConfiguration,FirebaseAdmin.FirebaseApp,Google.Cloud.Firestore.FirestoreDb,GrooverAdm.Business.Services.SpotifyService,GrooverAdm.Business.Services.User.IUserService)">
+            <summary>
+            Constructor
+            </summary>
+            <param name="configuration"></param>
+            <param name="app"></param>
+            <param name="db"></param>
+            <param name="spotifyService"></param>
+            <param name="userService"></param>
+        </member>
+        <member name="M:GrooverAdmSPA.Controllers.HomeController.Auth(System.String)">
+            <summary>
+            Autenticación para el móvil y la App
+            </summary>
+            <param name="refresh_token"></param>
+            <returns></returns>
+        </member>
+        <member name="M:GrooverAdmSPA.Controllers.HomeController.AuthCallback(System.String,System.String)">
+            <summary>
+            Callback de spotify con un token fresco
+            </summary>
+            <param name="code">Token</param>
+            <param name="nonce">Cookie de estado</param>
+            <returns></returns>
+        </member>
+    </members>
+</doc>

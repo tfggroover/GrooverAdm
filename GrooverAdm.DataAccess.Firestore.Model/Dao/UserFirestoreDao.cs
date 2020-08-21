@@ -13,6 +13,8 @@ namespace GrooverAdm.DataAccess.Firestore.Dao
         private readonly FirestoreDb _db;
 
         private static readonly string COLLECTION_REF = "users";
+        private static readonly string PLACE_REF = "places";
+        private static readonly string RECOGNIZED_REF = "recognizedSongs";
 
         public UserFirestoreDao(FirestoreDb db)
         {
@@ -20,11 +22,13 @@ namespace GrooverAdm.DataAccess.Firestore.Dao
         }
 
 
-        public async Task<User> CreateUser(User user)
+        public async Task<User> CreateOrUpdateUser(User user)
         {
             var reference = _db.Collection(COLLECTION_REF).Document(user.Reference.Id);
             if (!(await reference.GetSnapshotAsync()).Exists)
                 await reference.CreateAsync(user);
+            else
+                await reference.SetAsync(user);
             var snap = await reference.GetSnapshotAsync();
             return snap.ConvertTo<User>();
         }
@@ -41,18 +45,12 @@ namespace GrooverAdm.DataAccess.Firestore.Dao
         public async Task<User> GetUser(string id)
         {
             var snap = await _db.Collection(COLLECTION_REF).Document(id).GetSnapshotAsync();
-            var res = snap.ConvertTo<User>();
+            if(snap.Exists)
+                return snap.ConvertTo<User>();
 
-            return res;
-        }
-
-        public async Task<User> UpdateUser(User user)
-        {
-            var res = await _db.Collection(COLLECTION_REF).Document(user.Reference.Id).SetAsync(user);
-
-            if (res.UpdateTime != null)
-                return user;
             return null;
         }
+
+
     }
 }
