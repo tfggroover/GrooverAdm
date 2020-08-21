@@ -309,5 +309,33 @@ namespace GrooverAdm.Business.Services
             }
             return null;
         }
+
+        public async Task<Entities.Spotify.Playlist> GetPlaylistHeader(HttpClient client, string accessToken, string playlistId)
+        {
+            var success = false;
+            while (!success)
+            {
+                var playlistRequest = new HttpRequestMessage()
+                {
+                    RequestUri = new Uri($"https://api.spotify.com/v1/playlists/{ playlistId }?fields=snapshot_id%2Cid"),
+                    Method = HttpMethod.Get
+                };
+
+                playlistRequest.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
+
+                var playlistResponse = await client.SendAsync(playlistRequest);
+
+                if (playlistResponse.IsSuccessStatusCode)
+                {
+                    var playlist = JsonConvert.DeserializeObject<Entities.Spotify.Playlist>(await playlistResponse.Content.ReadAsStringAsync());
+                    return playlist;
+                }
+                else if (playlistResponse.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+                    Thread.Sleep((int)playlistResponse.Headers.RetryAfter.Delta.Value.TotalMilliseconds);
+                else
+                    break;
+            }
+            return null;
+        }
     }
 }

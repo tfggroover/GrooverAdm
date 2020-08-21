@@ -17,6 +17,7 @@ using GrooverAdm.Entities.LastFm;
 using GrooverAdm.Entities.Spotify;
 using GrooverAdmSPA.Business.Services;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 
@@ -82,6 +83,8 @@ namespace Fake.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("api/place/recommended")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<IEnumerable<ComparedPlace>>> GetRecommendedEstablishmentsForPlaylist(string playlistId, double lat, double lon, double distance, string spoToken, int page = 1, int pageSize = 25)
         {
             //string userId = GetUserId();
@@ -95,12 +98,12 @@ namespace Fake.Controllers
 
             var spotiPlaylist = await _spotify.GetPlaylist(client, token, playlistId);
             if (spotiPlaylist == null)
-                return BadRequest();
+                return Unauthorized("Please refresh your spotify token");
             var playlist = new GrooverAdm.Entities.Application.Playlist
             {
                 Id = playlistId,
                 Name = spotiPlaylist.Name,
-                SnapshotVersion = spotiPlaylist.SnapshotVersion,
+                SnapshotVersion = spotiPlaylist.Snapshot_id,
                 ImageUrl = spotiPlaylist.Images[0]?.Url,
                 Songs = spotiPlaylist.Tracks.Items.Select(s =>
                     new GrooverAdm.Entities.Application.Song
@@ -130,7 +133,9 @@ namespace Fake.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("api/place/recommended/top")]
-        public async Task<IEnumerable<Place>> GetRecommendedEstablishmentsForTop(double lat, double lon, double distance, string spoToken, int page = 1, int pageSize = 25)
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<ActionResult<IEnumerable<ComparedPlace>>> GetRecommendedEstablishmentsForTop(double lat, double lon, double distance, string spoToken, int page = 1, int pageSize = 25)
         {
             //string userId = GetUserId();
             var client = new HttpClient();
@@ -142,7 +147,8 @@ namespace Fake.Controllers
             //Get playlist songs from spotify
 
             var spotiPlaylist = await _spotify.GetUsersTopTracks(client, token);
-
+            if (spotiPlaylist == null)
+                return Unauthorized();
             var playlist = new GrooverAdm.Entities.Application.Playlist
             {
                 Id = "top",
@@ -161,7 +167,7 @@ namespace Fake.Controllers
             //Match with storedSongs in Db for tags
             var places = await _placesService.GetRecommendedPlaces(page, pageSize, new Geolocation(lat, lon), distance, playlist, token);
 
-            return places;
+            return Ok(places);
         }
         /// <summary>
         /// READY TO GO? NOT TESTED
@@ -203,7 +209,7 @@ namespace Fake.Controllers
         }
 
         /// <summary>
-        /// NOT IMPLEMENTED
+        /// We gucci
         /// </summary>
         /// <param name="establishmentId"></param>
         /// <param name="song"></param>

@@ -56,6 +56,9 @@ namespace GrooverAdm.Entities.Application
         public string Url { get; set; }
         public bool Changed { get; private set; }
 
-
+        public void ResetChange()
+        {
+            Changed = false;
+        }
     }
 }

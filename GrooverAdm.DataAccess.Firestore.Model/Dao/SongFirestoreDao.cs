@@ -53,8 +53,6 @@ namespace GrooverAdm.DataAccess.Firestore.Dao
                 var reference = _db.Collection(PLACES_REF).Document(p).Collection(MUSIC_REF).Document("mainPlaylist").Collection(COLLECTION_REF);
                 await reference.DeleteCollection(100);
             });
-
-            return;
         }
 
         public async Task<bool> DeleteSong(string place, string playlist, string song)

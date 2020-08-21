@@ -72,7 +72,7 @@ namespace GrooverAdm.Business.Services
 
             foreach (var t in tagFm)
             {
-                var idf = Math.Log(tags.Count / t.Value);
+                var idf = 1 + Math.Log(tags.Count / t.Value);
                 foreach (var p in ponderedTags)
                 {
                     if (tags.ContainsKey(p.Key) && tags[p.Key].ContainsKey(t.Key))
@@ -89,23 +89,27 @@ namespace GrooverAdm.Business.Services
         {
             var occurrences = new OccurrenceSearcher();
 
-            Parallel.ForEach(places, async (Place place) =>
+            await places.ToAsyncEnumerable().ForEachAsync( async (Place place) =>
             {
-                if (place.MainPlaylist.Tags != null && place.MainPlaylist.Tags.Any() && place.MainPlaylist.Genres != null && place.MainPlaylist.Genres.Any())
+                var header = await _spotify.GetPlaylistHeader(client, spotifyToken, place.MainPlaylist.Id);
+                if (header != null)
                 {
-                    occurrences.UpdateTags(place.MainPlaylist.Tags, place.MainPlaylist.Id);
-                    occurrences.UpdateGenres(place.MainPlaylist.Genres, place.MainPlaylist.Id);
-                }
-                else
-                {
-                    var playlistSongs = (await _spotify.GetSongsFromPlaylist(client, spotifyToken, place.MainPlaylist.Id)).Items.Select(s => new Entities.Application.Song(s)).ToList();
+                    if (header.Snapshot_id == place.MainPlaylist.SnapshotVersion && place.MainPlaylist.Tags != null && place.MainPlaylist.Tags.Any() && place.MainPlaylist.Genres != null && place.MainPlaylist.Genres.Any())
+                    {
+                        occurrences.UpdateTags(place.MainPlaylist.Tags, place.MainPlaylist.Id);
+                        occurrences.UpdateGenres(place.MainPlaylist.Genres, place.MainPlaylist.Id);
+                    }
+                    else
+                    {
+                        var playlistSongs = (await _spotify.GetSongsFromPlaylist(client, spotifyToken, place.MainPlaylist.Id)).Items.Select(s => new Entities.Application.Song(s)).ToList();
 
-                    await GetTagsAndGenresFromSongs(spotifyToken, place.MainPlaylist.Id, playlistSongs, occurrences);
+                        await GetTagsAndGenresFromSongs(spotifyToken, place.MainPlaylist.Id, playlistSongs, occurrences);
 
-                    place.MainPlaylist.Songs = playlistSongs;
-                    place.MainPlaylist.Tags = occurrences.GetTags(place.MainPlaylist.Id);
-                    place.MainPlaylist.Genres = occurrences.GetGenres(place.MainPlaylist.Id);
-
+                        place.MainPlaylist.SnapshotVersion = header.Snapshot_id;
+                        place.MainPlaylist.Songs = playlistSongs;
+                        place.MainPlaylist.Tags = occurrences.GetTags(place.MainPlaylist.Id);
+                        place.MainPlaylist.Genres = occurrences.GetGenres(place.MainPlaylist.Id);
+                    }
                 }
             });
 
@@ -155,7 +159,7 @@ namespace GrooverAdm.Business.Services
 
                             lastFmTags.Toptags.Tag.Take(5).ToList().ForEach(t =>
                             {
-                                lastFmTagOccurrenceConc.AddOrUpdate(t.Name, 1, (k, i) => i++);
+                                lastFmTagOccurrenceConc.AddOrUpdate(t.Name, 1, (k, old) => old + 1);
                             });
                         }
                         fmSuccess = true;
@@ -192,7 +196,7 @@ namespace GrooverAdm.Business.Services
                         occurrences.GetArtistGenres(s).ForEach(g =>
                         {
                         // Add Genre occurrence
-                        spotifyGenreOccurrenceConc.AddOrUpdate(g, 1, (k, l) => l++);
+                        spotifyGenreOccurrenceConc.AddOrUpdate(g, 1, (k, l) => l + 1);
                         });
                     });
                 }

@@ -20,8 +20,6 @@ namespace GrooverAdm.DataAccess.Firestore.Model
         [FirestoreProperty]
         public string SnapshotId { get; set; }
         [FirestoreProperty]
-        public dynamic Metrics { get; set; }
-        [FirestoreProperty]
         public string Url { get; set; }
         [FirestoreProperty]
         public Dictionary<string, int> LastFmOcurrenceDictionary { get; set; }

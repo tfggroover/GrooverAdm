@@ -12,7 +12,7 @@ namespace GrooverAdm.Entities.Spotify
         }
         public string Id { get; set; }
         public string Name { get; set; }
-        public string SnapshotVersion { get; set; }
+        public string Snapshot_id { get; set; }
         public List<Image> Images { get; set; }
         public GetSongsResponse Tracks { get; set; }
     }

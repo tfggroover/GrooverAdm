@@ -54,6 +54,7 @@ namespace GrooverAdm.Business.Services.Playlist
             var result = _mapper.ToApplicationEntity(dbResult);
             if (includeSongs)
                 result.Songs = await _songService.GetSongsFromPlaylist(place, dbResult.Reference.Id, page, pageSize);
+            result.ResetChange();
             return result;
         }
 
