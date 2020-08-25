@@ -117,7 +117,15 @@
             Callback de spotify con un token fresco
             </summary>
             <param name="code">Token</param>
-            <param name="nonce">Cookie de estado</param>
+            <param name="State">Cookie de estado</param>
+            <returns></returns>
+        </member>
+        <member name="M:GrooverAdmSPA.Controllers.HomeController.AuthWebCallback(System.String,System.String)">
+            <summary>
+            Callback de spotify con un token fresco
+            </summary>
+            <param name="code">Token</param>
+            <param name="State">Cookie de estado</param>
             <returns></returns>
         </member>
     </members>

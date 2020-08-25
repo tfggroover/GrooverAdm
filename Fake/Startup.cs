@@ -30,6 +30,7 @@ using System.Linq;
 using System.Collections.Generic;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.Options;
 
 namespace Fake
 {
@@ -127,6 +128,8 @@ namespace Fake
             {
                 configuration.RootPath = "ClientApp/dist";
             });
+
+            services.AddRouting(opt => opt.LowercaseUrls = true);
         }
 
         private static void AddUserServices(IServiceCollection services)

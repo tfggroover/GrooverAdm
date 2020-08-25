@@ -6,6 +6,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using Fake.Pages;
 using FirebaseAdmin;
 using FirebaseAdmin.Auth;
 using Google.Cloud.Firestore;
@@ -69,10 +70,10 @@ namespace GrooverAdmSPA.Controllers
         /// Callback de spotify con un token fresco
         /// </summary>
         /// <param name="code">Token</param>
-        /// <param name="nonce">Cookie de estado</param>
+        /// <param name="State">Cookie de estado</param>
         /// <returns></returns>
         [HttpGet("callback")]
-        public async Task<IActionResult> AuthCallback(string code, string nonce = null)
+        public async Task<IActionResult> AuthCallback(string code, string State = null)
         {
 
             if (string.IsNullOrEmpty(Request.Cookies["State"]))
@@ -107,6 +108,53 @@ namespace GrooverAdmSPA.Controllers
             }
 
             return Json(result);
+        }
+
+
+        /// <summary>
+        /// Callback de spotify con un token fresco
+        /// </summary>
+        /// <param name="code">Token</param>
+        /// <param name="State">Cookie de estado</param>
+        /// <returns></returns>
+        [HttpGet("web-callback")]
+        public async Task<IActionResult> AuthWebCallback(string code, string State = null)
+        {
+
+            if (string.IsNullOrEmpty(Request.Cookies["State"]))
+            {
+                return BadRequest("State cookie not set or expired. Maybe you took too long to authorize. Please try again.");
+            }
+            else if (Request.Cookies["State"] != Request.Query["State"])
+            {
+                return BadRequest("State verification failed.");
+            }
+
+            var model = new AuthPopupModel
+            {
+                ApiKey = Configuration["ApiKey"],
+                DbUrl = Configuration["DbUrl"]
+            };
+
+            if (code.Length > 0)
+            {
+                using (HttpClient client = new HttpClient())
+                {
+                    var spotiCredentials = await _spotifyService.AuthRequest(code, client);
+                    if (spotiCredentials == null)
+                        BadRequest("Invalid request to spotify");
+                    var userData = await _spotifyService.UserInfoRequest(client, spotiCredentials);
+
+                    var token = await GenerateToken(userData, spotiCredentials);
+
+                    model.DisplayName = userData.Display_name;
+                    model.PhotoUrl = userData.Images[0]?.Url;
+                    model.Token = token;
+                    model.SpotiToken = spotiCredentials.Access_token;
+                }
+            }
+
+            return View("AuthPopup", model);
         }
 
 
