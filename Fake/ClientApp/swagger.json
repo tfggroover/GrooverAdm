@@ -1,0 +1,1130 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Groover API",
+    "version": "1"
+  },
+  "paths": {
+    "/home/auth": {
+      "get": {
+        "tags": [
+          "Home"
+        ],
+        "summary": "Autenticación para el móvil y la App",
+        "parameters": [
+          {
+            "name": "refresh_token",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "type": "string",
+              "description": "",
+              "nullable": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/home/callback": {
+      "get": {
+        "tags": [
+          "Home"
+        ],
+        "summary": "Callback de spotify con un token fresco",
+        "parameters": [
+          {
+            "name": "code",
+            "in": "query",
+            "description": "Token",
+            "schema": {
+              "type": "string",
+              "description": "Token",
+              "nullable": true
+            }
+          },
+          {
+            "name": "State",
+            "in": "query",
+            "description": "Cookie de estado",
+            "schema": {
+              "type": "string",
+              "description": "Cookie de estado",
+              "nullable": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/home/web-callback": {
+      "get": {
+        "tags": [
+          "Home"
+        ],
+        "summary": "Callback de spotify con un token fresco",
+        "parameters": [
+          {
+            "name": "code",
+            "in": "query",
+            "description": "Token",
+            "schema": {
+              "type": "string",
+              "description": "Token",
+              "nullable": true
+            }
+          },
+          {
+            "name": "State",
+            "in": "query",
+            "description": "Cookie de estado",
+            "schema": {
+              "type": "string",
+              "description": "Cookie de estado",
+              "nullable": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/_configuration/{clientId}": {
+      "get": {
+        "tags": [
+          "OidcConfiguration"
+        ],
+        "summary": "IGNORA ESTO",
+        "parameters": [
+          {
+            "name": "clientId",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "",
+              "nullable": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/place": {
+      "get": {
+        "tags": [
+          "Place"
+        ],
+        "summary": "Retrieves the establishments surrounding [lat, lon] in \r\nthe distance provided",
+        "parameters": [
+          {
+            "name": "lat",
+            "in": "query",
+            "description": "Latitude",
+            "schema": {
+              "type": "number",
+              "description": "Latitude",
+              "format": "double"
+            }
+          },
+          {
+            "name": "lon",
+            "in": "query",
+            "description": "Longitude",
+            "schema": {
+              "type": "number",
+              "description": "Longitude",
+              "format": "double"
+            }
+          },
+          {
+            "name": "distance",
+            "in": "query",
+            "description": "Distance in METERS",
+            "schema": {
+              "type": "number",
+              "description": "Distance in METERS",
+              "format": "double"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "type": "integer",
+              "description": "",
+              "format": "int32",
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "type": "integer",
+              "description": "",
+              "format": "int32",
+              "default": 25
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Place"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Place"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Place"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Place"
+        ],
+        "summary": "READY TO GO? NOT TESTED",
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Place"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Place"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Place"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Place"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Place"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Place"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Place"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Place"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Place"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Place"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Place"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Place"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Place"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Place"
+        ],
+        "summary": "NOT IMPLEMENTED",
+        "parameters": [
+          {
+            "name": "establishmentId",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "type": "string",
+              "description": "",
+              "nullable": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/place/recommended": {
+      "get": {
+        "tags": [
+          "Place"
+        ],
+        "summary": "Obtiene los lugares recomendados en funcion de la playlist enviada",
+        "parameters": [
+          {
+            "name": "playlistId",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "type": "string",
+              "description": "",
+              "nullable": true
+            }
+          },
+          {
+            "name": "lat",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "type": "number",
+              "description": "",
+              "format": "double"
+            }
+          },
+          {
+            "name": "lon",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "type": "number",
+              "description": "",
+              "format": "double"
+            }
+          },
+          {
+            "name": "distance",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "type": "number",
+              "description": "",
+              "format": "double"
+            }
+          },
+          {
+            "name": "spoToken",
+            "in": "query",
+            "description": "Token de spotify",
+            "schema": {
+              "type": "string",
+              "description": "Token de spotify",
+              "nullable": true
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "type": "integer",
+              "description": "",
+              "format": "int32",
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "type": "integer",
+              "description": "",
+              "format": "int32",
+              "default": 25
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ComparedPlace"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ComparedPlace"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ComparedPlace"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/place/recommended/top": {
+      "get": {
+        "tags": [
+          "Place"
+        ],
+        "summary": "Obtiene los lugares recomendados en funcion del top50 del usuario",
+        "parameters": [
+          {
+            "name": "lat",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "type": "number",
+              "description": "",
+              "format": "double"
+            }
+          },
+          {
+            "name": "lon",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "type": "number",
+              "description": "",
+              "format": "double"
+            }
+          },
+          {
+            "name": "distance",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "type": "number",
+              "description": "",
+              "format": "double"
+            }
+          },
+          {
+            "name": "spoToken",
+            "in": "query",
+            "description": "Token de spotify",
+            "schema": {
+              "type": "string",
+              "description": "Token de spotify",
+              "nullable": true
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "type": "integer",
+              "description": "",
+              "format": "int32",
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "type": "integer",
+              "description": "",
+              "format": "int32",
+              "default": 25
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ComparedPlace"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ComparedPlace"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ComparedPlace"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/place/{establishmentId}/song": {
+      "post": {
+        "tags": [
+          "Place"
+        ],
+        "summary": "We gucci",
+        "parameters": [
+          {
+            "name": "establishmentId",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "",
+              "nullable": true
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Song"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Song"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Song"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/place/{placeId}/rate": {
+      "post": {
+        "tags": [
+          "Place"
+        ],
+        "summary": "NOT IMPLEMENTED",
+        "parameters": [
+          {
+            "name": "placeId",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "",
+              "nullable": true
+            }
+          },
+          {
+            "name": "value",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "type": "number",
+              "description": "",
+              "format": "double"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/weatherforecast": {
+      "get": {
+        "tags": [
+          "WeatherForecast"
+        ],
+        "summary": "IGNORA ESTO",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WeatherForecast"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WeatherForecast"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WeatherForecast"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Geolocation": {
+        "type": "object",
+        "properties": {
+          "latitude": {
+            "type": "number",
+            "format": "double"
+          },
+          "longitude": {
+            "type": "number",
+            "format": "double"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Artist": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Song": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "artists": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Artist"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Playlist": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "imageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "songs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Song"
+            },
+            "nullable": true
+          },
+          "snapshotVersion": {
+            "type": "string",
+            "nullable": true
+          },
+          "url": {
+            "type": "string",
+            "nullable": true
+          },
+          "changed": {
+            "type": "boolean",
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "born": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "displayName": {
+            "type": "string",
+            "nullable": true
+          },
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "currentToken": {
+            "type": "string",
+            "nullable": true
+          },
+          "expiresIn": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "tokenEmissionTime": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Rating": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "value": {
+            "type": "number",
+            "format": "double"
+          },
+          "user": {
+            "$ref": "#/components/schemas/User"
+          }
+        },
+        "additionalProperties": false
+      },
+      "RecognizedSong": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "artists": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Artist"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Schedule": {
+        "type": "object",
+        "properties": {
+          "start": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "end": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "DayOfWeek": {
+        "enum": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
+      "Timetable": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "schedules": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Schedule"
+            },
+            "nullable": true
+          },
+          "day": {
+            "$ref": "#/components/schemas/DayOfWeek"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Place": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "address": {
+            "type": "string",
+            "nullable": true
+          },
+          "displayName": {
+            "type": "string",
+            "nullable": true
+          },
+          "location": {
+            "$ref": "#/components/schemas/Geolocation"
+          },
+          "mainPlaylist": {
+            "$ref": "#/components/schemas/Playlist"
+          },
+          "weeklyPlaylists": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/Playlist"
+            },
+            "nullable": true
+          },
+          "ratings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Rating"
+            },
+            "nullable": true
+          },
+          "owners": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/User"
+            },
+            "nullable": true
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "geohash": {
+            "type": "string",
+            "nullable": true
+          },
+          "recognizedMusic": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RecognizedSong"
+            },
+            "nullable": true
+          },
+          "timetables": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Timetable"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ComparedPlace": {
+        "type": "object",
+        "properties": {
+          "similitude": {
+            "type": "number",
+            "format": "double"
+          },
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "address": {
+            "type": "string",
+            "nullable": true
+          },
+          "displayName": {
+            "type": "string",
+            "nullable": true
+          },
+          "location": {
+            "$ref": "#/components/schemas/Geolocation"
+          },
+          "mainPlaylist": {
+            "$ref": "#/components/schemas/Playlist"
+          },
+          "weeklyPlaylists": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/Playlist"
+            },
+            "nullable": true
+          },
+          "ratings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Rating"
+            },
+            "nullable": true
+          },
+          "owners": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/User"
+            },
+            "nullable": true
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "geohash": {
+            "type": "string",
+            "nullable": true
+          },
+          "recognizedMusic": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RecognizedSong"
+            },
+            "nullable": true
+          },
+          "timetables": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Timetable"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ProblemDetails": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "detail": {
+            "type": "string",
+            "nullable": true
+          },
+          "instance": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": {
+          "type": "object",
+          "additionalProperties": false
+        }
+      },
+      "WeatherForecast": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "temperatureC": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "temperatureF": {
+            "type": "integer",
+            "format": "int32",
+            "readOnly": true
+          },
+          "summary": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "securitySchemes": {
+      "Bearer": {
+        "type": "apiKey",
+        "description": "Please enter into field the word 'Bearer' following by space and JWT",
+        "name": "Authorization",
+        "in": "header"
+      }
+    }
+  },
+  "security": [
+    {
+      "Bearer": [ ]
+    }
+  ]
+}
