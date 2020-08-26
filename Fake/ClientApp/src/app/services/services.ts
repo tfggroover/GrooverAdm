@@ -15,23 +15,21 @@ import { HttpClient, HttpHeaders, HttpResponse, HttpResponseBase } from '@angula
 export const API_BASE_URL = new InjectionToken<string>('API_BASE_URL');
 
 @Injectable()
-export class Client extends BaseService {
+export class HomeClient {
     private http: HttpClient;
     private baseUrl: string;
     protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
 
     constructor(@Inject(HttpClient) http: HttpClient, @Optional() @Inject(API_BASE_URL) baseUrl?: string) {
-        super();
         this.http = http;
-        this.baseUrl = baseUrl ? baseUrl : "";
+        this.baseUrl = baseUrl ? baseUrl : "https://localhost:44335";
     }
 
     /**
      * Autenticación para el móvil y la App
      * @param refresh_token (optional) 
-     * @return Success
      */
-    auth(refresh_token: string | null | undefined): Observable<void> {
+    auth(refresh_token: string | null | undefined): Observable<FileResponse> {
         let url_ = this.baseUrl + "/home/auth?";
         if (refresh_token !== undefined && refresh_token !== null)
             url_ += "refresh_token=" + encodeURIComponent("" + refresh_token) + "&";
@@ -41,49 +39,50 @@ export class Client extends BaseService {
             observe: "response",
             responseType: "blob",
             headers: new HttpHeaders({
+                "Accept": "application/octet-stream"
             })
         };
 
         return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.transformResult(url_, response_, (r) => this.processAuth(<any>r));
+            return this.processAuth(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.transformResult(url_, response_, (r) => this.processAuth(<any>r));
+                    return this.processAuth(<any>response_);
                 } catch (e) {
-                    return <Observable<void>><any>_observableThrow(e);
+                    return <Observable<FileResponse>><any>_observableThrow(e);
                 }
             } else
-                return <Observable<void>><any>_observableThrow(response_);
+                return <Observable<FileResponse>><any>_observableThrow(response_);
         }));
     }
 
-    protected processAuth(response: HttpResponseBase): Observable<void> {
+    protected processAuth(response: HttpResponseBase): Observable<FileResponse> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
             (<any>response).error instanceof Blob ? (<any>response).error : undefined;
 
         let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
-        if (status === 200) {
-            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
-            return _observableOf<void>(<any>null);
-            }));
+        if (status === 200 || status === 206) {
+            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
+            const fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
+            const fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
+            return _observableOf({ fileName: fileName, data: <any>responseBlob, status: status, headers: _headers });
         } else if (status !== 200 && status !== 204) {
             return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             }));
         }
-        return _observableOf<void>(<any>null);
+        return _observableOf<FileResponse>(<any>null);
     }
 
     /**
      * Callback de spotify con un token fresco
      * @param code (optional) Token
      * @param state (optional) Cookie de estado
-     * @return Success
      */
-    callback(code: string | null | undefined, state: string | null | undefined): Observable<void> {
+    authCallback(code: string | null | undefined, state: string | null | undefined): Observable<AuthenticationResponse> {
         let url_ = this.baseUrl + "/home/callback?";
         if (code !== undefined && code !== null)
             url_ += "code=" + encodeURIComponent("" + code) + "&";
@@ -95,24 +94,25 @@ export class Client extends BaseService {
             observe: "response",
             responseType: "blob",
             headers: new HttpHeaders({
+                "Accept": "application/json"
             })
         };
 
         return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.transformResult(url_, response_, (r) => this.processCallback(<any>r));
+            return this.processAuthCallback(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.transformResult(url_, response_, (r) => this.processCallback(<any>r));
+                    return this.processAuthCallback(<any>response_);
                 } catch (e) {
-                    return <Observable<void>><any>_observableThrow(e);
+                    return <Observable<AuthenticationResponse>><any>_observableThrow(e);
                 }
             } else
-                return <Observable<void>><any>_observableThrow(response_);
+                return <Observable<AuthenticationResponse>><any>_observableThrow(response_);
         }));
     }
 
-    protected processCallback(response: HttpResponseBase): Observable<void> {
+    protected processAuthCallback(response: HttpResponseBase): Observable<AuthenticationResponse> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
@@ -121,23 +121,25 @@ export class Client extends BaseService {
         let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
         if (status === 200) {
             return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
-            return _observableOf<void>(<any>null);
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = AuthenticationResponse.fromJS(resultData200);
+            return _observableOf(result200);
             }));
         } else if (status !== 200 && status !== 204) {
             return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             }));
         }
-        return _observableOf<void>(<any>null);
+        return _observableOf<AuthenticationResponse>(<any>null);
     }
 
     /**
      * Callback de spotify con un token fresco
      * @param code (optional) Token
      * @param state (optional) Cookie de estado
-     * @return Success
      */
-    webCallback(code: string | null | undefined, state: string | null | undefined): Observable<void> {
+    authWebCallback(code: string | null | undefined, state: string | null | undefined): Observable<FileResponse> {
         let url_ = this.baseUrl + "/home/web-callback?";
         if (code !== undefined && code !== null)
             url_ += "code=" + encodeURIComponent("" + code) + "&";
@@ -149,47 +151,60 @@ export class Client extends BaseService {
             observe: "response",
             responseType: "blob",
             headers: new HttpHeaders({
+                "Accept": "application/octet-stream"
             })
         };
 
         return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.transformResult(url_, response_, (r) => this.processWebCallback(<any>r));
+            return this.processAuthWebCallback(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.transformResult(url_, response_, (r) => this.processWebCallback(<any>r));
+                    return this.processAuthWebCallback(<any>response_);
                 } catch (e) {
-                    return <Observable<void>><any>_observableThrow(e);
+                    return <Observable<FileResponse>><any>_observableThrow(e);
                 }
             } else
-                return <Observable<void>><any>_observableThrow(response_);
+                return <Observable<FileResponse>><any>_observableThrow(response_);
         }));
     }
 
-    protected processWebCallback(response: HttpResponseBase): Observable<void> {
+    protected processAuthWebCallback(response: HttpResponseBase): Observable<FileResponse> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
             (<any>response).error instanceof Blob ? (<any>response).error : undefined;
 
         let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
-        if (status === 200) {
-            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
-            return _observableOf<void>(<any>null);
-            }));
+        if (status === 200 || status === 206) {
+            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
+            const fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
+            const fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
+            return _observableOf({ fileName: fileName, data: <any>responseBlob, status: status, headers: _headers });
         } else if (status !== 200 && status !== 204) {
             return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             }));
         }
-        return _observableOf<void>(<any>null);
+        return _observableOf<FileResponse>(<any>null);
+    }
+}
+
+@Injectable()
+export class OidcConfigurationClient {
+    private http: HttpClient;
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(@Inject(HttpClient) http: HttpClient, @Optional() @Inject(API_BASE_URL) baseUrl?: string) {
+        this.http = http;
+        this.baseUrl = baseUrl ? baseUrl : "https://localhost:44335";
     }
 
     /**
      * IGNORA ESTO
-     * @return Success
      */
-    configuration(clientId: string | null): Observable<void> {
+    getClientRequestParameters(clientId: string | null): Observable<FileResponse> {
         let url_ = this.baseUrl + "/_configuration/{clientId}";
         if (clientId === undefined || clientId === null)
             throw new Error("The parameter 'clientId' must be defined.");
@@ -200,53 +215,66 @@ export class Client extends BaseService {
             observe: "response",
             responseType: "blob",
             headers: new HttpHeaders({
+                "Accept": "application/octet-stream"
             })
         };
 
         return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.transformResult(url_, response_, (r) => this.processConfiguration(<any>r));
+            return this.processGetClientRequestParameters(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.transformResult(url_, response_, (r) => this.processConfiguration(<any>r));
+                    return this.processGetClientRequestParameters(<any>response_);
                 } catch (e) {
-                    return <Observable<void>><any>_observableThrow(e);
+                    return <Observable<FileResponse>><any>_observableThrow(e);
                 }
             } else
-                return <Observable<void>><any>_observableThrow(response_);
+                return <Observable<FileResponse>><any>_observableThrow(response_);
         }));
     }
 
-    protected processConfiguration(response: HttpResponseBase): Observable<void> {
+    protected processGetClientRequestParameters(response: HttpResponseBase): Observable<FileResponse> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
             (<any>response).error instanceof Blob ? (<any>response).error : undefined;
 
         let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
-        if (status === 200) {
-            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
-            return _observableOf<void>(<any>null);
-            }));
+        if (status === 200 || status === 206) {
+            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
+            const fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
+            const fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
+            return _observableOf({ fileName: fileName, data: <any>responseBlob, status: status, headers: _headers });
         } else if (status !== 200 && status !== 204) {
             return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             }));
         }
-        return _observableOf<void>(<any>null);
+        return _observableOf<FileResponse>(<any>null);
+    }
+}
+
+@Injectable()
+export class PlaceClient {
+    private http: HttpClient;
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(@Inject(HttpClient) http: HttpClient, @Optional() @Inject(API_BASE_URL) baseUrl?: string) {
+        this.http = http;
+        this.baseUrl = baseUrl ? baseUrl : "https://localhost:44335";
     }
 
     /**
-     * Retrieves the establishments surrounding [lat, lon] in 
+     * Retrieves the establishments surrounding [, ] in 
     the distance provided
      * @param lat (optional) Latitude
      * @param lon (optional) Longitude
      * @param distance (optional) Distance in METERS
      * @param page (optional) 
      * @param pageSize (optional) 
-     * @return Success
      */
-    placeAll(lat: number | undefined, lon: number | undefined, distance: number | undefined, page: number | undefined, pageSize: number | undefined): Observable<Place[]> {
+    getEstablishments(lat: number | undefined, lon: number | undefined, distance: number | undefined, page: number | undefined, pageSize: number | undefined): Observable<Place[]> {
         let url_ = this.baseUrl + "/api/place?";
         if (lat === null)
             throw new Error("The parameter 'lat' cannot be null.");
@@ -274,16 +302,16 @@ export class Client extends BaseService {
             observe: "response",
             responseType: "blob",
             headers: new HttpHeaders({
-                "Accept": "text/plain"
+                "Accept": "application/json"
             })
         };
 
         return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.transformResult(url_, response_, (r) => this.processPlaceAll(<any>r));
+            return this.processGetEstablishments(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.transformResult(url_, response_, (r) => this.processPlaceAll(<any>r));
+                    return this.processGetEstablishments(<any>response_);
                 } catch (e) {
                     return <Observable<Place[]>><any>_observableThrow(e);
                 }
@@ -292,7 +320,7 @@ export class Client extends BaseService {
         }));
     }
 
-    protected processPlaceAll(response: HttpResponseBase): Observable<Place[]> {
+    protected processGetEstablishments(response: HttpResponseBase): Observable<Place[]> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
@@ -320,14 +348,12 @@ export class Client extends BaseService {
 
     /**
      * READY TO GO? NOT TESTED
-     * @param body (optional) 
-     * @return Success
      */
-    place(body: Place | undefined): Observable<Place> {
+    createEstablishment(establishment: Place): Observable<Place> {
         let url_ = this.baseUrl + "/api/place";
         url_ = url_.replace(/[?&]$/, "");
 
-        const content_ = JSON.stringify(body);
+        const content_ = JSON.stringify(establishment);
 
         let options_ : any = {
             body: content_,
@@ -335,16 +361,16 @@ export class Client extends BaseService {
             responseType: "blob",
             headers: new HttpHeaders({
                 "Content-Type": "application/json",
-                "Accept": "text/plain"
+                "Accept": "application/json"
             })
         };
 
         return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.transformResult(url_, response_, (r) => this.processPlace(<any>r));
+            return this.processCreateEstablishment(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.transformResult(url_, response_, (r) => this.processPlace(<any>r));
+                    return this.processCreateEstablishment(<any>response_);
                 } catch (e) {
                     return <Observable<Place>><any>_observableThrow(e);
                 }
@@ -353,7 +379,7 @@ export class Client extends BaseService {
         }));
     }
 
-    protected processPlace(response: HttpResponseBase): Observable<Place> {
+    protected processCreateEstablishment(response: HttpResponseBase): Observable<Place> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
@@ -375,15 +401,11 @@ export class Client extends BaseService {
         return _observableOf<Place>(<any>null);
     }
 
-    /**
-     * @param body (optional) 
-     * @return Success
-     */
-    place2(body: Place | undefined): Observable<Place> {
+    updateEstablishment(establishment: Place): Observable<Place> {
         let url_ = this.baseUrl + "/api/place";
         url_ = url_.replace(/[?&]$/, "");
 
-        const content_ = JSON.stringify(body);
+        const content_ = JSON.stringify(establishment);
 
         let options_ : any = {
             body: content_,
@@ -391,16 +413,16 @@ export class Client extends BaseService {
             responseType: "blob",
             headers: new HttpHeaders({
                 "Content-Type": "application/json",
-                "Accept": "text/plain"
+                "Accept": "application/json"
             })
         };
 
         return this.http.request("patch", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.transformResult(url_, response_, (r) => this.processPlace2(<any>r));
+            return this.processUpdateEstablishment(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.transformResult(url_, response_, (r) => this.processPlace2(<any>r));
+                    return this.processUpdateEstablishment(<any>response_);
                 } catch (e) {
                     return <Observable<Place>><any>_observableThrow(e);
                 }
@@ -409,7 +431,7 @@ export class Client extends BaseService {
         }));
     }
 
-    protected processPlace2(response: HttpResponseBase): Observable<Place> {
+    protected processUpdateEstablishment(response: HttpResponseBase): Observable<Place> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
@@ -434,9 +456,8 @@ export class Client extends BaseService {
     /**
      * NOT IMPLEMENTED
      * @param establishmentId (optional) 
-     * @return Success
      */
-    place3(establishmentId: string | null | undefined): Observable<void> {
+    deleteEstablishment(establishmentId: string | null | undefined): Observable<FileResponse> {
         let url_ = this.baseUrl + "/api/place?";
         if (establishmentId !== undefined && establishmentId !== null)
             url_ += "establishmentId=" + encodeURIComponent("" + establishmentId) + "&";
@@ -446,40 +467,42 @@ export class Client extends BaseService {
             observe: "response",
             responseType: "blob",
             headers: new HttpHeaders({
+                "Accept": "application/octet-stream"
             })
         };
 
         return this.http.request("delete", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.transformResult(url_, response_, (r) => this.processPlace3(<any>r));
+            return this.processDeleteEstablishment(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.transformResult(url_, response_, (r) => this.processPlace3(<any>r));
+                    return this.processDeleteEstablishment(<any>response_);
                 } catch (e) {
-                    return <Observable<void>><any>_observableThrow(e);
+                    return <Observable<FileResponse>><any>_observableThrow(e);
                 }
             } else
-                return <Observable<void>><any>_observableThrow(response_);
+                return <Observable<FileResponse>><any>_observableThrow(response_);
         }));
     }
 
-    protected processPlace3(response: HttpResponseBase): Observable<void> {
+    protected processDeleteEstablishment(response: HttpResponseBase): Observable<FileResponse> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
             (<any>response).error instanceof Blob ? (<any>response).error : undefined;
 
         let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
-        if (status === 200) {
-            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
-            return _observableOf<void>(<any>null);
-            }));
+        if (status === 200 || status === 206) {
+            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
+            const fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
+            const fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
+            return _observableOf({ fileName: fileName, data: <any>responseBlob, status: status, headers: _headers });
         } else if (status !== 200 && status !== 204) {
             return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             }));
         }
-        return _observableOf<void>(<any>null);
+        return _observableOf<FileResponse>(<any>null);
     }
 
     /**
@@ -491,9 +514,8 @@ export class Client extends BaseService {
      * @param spoToken (optional) Token de spotify
      * @param page (optional) 
      * @param pageSize (optional) 
-     * @return Success
      */
-    recommended(playlistId: string | null | undefined, lat: number | undefined, lon: number | undefined, distance: number | undefined, spoToken: string | null | undefined, page: number | undefined, pageSize: number | undefined): Observable<ComparedPlace[]> {
+    getRecommendedEstablishmentsForPlaylist(playlistId: string | null | undefined, lat: number | undefined, lon: number | undefined, distance: number | undefined, spoToken: string | null | undefined, page: number | undefined, pageSize: number | undefined): Observable<ComparedPlace[]> {
         let url_ = this.baseUrl + "/api/place/recommended?";
         if (playlistId !== undefined && playlistId !== null)
             url_ += "playlistId=" + encodeURIComponent("" + playlistId) + "&";
@@ -525,16 +547,16 @@ export class Client extends BaseService {
             observe: "response",
             responseType: "blob",
             headers: new HttpHeaders({
-                "Accept": "text/plain"
+                "Accept": "application/json"
             })
         };
 
         return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.transformResult(url_, response_, (r) => this.processRecommended(<any>r));
+            return this.processGetRecommendedEstablishmentsForPlaylist(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.transformResult(url_, response_, (r) => this.processRecommended(<any>r));
+                    return this.processGetRecommendedEstablishmentsForPlaylist(<any>response_);
                 } catch (e) {
                     return <Observable<ComparedPlace[]>><any>_observableThrow(e);
                 }
@@ -543,7 +565,7 @@ export class Client extends BaseService {
         }));
     }
 
-    protected processRecommended(response: HttpResponseBase): Observable<ComparedPlace[]> {
+    protected processGetRecommendedEstablishmentsForPlaylist(response: HttpResponseBase): Observable<ComparedPlace[]> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
@@ -566,7 +588,7 @@ export class Client extends BaseService {
             let result401: any = null;
             let resultData401 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
             result401 = ProblemDetails.fromJS(resultData401);
-            return throwException("Unauthorized", status, _responseText, _headers, result401);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result401);
             }));
         } else if (status !== 200 && status !== 204) {
             return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
@@ -584,9 +606,8 @@ export class Client extends BaseService {
      * @param spoToken (optional) Token de spotify
      * @param page (optional) 
      * @param pageSize (optional) 
-     * @return Success
      */
-    top(lat: number | undefined, lon: number | undefined, distance: number | undefined, spoToken: string | null | undefined, page: number | undefined, pageSize: number | undefined): Observable<ComparedPlace[]> {
+    getRecommendedEstablishmentsForTop(lat: number | undefined, lon: number | undefined, distance: number | undefined, spoToken: string | null | undefined, page: number | undefined, pageSize: number | undefined): Observable<ComparedPlace[]> {
         let url_ = this.baseUrl + "/api/place/recommended/top?";
         if (lat === null)
             throw new Error("The parameter 'lat' cannot be null.");
@@ -616,16 +637,16 @@ export class Client extends BaseService {
             observe: "response",
             responseType: "blob",
             headers: new HttpHeaders({
-                "Accept": "text/plain"
+                "Accept": "application/json"
             })
         };
 
         return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.transformResult(url_, response_, (r) => this.processTop(<any>r));
+            return this.processGetRecommendedEstablishmentsForTop(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.transformResult(url_, response_, (r) => this.processTop(<any>r));
+                    return this.processGetRecommendedEstablishmentsForTop(<any>response_);
                 } catch (e) {
                     return <Observable<ComparedPlace[]>><any>_observableThrow(e);
                 }
@@ -634,7 +655,7 @@ export class Client extends BaseService {
         }));
     }
 
-    protected processTop(response: HttpResponseBase): Observable<ComparedPlace[]> {
+    protected processGetRecommendedEstablishmentsForTop(response: HttpResponseBase): Observable<ComparedPlace[]> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
@@ -657,7 +678,7 @@ export class Client extends BaseService {
             let result401: any = null;
             let resultData401 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
             result401 = ProblemDetails.fromJS(resultData401);
-            return throwException("Unauthorized", status, _responseText, _headers, result401);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result401);
             }));
         } else if (status !== 200 && status !== 204) {
             return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
@@ -667,44 +688,36 @@ export class Client extends BaseService {
         return _observableOf<ComparedPlace[]>(<any>null);
     }
 
-    /**
-     * We gucci
-     * @param body (optional) 
-     * @return Success
-     */
-    song(establishmentId: string | null, body: Song | undefined): Observable<void> {
-        let url_ = this.baseUrl + "/api/place/{establishmentId}/song";
-        if (establishmentId === undefined || establishmentId === null)
-            throw new Error("The parameter 'establishmentId' must be defined.");
-        url_ = url_.replace("{establishmentId}", encodeURIComponent("" + establishmentId));
+    getPlace(id: string | null): Observable<Place> {
+        let url_ = this.baseUrl + "/api/place/{id}";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
         url_ = url_.replace(/[?&]$/, "");
 
-        const content_ = JSON.stringify(body);
-
         let options_ : any = {
-            body: content_,
             observe: "response",
             responseType: "blob",
             headers: new HttpHeaders({
-                "Content-Type": "application/json",
+                "Accept": "application/json"
             })
         };
 
-        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.transformResult(url_, response_, (r) => this.processSong(<any>r));
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetPlace(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.transformResult(url_, response_, (r) => this.processSong(<any>r));
+                    return this.processGetPlace(<any>response_);
                 } catch (e) {
-                    return <Observable<void>><any>_observableThrow(e);
+                    return <Observable<Place>><any>_observableThrow(e);
                 }
             } else
-                return <Observable<void>><any>_observableThrow(response_);
+                return <Observable<Place>><any>_observableThrow(response_);
         }));
     }
 
-    protected processSong(response: HttpResponseBase): Observable<void> {
+    protected processGetPlace(response: HttpResponseBase): Observable<Place> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
@@ -713,22 +726,80 @@ export class Client extends BaseService {
         let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
         if (status === 200) {
             return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
-            return _observableOf<void>(<any>null);
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = Place.fromJS(resultData200);
+            return _observableOf(result200);
             }));
         } else if (status !== 200 && status !== 204) {
             return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             }));
         }
-        return _observableOf<void>(<any>null);
+        return _observableOf<Place>(<any>null);
+    }
+
+    /**
+     * We gucci
+     */
+    recognizeSong(establishmentId: string | null, song: Song): Observable<FileResponse> {
+        let url_ = this.baseUrl + "/api/place/{establishmentId}/song";
+        if (establishmentId === undefined || establishmentId === null)
+            throw new Error("The parameter 'establishmentId' must be defined.");
+        url_ = url_.replace("{establishmentId}", encodeURIComponent("" + establishmentId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(song);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "application/octet-stream"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processRecognizeSong(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processRecognizeSong(<any>response_);
+                } catch (e) {
+                    return <Observable<FileResponse>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<FileResponse>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processRecognizeSong(response: HttpResponseBase): Observable<FileResponse> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200 || status === 206) {
+            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
+            const fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
+            const fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
+            return _observableOf({ fileName: fileName, data: <any>responseBlob, status: status, headers: _headers });
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<FileResponse>(<any>null);
     }
 
     /**
      * NOT IMPLEMENTED
      * @param value (optional) 
-     * @return Success
      */
-    rate(placeId: string | null, value: number | undefined): Observable<void> {
+    ratePlace(placeId: string | null, value: number | undefined): Observable<FileResponse> {
         let url_ = this.baseUrl + "/api/place/{placeId}/rate?";
         if (placeId === undefined || placeId === null)
             throw new Error("The parameter 'placeId' must be defined.");
@@ -743,47 +814,60 @@ export class Client extends BaseService {
             observe: "response",
             responseType: "blob",
             headers: new HttpHeaders({
+                "Accept": "application/octet-stream"
             })
         };
 
         return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.transformResult(url_, response_, (r) => this.processRate(<any>r));
+            return this.processRatePlace(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.transformResult(url_, response_, (r) => this.processRate(<any>r));
+                    return this.processRatePlace(<any>response_);
                 } catch (e) {
-                    return <Observable<void>><any>_observableThrow(e);
+                    return <Observable<FileResponse>><any>_observableThrow(e);
                 }
             } else
-                return <Observable<void>><any>_observableThrow(response_);
+                return <Observable<FileResponse>><any>_observableThrow(response_);
         }));
     }
 
-    protected processRate(response: HttpResponseBase): Observable<void> {
+    protected processRatePlace(response: HttpResponseBase): Observable<FileResponse> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
             (<any>response).error instanceof Blob ? (<any>response).error : undefined;
 
         let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
-        if (status === 200) {
-            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
-            return _observableOf<void>(<any>null);
-            }));
+        if (status === 200 || status === 206) {
+            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
+            const fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
+            const fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
+            return _observableOf({ fileName: fileName, data: <any>responseBlob, status: status, headers: _headers });
         } else if (status !== 200 && status !== 204) {
             return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             }));
         }
-        return _observableOf<void>(<any>null);
+        return _observableOf<FileResponse>(<any>null);
+    }
+}
+
+@Injectable()
+export class WeatherForecastClient {
+    private http: HttpClient;
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(@Inject(HttpClient) http: HttpClient, @Optional() @Inject(API_BASE_URL) baseUrl?: string) {
+        this.http = http;
+        this.baseUrl = baseUrl ? baseUrl : "https://localhost:44335";
     }
 
     /**
      * IGNORA ESTO
-     * @return Success
      */
-    weatherforecast(): Observable<WeatherForecast[]> {
+    get(): Observable<WeatherForecast[]> {
         let url_ = this.baseUrl + "/weatherforecast";
         url_ = url_.replace(/[?&]$/, "");
 
@@ -791,16 +875,16 @@ export class Client extends BaseService {
             observe: "response",
             responseType: "blob",
             headers: new HttpHeaders({
-                "Accept": "text/plain"
+                "Accept": "application/json"
             })
         };
 
         return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.transformResult(url_, response_, (r) => this.processWeatherforecast(<any>r));
+            return this.processGet(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.transformResult(url_, response_, (r) => this.processWeatherforecast(<any>r));
+                    return this.processGet(<any>response_);
                 } catch (e) {
                     return <Observable<WeatherForecast[]>><any>_observableThrow(e);
                 }
@@ -809,7 +893,7 @@ export class Client extends BaseService {
         }));
     }
 
-    protected processWeatherforecast(response: HttpResponseBase): Observable<WeatherForecast[]> {
+    protected processGet(response: HttpResponseBase): Observable<WeatherForecast[]> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
@@ -836,11 +920,12 @@ export class Client extends BaseService {
     }
 }
 
-export class Geolocation implements IGeolocation {
-    latitude?: number;
-    longitude?: number;
+export class AuthenticationResponse implements IAuthenticationResponse {
+    spotify?: AuthorizationCodeFlowResponse | undefined;
+    spotifyUserData?: UserInfo | undefined;
+    firebase?: string | undefined;
 
-    constructor(data?: IGeolocation) {
+    constructor(data?: IAuthenticationResponse) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -851,36 +936,41 @@ export class Geolocation implements IGeolocation {
 
     init(_data?: any) {
         if (_data) {
-            this.latitude = _data["latitude"];
-            this.longitude = _data["longitude"];
+            this.spotify = _data["spotify"] ? AuthorizationCodeFlowResponse.fromJS(_data["spotify"]) : <any>undefined;
+            this.spotifyUserData = _data["spotifyUserData"] ? UserInfo.fromJS(_data["spotifyUserData"]) : <any>undefined;
+            this.firebase = _data["firebase"];
         }
     }
 
-    static fromJS(data: any): Geolocation {
+    static fromJS(data: any): AuthenticationResponse {
         data = typeof data === 'object' ? data : {};
-        let result = new Geolocation();
+        let result = new AuthenticationResponse();
         result.init(data);
         return result;
     }
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        data["latitude"] = this.latitude;
-        data["longitude"] = this.longitude;
+        data["spotify"] = this.spotify ? this.spotify.toJSON() : <any>undefined;
+        data["spotifyUserData"] = this.spotifyUserData ? this.spotifyUserData.toJSON() : <any>undefined;
+        data["firebase"] = this.firebase;
         return data; 
     }
 }
 
-export interface IGeolocation {
-    latitude?: number;
-    longitude?: number;
+export interface IAuthenticationResponse {
+    spotify?: AuthorizationCodeFlowResponse | undefined;
+    spotifyUserData?: UserInfo | undefined;
+    firebase?: string | undefined;
 }
 
-export class Artist implements IArtist {
-    id?: string | undefined;
-    name?: string | undefined;
+export class AuthResponse implements IAuthResponse {
+    access_token?: string | undefined;
+    token_type?: string | undefined;
+    expires_in?: number;
+    scope?: string | undefined;
 
-    constructor(data?: IArtist) {
+    constructor(data?: IAuthResponse) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -891,37 +981,171 @@ export class Artist implements IArtist {
 
     init(_data?: any) {
         if (_data) {
+            this.access_token = _data["access_token"];
+            this.token_type = _data["token_type"];
+            this.expires_in = _data["expires_in"];
+            this.scope = _data["scope"];
+        }
+    }
+
+    static fromJS(data: any): AuthResponse {
+        data = typeof data === 'object' ? data : {};
+        let result = new AuthResponse();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["access_token"] = this.access_token;
+        data["token_type"] = this.token_type;
+        data["expires_in"] = this.expires_in;
+        data["scope"] = this.scope;
+        return data; 
+    }
+}
+
+export interface IAuthResponse {
+    access_token?: string | undefined;
+    token_type?: string | undefined;
+    expires_in?: number;
+    scope?: string | undefined;
+}
+
+export class AuthorizationCodeFlowResponse extends AuthResponse implements IAuthorizationCodeFlowResponse {
+    refresh_token?: string | undefined;
+
+    constructor(data?: IAuthorizationCodeFlowResponse) {
+        super(data);
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+        if (_data) {
+            this.refresh_token = _data["refresh_token"];
+        }
+    }
+
+    static fromJS(data: any): AuthorizationCodeFlowResponse {
+        data = typeof data === 'object' ? data : {};
+        let result = new AuthorizationCodeFlowResponse();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["refresh_token"] = this.refresh_token;
+        super.toJSON(data);
+        return data; 
+    }
+}
+
+export interface IAuthorizationCodeFlowResponse extends IAuthResponse {
+    refresh_token?: string | undefined;
+}
+
+export class UserInfo implements IUserInfo {
+    country?: string | undefined;
+    display_name?: string | undefined;
+    email?: string | undefined;
+    explicit_content?: ExplicitContentFilters | undefined;
+    external_urls?: { [key: string]: string; } | undefined;
+    href?: string | undefined;
+    id?: string | undefined;
+    images?: Image[] | undefined;
+    product?: string | undefined;
+    type?: string | undefined;
+    uri?: string | undefined;
+
+    constructor(data?: IUserInfo) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.country = _data["country"];
+            this.display_name = _data["display_name"];
+            this.email = _data["email"];
+            this.explicit_content = _data["explicit_content"] ? ExplicitContentFilters.fromJS(_data["explicit_content"]) : <any>undefined;
+            if (_data["external_urls"]) {
+                this.external_urls = {} as any;
+                for (let key in _data["external_urls"]) {
+                    if (_data["external_urls"].hasOwnProperty(key))
+                        this.external_urls![key] = _data["external_urls"][key];
+                }
+            }
+            this.href = _data["href"];
             this.id = _data["id"];
-            this.name = _data["name"];
+            if (Array.isArray(_data["images"])) {
+                this.images = [] as any;
+                for (let item of _data["images"])
+                    this.images!.push(Image.fromJS(item));
+            }
+            this.product = _data["product"];
+            this.type = _data["type"];
+            this.uri = _data["uri"];
         }
     }
 
-    static fromJS(data: any): Artist {
+    static fromJS(data: any): UserInfo {
         data = typeof data === 'object' ? data : {};
-        let result = new Artist();
+        let result = new UserInfo();
         result.init(data);
         return result;
     }
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
+        data["country"] = this.country;
+        data["display_name"] = this.display_name;
+        data["email"] = this.email;
+        data["explicit_content"] = this.explicit_content ? this.explicit_content.toJSON() : <any>undefined;
+        if (this.external_urls) {
+            data["external_urls"] = {};
+            for (let key in this.external_urls) {
+                if (this.external_urls.hasOwnProperty(key))
+                    data["external_urls"][key] = this.external_urls[key];
+            }
+        }
+        data["href"] = this.href;
         data["id"] = this.id;
-        data["name"] = this.name;
+        if (Array.isArray(this.images)) {
+            data["images"] = [];
+            for (let item of this.images)
+                data["images"].push(item.toJSON());
+        }
+        data["product"] = this.product;
+        data["type"] = this.type;
+        data["uri"] = this.uri;
         return data; 
     }
 }
 
-export interface IArtist {
+export interface IUserInfo {
+    country?: string | undefined;
+    display_name?: string | undefined;
+    email?: string | undefined;
+    explicit_content?: ExplicitContentFilters | undefined;
+    external_urls?: { [key: string]: string; } | undefined;
+    href?: string | undefined;
     id?: string | undefined;
-    name?: string | undefined;
+    images?: Image[] | undefined;
+    product?: string | undefined;
+    type?: string | undefined;
+    uri?: string | undefined;
 }
 
-export class Song implements ISong {
-    id?: string | undefined;
-    name?: string | undefined;
-    artists?: Artist[] | undefined;
+export class ExplicitContentFilters implements IExplicitContentFilters {
+    filter_enabled?: boolean;
+    filter_locked?: boolean;
 
-    constructor(data?: ISong) {
+    constructor(data?: IExplicitContentFilters) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -932,52 +1156,37 @@ export class Song implements ISong {
 
     init(_data?: any) {
         if (_data) {
-            this.id = _data["id"];
-            this.name = _data["name"];
-            if (Array.isArray(_data["artists"])) {
-                this.artists = [] as any;
-                for (let item of _data["artists"])
-                    this.artists!.push(Artist.fromJS(item));
-            }
+            this.filter_enabled = _data["filter_enabled"];
+            this.filter_locked = _data["filter_locked"];
         }
     }
 
-    static fromJS(data: any): Song {
+    static fromJS(data: any): ExplicitContentFilters {
         data = typeof data === 'object' ? data : {};
-        let result = new Song();
+        let result = new ExplicitContentFilters();
         result.init(data);
         return result;
     }
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        data["id"] = this.id;
-        data["name"] = this.name;
-        if (Array.isArray(this.artists)) {
-            data["artists"] = [];
-            for (let item of this.artists)
-                data["artists"].push(item.toJSON());
-        }
+        data["filter_enabled"] = this.filter_enabled;
+        data["filter_locked"] = this.filter_locked;
         return data; 
     }
 }
 
-export interface ISong {
-    id?: string | undefined;
-    name?: string | undefined;
-    artists?: Artist[] | undefined;
+export interface IExplicitContentFilters {
+    filter_enabled?: boolean;
+    filter_locked?: boolean;
 }
 
-export class Playlist implements IPlaylist {
-    id?: string | undefined;
-    imageUrl?: string | undefined;
-    name?: string | undefined;
-    songs?: Song[] | undefined;
-    snapshotVersion?: string | undefined;
+export class Image implements IImage {
+    height?: number | undefined;
+    width?: number | undefined;
     url?: string | undefined;
-    readonly changed?: boolean;
 
-    constructor(data?: IPlaylist) {
+    constructor(data?: IImage) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -988,318 +1197,40 @@ export class Playlist implements IPlaylist {
 
     init(_data?: any) {
         if (_data) {
-            this.id = _data["id"];
-            this.imageUrl = _data["imageUrl"];
-            this.name = _data["name"];
-            if (Array.isArray(_data["songs"])) {
-                this.songs = [] as any;
-                for (let item of _data["songs"])
-                    this.songs!.push(Song.fromJS(item));
-            }
-            this.snapshotVersion = _data["snapshotVersion"];
+            this.height = _data["height"];
+            this.width = _data["width"];
             this.url = _data["url"];
-            (<any>this).changed = _data["changed"];
         }
     }
 
-    static fromJS(data: any): Playlist {
+    static fromJS(data: any): Image {
         data = typeof data === 'object' ? data : {};
-        let result = new Playlist();
+        let result = new Image();
         result.init(data);
         return result;
     }
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        data["id"] = this.id;
-        data["imageUrl"] = this.imageUrl;
-        data["name"] = this.name;
-        if (Array.isArray(this.songs)) {
-            data["songs"] = [];
-            for (let item of this.songs)
-                data["songs"].push(item.toJSON());
-        }
-        data["snapshotVersion"] = this.snapshotVersion;
+        data["height"] = this.height;
+        data["width"] = this.width;
         data["url"] = this.url;
-        data["changed"] = this.changed;
         return data; 
     }
 }
 
-export interface IPlaylist {
-    id?: string | undefined;
-    imageUrl?: string | undefined;
-    name?: string | undefined;
-    songs?: Song[] | undefined;
-    snapshotVersion?: string | undefined;
+export interface IImage {
+    height?: number | undefined;
+    width?: number | undefined;
     url?: string | undefined;
-    changed?: boolean;
-}
-
-export class User implements IUser {
-    born?: number;
-    displayName?: string | undefined;
-    id?: string | undefined;
-    currentToken?: string | undefined;
-    expiresIn?: number;
-    tokenEmissionTime?: Date;
-
-    constructor(data?: IUser) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.born = _data["born"];
-            this.displayName = _data["displayName"];
-            this.id = _data["id"];
-            this.currentToken = _data["currentToken"];
-            this.expiresIn = _data["expiresIn"];
-            this.tokenEmissionTime = _data["tokenEmissionTime"] ? new Date(_data["tokenEmissionTime"].toString()) : <any>undefined;
-        }
-    }
-
-    static fromJS(data: any): User {
-        data = typeof data === 'object' ? data : {};
-        let result = new User();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["born"] = this.born;
-        data["displayName"] = this.displayName;
-        data["id"] = this.id;
-        data["currentToken"] = this.currentToken;
-        data["expiresIn"] = this.expiresIn;
-        data["tokenEmissionTime"] = this.tokenEmissionTime ? this.tokenEmissionTime.toISOString() : <any>undefined;
-        return data; 
-    }
-}
-
-export interface IUser {
-    born?: number;
-    displayName?: string | undefined;
-    id?: string | undefined;
-    currentToken?: string | undefined;
-    expiresIn?: number;
-    tokenEmissionTime?: Date;
-}
-
-export class Rating implements IRating {
-    id?: string | undefined;
-    value?: number;
-    user?: User;
-
-    constructor(data?: IRating) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.id = _data["id"];
-            this.value = _data["value"];
-            this.user = _data["user"] ? User.fromJS(_data["user"]) : <any>undefined;
-        }
-    }
-
-    static fromJS(data: any): Rating {
-        data = typeof data === 'object' ? data : {};
-        let result = new Rating();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["id"] = this.id;
-        data["value"] = this.value;
-        data["user"] = this.user ? this.user.toJSON() : <any>undefined;
-        return data; 
-    }
-}
-
-export interface IRating {
-    id?: string | undefined;
-    value?: number;
-    user?: User;
-}
-
-export class RecognizedSong implements IRecognizedSong {
-    count?: number;
-    id?: string | undefined;
-    name?: string | undefined;
-    artists?: Artist[] | undefined;
-
-    constructor(data?: IRecognizedSong) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.count = _data["count"];
-            this.id = _data["id"];
-            this.name = _data["name"];
-            if (Array.isArray(_data["artists"])) {
-                this.artists = [] as any;
-                for (let item of _data["artists"])
-                    this.artists!.push(Artist.fromJS(item));
-            }
-        }
-    }
-
-    static fromJS(data: any): RecognizedSong {
-        data = typeof data === 'object' ? data : {};
-        let result = new RecognizedSong();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["count"] = this.count;
-        data["id"] = this.id;
-        data["name"] = this.name;
-        if (Array.isArray(this.artists)) {
-            data["artists"] = [];
-            for (let item of this.artists)
-                data["artists"].push(item.toJSON());
-        }
-        return data; 
-    }
-}
-
-export interface IRecognizedSong {
-    count?: number;
-    id?: string | undefined;
-    name?: string | undefined;
-    artists?: Artist[] | undefined;
-}
-
-export class Schedule implements ISchedule {
-    start?: Date;
-    end?: Date;
-
-    constructor(data?: ISchedule) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.start = _data["start"] ? new Date(_data["start"].toString()) : <any>undefined;
-            this.end = _data["end"] ? new Date(_data["end"].toString()) : <any>undefined;
-        }
-    }
-
-    static fromJS(data: any): Schedule {
-        data = typeof data === 'object' ? data : {};
-        let result = new Schedule();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["start"] = this.start ? this.start.toISOString() : <any>undefined;
-        data["end"] = this.end ? this.end.toISOString() : <any>undefined;
-        return data; 
-    }
-}
-
-export interface ISchedule {
-    start?: Date;
-    end?: Date;
-}
-
-export enum DayOfWeek {
-    _0 = 0,
-    _1 = 1,
-    _2 = 2,
-    _3 = 3,
-    _4 = 4,
-    _5 = 5,
-    _6 = 6,
-}
-
-export class Timetable implements ITimetable {
-    id?: string | undefined;
-    schedules?: Schedule[] | undefined;
-    day?: DayOfWeek;
-
-    constructor(data?: ITimetable) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.id = _data["id"];
-            if (Array.isArray(_data["schedules"])) {
-                this.schedules = [] as any;
-                for (let item of _data["schedules"])
-                    this.schedules!.push(Schedule.fromJS(item));
-            }
-            this.day = _data["day"];
-        }
-    }
-
-    static fromJS(data: any): Timetable {
-        data = typeof data === 'object' ? data : {};
-        let result = new Timetable();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["id"] = this.id;
-        if (Array.isArray(this.schedules)) {
-            data["schedules"] = [];
-            for (let item of this.schedules)
-                data["schedules"].push(item.toJSON());
-        }
-        data["day"] = this.day;
-        return data; 
-    }
-}
-
-export interface ITimetable {
-    id?: string | undefined;
-    schedules?: Schedule[] | undefined;
-    day?: DayOfWeek;
 }
 
 export class Place implements IPlace {
     id?: string | undefined;
     address?: string | undefined;
     displayName?: string | undefined;
-    location?: Geolocation;
-    mainPlaylist?: Playlist;
+    location?: Geolocation | undefined;
+    mainPlaylist?: Playlist | undefined;
     weeklyPlaylists?: { [key: string]: Playlist; } | undefined;
     ratings?: Rating[] | undefined;
     owners?: User[] | undefined;
@@ -1407,8 +1338,8 @@ export interface IPlace {
     id?: string | undefined;
     address?: string | undefined;
     displayName?: string | undefined;
-    location?: Geolocation;
-    mainPlaylist?: Playlist;
+    location?: Geolocation | undefined;
+    mainPlaylist?: Playlist | undefined;
     weeklyPlaylists?: { [key: string]: Playlist; } | undefined;
     ratings?: Rating[] | undefined;
     owners?: User[] | undefined;
@@ -1418,22 +1349,11 @@ export interface IPlace {
     timetables?: Timetable[] | undefined;
 }
 
-export class ComparedPlace implements IComparedPlace {
-    similitude?: number;
-    id?: string | undefined;
-    address?: string | undefined;
-    displayName?: string | undefined;
-    location?: Geolocation;
-    mainPlaylist?: Playlist;
-    weeklyPlaylists?: { [key: string]: Playlist; } | undefined;
-    ratings?: Rating[] | undefined;
-    owners?: User[] | undefined;
-    phone?: string | undefined;
-    geohash?: string | undefined;
-    recognizedMusic?: RecognizedSong[] | undefined;
-    timetables?: Timetable[] | undefined;
+export class Geolocation implements IGeolocation {
+    latitude?: number;
+    longitude?: number;
 
-    constructor(data?: IComparedPlace) {
+    constructor(data?: IGeolocation) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -1444,41 +1364,433 @@ export class ComparedPlace implements IComparedPlace {
 
     init(_data?: any) {
         if (_data) {
-            this.similitude = _data["similitude"];
+            this.latitude = _data["latitude"];
+            this.longitude = _data["longitude"];
+        }
+    }
+
+    static fromJS(data: any): Geolocation {
+        data = typeof data === 'object' ? data : {};
+        let result = new Geolocation();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["latitude"] = this.latitude;
+        data["longitude"] = this.longitude;
+        return data; 
+    }
+}
+
+export interface IGeolocation {
+    latitude?: number;
+    longitude?: number;
+}
+
+export class Playlist implements IPlaylist {
+    id?: string | undefined;
+    imageUrl?: string | undefined;
+    name?: string | undefined;
+    songs?: Song[] | undefined;
+    snapshotVersion?: string | undefined;
+    url?: string | undefined;
+    changed?: boolean;
+
+    constructor(data?: IPlaylist) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
             this.id = _data["id"];
-            this.address = _data["address"];
+            this.imageUrl = _data["imageUrl"];
+            this.name = _data["name"];
+            if (Array.isArray(_data["songs"])) {
+                this.songs = [] as any;
+                for (let item of _data["songs"])
+                    this.songs!.push(Song.fromJS(item));
+            }
+            this.snapshotVersion = _data["snapshotVersion"];
+            this.url = _data["url"];
+            this.changed = _data["changed"];
+        }
+    }
+
+    static fromJS(data: any): Playlist {
+        data = typeof data === 'object' ? data : {};
+        let result = new Playlist();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["imageUrl"] = this.imageUrl;
+        data["name"] = this.name;
+        if (Array.isArray(this.songs)) {
+            data["songs"] = [];
+            for (let item of this.songs)
+                data["songs"].push(item.toJSON());
+        }
+        data["snapshotVersion"] = this.snapshotVersion;
+        data["url"] = this.url;
+        data["changed"] = this.changed;
+        return data; 
+    }
+}
+
+export interface IPlaylist {
+    id?: string | undefined;
+    imageUrl?: string | undefined;
+    name?: string | undefined;
+    songs?: Song[] | undefined;
+    snapshotVersion?: string | undefined;
+    url?: string | undefined;
+    changed?: boolean;
+}
+
+export class Song implements ISong {
+    id?: string | undefined;
+    name?: string | undefined;
+    artists?: Artist[] | undefined;
+
+    constructor(data?: ISong) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.name = _data["name"];
+            if (Array.isArray(_data["artists"])) {
+                this.artists = [] as any;
+                for (let item of _data["artists"])
+                    this.artists!.push(Artist.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): Song {
+        data = typeof data === 'object' ? data : {};
+        let result = new Song();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["name"] = this.name;
+        if (Array.isArray(this.artists)) {
+            data["artists"] = [];
+            for (let item of this.artists)
+                data["artists"].push(item.toJSON());
+        }
+        return data; 
+    }
+}
+
+export interface ISong {
+    id?: string | undefined;
+    name?: string | undefined;
+    artists?: Artist[] | undefined;
+}
+
+export class Artist implements IArtist {
+    id?: string | undefined;
+    name?: string | undefined;
+
+    constructor(data?: IArtist) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.name = _data["name"];
+        }
+    }
+
+    static fromJS(data: any): Artist {
+        data = typeof data === 'object' ? data : {};
+        let result = new Artist();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["name"] = this.name;
+        return data; 
+    }
+}
+
+export interface IArtist {
+    id?: string | undefined;
+    name?: string | undefined;
+}
+
+export class Rating implements IRating {
+    id?: string | undefined;
+    value?: number;
+    user?: User | undefined;
+
+    constructor(data?: IRating) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.value = _data["value"];
+            this.user = _data["user"] ? User.fromJS(_data["user"]) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): Rating {
+        data = typeof data === 'object' ? data : {};
+        let result = new Rating();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["value"] = this.value;
+        data["user"] = this.user ? this.user.toJSON() : <any>undefined;
+        return data; 
+    }
+}
+
+export interface IRating {
+    id?: string | undefined;
+    value?: number;
+    user?: User | undefined;
+}
+
+export class User implements IUser {
+    born?: number;
+    displayName?: string | undefined;
+    id?: string | undefined;
+    currentToken?: string | undefined;
+    expiresIn?: number;
+    tokenEmissionTime?: Date;
+
+    constructor(data?: IUser) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.born = _data["born"];
             this.displayName = _data["displayName"];
-            this.location = _data["location"] ? Geolocation.fromJS(_data["location"]) : <any>undefined;
-            this.mainPlaylist = _data["mainPlaylist"] ? Playlist.fromJS(_data["mainPlaylist"]) : <any>undefined;
-            if (_data["weeklyPlaylists"]) {
-                this.weeklyPlaylists = {} as any;
-                for (let key in _data["weeklyPlaylists"]) {
-                    if (_data["weeklyPlaylists"].hasOwnProperty(key))
-                        this.weeklyPlaylists![key] = _data["weeklyPlaylists"][key] ? Playlist.fromJS(_data["weeklyPlaylists"][key]) : new Playlist();
-                }
+            this.id = _data["id"];
+            this.currentToken = _data["currentToken"];
+            this.expiresIn = _data["expiresIn"];
+            this.tokenEmissionTime = _data["tokenEmissionTime"] ? new Date(_data["tokenEmissionTime"].toString()) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): User {
+        data = typeof data === 'object' ? data : {};
+        let result = new User();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["born"] = this.born;
+        data["displayName"] = this.displayName;
+        data["id"] = this.id;
+        data["currentToken"] = this.currentToken;
+        data["expiresIn"] = this.expiresIn;
+        data["tokenEmissionTime"] = this.tokenEmissionTime ? this.tokenEmissionTime.toISOString() : <any>undefined;
+        return data; 
+    }
+}
+
+export interface IUser {
+    born?: number;
+    displayName?: string | undefined;
+    id?: string | undefined;
+    currentToken?: string | undefined;
+    expiresIn?: number;
+    tokenEmissionTime?: Date;
+}
+
+export class RecognizedSong extends Song implements IRecognizedSong {
+    count?: number;
+
+    constructor(data?: IRecognizedSong) {
+        super(data);
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+        if (_data) {
+            this.count = _data["count"];
+        }
+    }
+
+    static fromJS(data: any): RecognizedSong {
+        data = typeof data === 'object' ? data : {};
+        let result = new RecognizedSong();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["count"] = this.count;
+        super.toJSON(data);
+        return data; 
+    }
+}
+
+export interface IRecognizedSong extends ISong {
+    count?: number;
+}
+
+export class Timetable implements ITimetable {
+    schedules?: Schedule[] | undefined;
+    day?: DayOfWeek;
+
+    constructor(data?: ITimetable) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
             }
-            if (Array.isArray(_data["ratings"])) {
-                this.ratings = [] as any;
-                for (let item of _data["ratings"])
-                    this.ratings!.push(Rating.fromJS(item));
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            if (Array.isArray(_data["schedules"])) {
+                this.schedules = [] as any;
+                for (let item of _data["schedules"])
+                    this.schedules!.push(Schedule.fromJS(item));
             }
-            if (Array.isArray(_data["owners"])) {
-                this.owners = [] as any;
-                for (let item of _data["owners"])
-                    this.owners!.push(User.fromJS(item));
+            this.day = _data["day"];
+        }
+    }
+
+    static fromJS(data: any): Timetable {
+        data = typeof data === 'object' ? data : {};
+        let result = new Timetable();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        if (Array.isArray(this.schedules)) {
+            data["schedules"] = [];
+            for (let item of this.schedules)
+                data["schedules"].push(item.toJSON());
+        }
+        data["day"] = this.day;
+        return data; 
+    }
+}
+
+export interface ITimetable {
+    schedules?: Schedule[] | undefined;
+    day?: DayOfWeek;
+}
+
+export class Schedule implements ISchedule {
+    start?: Date;
+    end?: Date;
+
+    constructor(data?: ISchedule) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
             }
-            this.phone = _data["phone"];
-            this.geohash = _data["geohash"];
-            if (Array.isArray(_data["recognizedMusic"])) {
-                this.recognizedMusic = [] as any;
-                for (let item of _data["recognizedMusic"])
-                    this.recognizedMusic!.push(RecognizedSong.fromJS(item));
-            }
-            if (Array.isArray(_data["timetables"])) {
-                this.timetables = [] as any;
-                for (let item of _data["timetables"])
-                    this.timetables!.push(Timetable.fromJS(item));
-            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.start = _data["start"] ? new Date(_data["start"].toString()) : <any>undefined;
+            this.end = _data["end"] ? new Date(_data["end"].toString()) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): Schedule {
+        data = typeof data === 'object' ? data : {};
+        let result = new Schedule();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["start"] = this.start ? this.start.toISOString() : <any>undefined;
+        data["end"] = this.end ? this.end.toISOString() : <any>undefined;
+        return data; 
+    }
+}
+
+export interface ISchedule {
+    start?: Date;
+    end?: Date;
+}
+
+export enum DayOfWeek {
+    Sunday = 0,
+    Monday = 1,
+    Tuesday = 2,
+    Wednesday = 3,
+    Thursday = 4,
+    Friday = 5,
+    Saturday = 6,
+}
+
+export class ComparedPlace extends Place implements IComparedPlace {
+    similitude?: number;
+
+    constructor(data?: IComparedPlace) {
+        super(data);
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+        if (_data) {
+            this.similitude = _data["similitude"];
         }
     }
 
@@ -1492,58 +1804,13 @@ export class ComparedPlace implements IComparedPlace {
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
         data["similitude"] = this.similitude;
-        data["id"] = this.id;
-        data["address"] = this.address;
-        data["displayName"] = this.displayName;
-        data["location"] = this.location ? this.location.toJSON() : <any>undefined;
-        data["mainPlaylist"] = this.mainPlaylist ? this.mainPlaylist.toJSON() : <any>undefined;
-        if (this.weeklyPlaylists) {
-            data["weeklyPlaylists"] = {};
-            for (let key in this.weeklyPlaylists) {
-                if (this.weeklyPlaylists.hasOwnProperty(key))
-                    data["weeklyPlaylists"][key] = this.weeklyPlaylists[key] ? this.weeklyPlaylists[key].toJSON() : <any>undefined;
-            }
-        }
-        if (Array.isArray(this.ratings)) {
-            data["ratings"] = [];
-            for (let item of this.ratings)
-                data["ratings"].push(item.toJSON());
-        }
-        if (Array.isArray(this.owners)) {
-            data["owners"] = [];
-            for (let item of this.owners)
-                data["owners"].push(item.toJSON());
-        }
-        data["phone"] = this.phone;
-        data["geohash"] = this.geohash;
-        if (Array.isArray(this.recognizedMusic)) {
-            data["recognizedMusic"] = [];
-            for (let item of this.recognizedMusic)
-                data["recognizedMusic"].push(item.toJSON());
-        }
-        if (Array.isArray(this.timetables)) {
-            data["timetables"] = [];
-            for (let item of this.timetables)
-                data["timetables"].push(item.toJSON());
-        }
+        super.toJSON(data);
         return data; 
     }
 }
 
-export interface IComparedPlace {
+export interface IComparedPlace extends IPlace {
     similitude?: number;
-    id?: string | undefined;
-    address?: string | undefined;
-    displayName?: string | undefined;
-    location?: Geolocation;
-    mainPlaylist?: Playlist;
-    weeklyPlaylists?: { [key: string]: Playlist; } | undefined;
-    ratings?: Rating[] | undefined;
-    owners?: User[] | undefined;
-    phone?: string | undefined;
-    geohash?: string | undefined;
-    recognizedMusic?: RecognizedSong[] | undefined;
-    timetables?: Timetable[] | undefined;
 }
 
 export class ProblemDetails implements IProblemDetails {
@@ -1552,6 +1819,7 @@ export class ProblemDetails implements IProblemDetails {
     status?: number | undefined;
     detail?: string | undefined;
     instance?: string | undefined;
+    extensions?: { [key: string]: any; } | undefined;
 
     constructor(data?: IProblemDetails) {
         if (data) {
@@ -1569,6 +1837,13 @@ export class ProblemDetails implements IProblemDetails {
             this.status = _data["status"];
             this.detail = _data["detail"];
             this.instance = _data["instance"];
+            if (_data["extensions"]) {
+                this.extensions = {} as any;
+                for (let key in _data["extensions"]) {
+                    if (_data["extensions"].hasOwnProperty(key))
+                        this.extensions![key] = _data["extensions"][key];
+                }
+            }
         }
     }
 
@@ -1586,6 +1861,13 @@ export class ProblemDetails implements IProblemDetails {
         data["status"] = this.status;
         data["detail"] = this.detail;
         data["instance"] = this.instance;
+        if (this.extensions) {
+            data["extensions"] = {};
+            for (let key in this.extensions) {
+                if (this.extensions.hasOwnProperty(key))
+                    data["extensions"][key] = this.extensions[key];
+            }
+        }
         return data; 
     }
 }
@@ -1596,12 +1878,13 @@ export interface IProblemDetails {
     status?: number | undefined;
     detail?: string | undefined;
     instance?: string | undefined;
+    extensions?: { [key: string]: any; } | undefined;
 }
 
 export class WeatherForecast implements IWeatherForecast {
     date?: Date;
     temperatureC?: number;
-    readonly temperatureF?: number;
+    temperatureF?: number;
     summary?: string | undefined;
 
     constructor(data?: IWeatherForecast) {
@@ -1617,7 +1900,7 @@ export class WeatherForecast implements IWeatherForecast {
         if (_data) {
             this.date = _data["date"] ? new Date(_data["date"].toString()) : <any>undefined;
             this.temperatureC = _data["temperatureC"];
-            (<any>this).temperatureF = _data["temperatureF"];
+            this.temperatureF = _data["temperatureF"];
             this.summary = _data["summary"];
         }
     }
@@ -1644,6 +1927,13 @@ export interface IWeatherForecast {
     temperatureC?: number;
     temperatureF?: number;
     summary?: string | undefined;
+}
+
+export interface FileResponse {
+    data: Blob;
+    status: number;
+    fileName?: string;
+    headers?: { [name: string]: any };
 }
 
 export class ApiException extends Error {
@@ -1689,5 +1979,3 @@ function blobToText(blob: any): Observable<string> {
         }
     });
 }
-
-src/app/services/baseService.ts
