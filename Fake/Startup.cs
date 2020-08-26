@@ -28,9 +28,10 @@ using System;
 using System.Reflection;
 using System.Linq;
 using System.Collections.Generic;
-using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
+using NSwag;
+using NSwag.Generation.Processors.Security;
 
 namespace Fake
 {
@@ -91,37 +92,24 @@ namespace Fake
             services.AddScoped<LastFmService>();
             services.AddScoped<RecommendationService>();
 
-            services.AddSwaggerGen(c =>
+            services.AddOpenApiDocument(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo()
+                c.PostProcess = d =>
                 {
-                    Title = "Groover API",
-                    Version = "1"
-                });
-
-                c.AddSecurityDefinition("Bearer",
+                    d.Info.Version = "v1";
+                    d.Info.Title = "Groover API";
+                };
+                c.DocumentProcessors.Add(
+                    new SecurityDefinitionAppender("JWT",
                     new OpenApiSecurityScheme
                     {
-                        In = ParameterLocation.Header,
-                        Description = "Please enter into field the word 'Bearer' following by space and JWT",
+                        Type = OpenApiSecuritySchemeType.ApiKey,
                         Name = "Authorization",
-                        Type = SecuritySchemeType.ApiKey
-                    });
-                c.AddSecurityRequirement(new OpenApiSecurityRequirement {
-                    {
-                        new OpenApiSecurityScheme
-                        {
-                            Reference = new OpenApiReference
-                            {
-                                Type = ReferenceType.SecurityScheme,
-                                Id = "Bearer"
-                            }
-                        },
-                        new string[] { }
-                    }
-                  });
+                        In = OpenApiSecurityApiKeyLocation.Header,
+                        Description = "Type into the textbox: Bearer {your JWT token}."
+                    }));
+                c.OperationProcessors.Add(new AspNetCoreOperationSecurityScopeProcessor("JWT"));
 
-                c.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, $"{Assembly.GetExecutingAssembly().GetName().Name}.xml"));
             });
             // In production, the Angular files will be served from this directory
             services.AddSpaStaticFiles(configuration =>
@@ -195,13 +183,12 @@ namespace Fake
                 endpoints.MapRazorPages();
             });
 
-            app.UseSwagger();
+            app.UseOpenApi();
 
             // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
             // specifying the Swagger JSON endpoint.
-            app.UseSwaggerUI(c =>
+            app.UseSwaggerUi3(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
             });
 
 
