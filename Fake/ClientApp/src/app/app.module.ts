@@ -1,5 +1,5 @@
 import { BrowserModule } from '@angular/platform-browser';
-import { NgModule } from '@angular/core';
+import { NgModule, APP_INITIALIZER } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
@@ -17,6 +17,8 @@ import { AuthorizeInterceptor } from 'src/api-authorization/authorize.intercepto
 import { AgmCoreModule } from '@agm/core';
 import { MatGoogleMapsAutocompleteModule } from '@angular-material-extensions/google-maps-autocomplete';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { API_BASE_URL } from './services/services';
+import { getBaseUrl } from 'src/main';
 
 export const firebaseConfig = {
   apiKey: 'AIzaSyASCdn-XXWI2uQmRDvTHJauYN0Qca07-oE',
@@ -27,6 +29,8 @@ export const firebaseConfig = {
   messagingSenderId: '427397483542',
   appId: '1:427397483542:web:9468e5b824c4f97a'
 };
+
+
 
 @NgModule({
   declarations: [
@@ -57,7 +61,11 @@ export const firebaseConfig = {
     BrowserAnimationsModule
   ],
   providers: [
-    { provide: HTTP_INTERCEPTORS, useClass: AuthorizeInterceptor, multi: true }
+    { provide: HTTP_INTERCEPTORS, useClass: AuthorizeInterceptor, multi: true },
+    {
+      provide: API_BASE_URL,
+      useFactory: () => getBaseUrl()
+    }
   ],
   bootstrap: [AppComponent]
 })
