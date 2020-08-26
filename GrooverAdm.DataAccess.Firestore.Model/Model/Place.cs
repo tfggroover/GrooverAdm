@@ -20,6 +20,10 @@ namespace GrooverAdm.DataAccess.Firestore.Model
         public string Phone { get; set; }
         [FirestoreProperty("geohash")]
         public string Geohash { get; set; }
+        [FirestoreProperty]
+        public List<Timetable> Timetables { get; set; }
+        [FirestoreProperty]
+        public List<DocumentReference> Owners { get; set; }
 
     }
 }

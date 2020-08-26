@@ -1,12 +1,14 @@
 ﻿using Google.Cloud.Firestore;
 using GrooverAdm.Entities.Application;
 using GrooverAdm.Mappers.Interface;
+using System.Linq;
 
 namespace GrooverAdm.Mappers.Firestore
 {
     public class PlaceMapper : IPlaceMapper<DataAccess.Firestore.Model.Place>
     {
         private static readonly string COLLECTION_REF = "places";
+        private static readonly string USERS_REF = "users";
 
         private readonly FirestoreDb _db;
         public PlaceMapper(FirestoreDb db)
@@ -26,7 +28,13 @@ namespace GrooverAdm.Mappers.Firestore
                 DisplayName = entity.DisplayName,
                 Geohash = entity.Geohash,
                 Location = new GeoPoint(entity.Location.Latitude, entity.Location.Longitude),
-                Phone = entity.Phone
+                Phone = entity.Phone,
+                Owners = entity.Owners.Select(u => _db.Collection(USERS_REF).Document(u.Id)).ToList(),
+                Timetables = entity.Timetables.Select(t => new DataAccess.Firestore.Model.Timetable
+                {
+                    Day = t.Day,
+                    Schedules = t.Schedules.Select(s => new DataAccess.Firestore.Model.Schedule { End = s.End, Start = s.Start }).ToList()
+                }).ToList()
             };
         }
 
@@ -43,7 +51,13 @@ namespace GrooverAdm.Mappers.Firestore
                     Longitude = dbEntity.Location.Longitude
                 },
                 Geohash = dbEntity.Geohash,
-                Phone = dbEntity.Phone
+                Phone = dbEntity.Phone,
+                Timetables = dbEntity.Timetables.Select(t => new Timetable
+                {
+                    Day = t.Day,
+                    Schedules = t.Schedules.Select(s => new Schedule { End = s.End, Start = s.Start }).ToList()
+                }).ToList(),
+                Owners = dbEntity.Owners.Select(u => new User { Id = u.Id }).ToList()
             };
         }
     }

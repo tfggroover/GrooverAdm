@@ -181,7 +181,7 @@ namespace Fake.Controllers
         /// <returns></returns>
         [HttpPost]
         [Route("api/place")]
-        public async Task<Place> CreateEstablishment([FromBody] Place establishment)
+        public async Task<ActionResult<Place>> CreateEstablishment([FromBody] Place establishment)
         {
             var userId = HttpContext.User.Identity.Name;
 
@@ -190,9 +190,17 @@ namespace Fake.Controllers
             return docRef;
         }
 
+
+        [HttpGet]
+        [Route("api/place/{id}")]
+        public async Task<ActionResult<Place>> GetPlace([FromRoute] string id)
+        {
+            return Ok(_placesService.GetPlace(id));
+        }
+
         [HttpPatch]
         [Route("api/place")]
-        public async Task<Place> UpdateEstablishment(Place establishment)
+        public async Task<ActionResult<Place>> UpdateEstablishment(Place establishment)
         {
 
             var docRef = await _placesService.UpdatePlace(establishment);
