@@ -1,0 +1,44 @@
+<form (ngSubmit)="this.onSubmit()" #form="ngForm">
+<div class="two-cols">
+  <div class="formcontrol">
+    <label class="col-md-2" for="Name">Name</label>
+    <input class="col-md-4" name="Name" [(ngModel)]="this.place.displayName" />
+  </div>
+  <div class="formcontrol">
+    <label class="col-md-2" for="Address">Address</label>
+    <input class="col-md-4" name="Address" [(ngModel)]="this.place.address" />
+  </div>
+  <div class="formcontrol">
+    <label class="col-md-2" for="Latitude">Latitude</label>
+    <input class="col-md-4" name="Latitude" [(ngModel)]="this.place.location.latitude" />
+  </div>
+  <div class="formcontrol">
+    <label class="col-md-2" for="Longitude">Longitude</label>
+    <input class="col-md-4" name="Longitude" [(ngModel)]="this.place.location.longitude" />
+  </div>
+  <div class="container" fxLayout="column" fxLayoutAlign="center">
+
+    <div fxFlex>
+      <agm-map [latitude]="this.marker.lat" [longitude]="this.marker.lng" [scrollwheel]="false" [zoom]="zoom">
+        <agm-marker [latitude]="this.marker.lng" [longitude]="this.marker.lng"></agm-marker>
+      </agm-map>
+    </div>
+
+    <div fxFlex fxFlexAlign="center"
+         class="autocomplete-container"
+         [style.xs]="{'min-width.%': 100}"
+         [style.sm]="{'width.%': 70}">
+      <mat-google-maps-autocomplete (onAutocompleteSelected)="onAutocompleteSelected($event)"
+                                    (onLocationSelected)="onLocationSelected($event)">
+      </mat-google-maps-autocomplete>
+    </div>
+
+  </div>
+  <div class="formcontrol">
+    <label class="col-md-2" for="Phone">Phone</label>
+    <input class="col-md-4" name="Phone" [(ngModel)]="this.place.phone" />
+  </div>
+  <hr/>
+  <button class="btn btn-success" type="submit">Submit</button>
+</div>
+</form>
