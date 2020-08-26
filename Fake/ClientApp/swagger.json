@@ -33,10 +33,9 @@
           "200": {
             "description": "",
             "content": {
-              "application/octet-stream": {
+              "application/json": {
                 "schema": {
-                  "type": "string",
-                  "format": "binary"
+                  "$ref": "#/components/schemas/AuthenticationResponse"
                 }
               }
             }
@@ -689,7 +688,7 @@
             "nullable": true,
             "oneOf": [
               {
-                "$ref": "#/components/schemas/AuthorizationCodeFlowResponse"
+                "$ref": "#/components/schemas/IAuthResponse"
               }
             ]
           },
@@ -707,25 +706,9 @@
           }
         }
       },
-      "AuthorizationCodeFlowResponse": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/AuthResponse"
-          },
-          {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-              "refresh_token": {
-                "type": "string",
-                "nullable": true
-              }
-            }
-          }
-        ]
-      },
-      "AuthResponse": {
+      "IAuthResponse": {
         "type": "object",
+        "x-abstract": true,
         "additionalProperties": false,
         "properties": {
           "access_token": {
@@ -741,6 +724,10 @@
             "format": "int32"
           },
           "scope": {
+            "type": "string",
+            "nullable": true
+          },
+          "refresh_Token": {
             "type": "string",
             "nullable": true
           }

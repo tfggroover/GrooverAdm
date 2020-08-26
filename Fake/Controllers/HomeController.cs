@@ -53,18 +53,20 @@ namespace GrooverAdmSPA.Controllers
             this.userService = userService;
         }
 
+
         /// <summary>
         /// Autenticación para el móvil y la App
         /// </summary>
         /// <param name="refresh_token"></param>
         /// <returns></returns>
+        /// <response code="400">The specified refresh token is not valid</response>
         [HttpGet("Auth")]
-        public async Task<IActionResult> Auth(string refresh_token = null)
+        [ProducesResponseType(Microsoft.AspNetCore.Http.StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<AuthenticationResponse>> Auth(string refresh_token)
         {
-            if (string.IsNullOrWhiteSpace(refresh_token))
+            if(string.IsNullOrEmpty(refresh_token))
                 return AuthorizationCodeFlow();
-            else
-                return await RefreshTokenFlow(refresh_token);
+            return await RefreshTokenFlow(refresh_token);
         }
 
         /// <summary>
@@ -81,7 +83,7 @@ namespace GrooverAdmSPA.Controllers
             {
                 return BadRequest("State cookie not set or expired. Maybe you took too long to authorize. Please try again.");
             }
-            else if(Request.Cookies["State"] != Request.Query["State"])
+            else if (Request.Cookies["State"] != Request.Query["State"])
             {
                 return BadRequest("State verification failed.");
             }
@@ -159,22 +161,22 @@ namespace GrooverAdmSPA.Controllers
         }
 
 
-        private async Task<IActionResult> RefreshTokenFlow(string refresh_token)
+        private async Task<ActionResult<AuthenticationResponse>> RefreshTokenFlow(string refresh_token)
         {
-            object result = null;
+            AuthenticationResponse result = null;
             using (HttpClient client = new HttpClient())
             {
                 var spotiCredentials = await _spotifyService.RefreshAuthRequest(refresh_token, client);
 
-                if(spotiCredentials == null)
+                if (spotiCredentials == null)
                 {
-                    return AuthorizationCodeFlow();
+                    return BadRequest("The refresh token provided is not valid");
                 }
                 var userData = await _spotifyService.UserInfoRequest(client, spotiCredentials);
 
                 var token = await GenerateToken(userData, spotiCredentials);
 
-                result = new
+                result = new AuthenticationResponse
                 {
                     Spotify = spotiCredentials,
                     SpotifyUserData = userData,
@@ -185,10 +187,10 @@ namespace GrooverAdmSPA.Controllers
             return Json(result);
         }
 
-        private IActionResult AuthorizationCodeFlow()
+        private RedirectResult AuthorizationCodeFlow()
         {
 
-            var  nonce = Guid.NewGuid().ToString("N");
+            var nonce = Guid.NewGuid().ToString("N");
 
             //string.IsNullOrEmpty(cookieNonce) ? RandomNumberGenerator.Create().GetBytes(byteNonce) :  Encoding.UTF32.GetBytes(cookieNonce.ToCharArray(), byteNonce);
 
@@ -216,7 +218,7 @@ namespace GrooverAdmSPA.Controllers
         }
 
 
-        private async Task<string> GenerateToken(UserInfo userData, AuthResponse credentials)
+        private async Task<string> GenerateToken(UserInfo userData, IAuthResponse credentials)
         {
 
             var auth = FirebaseAuth.GetAuth(firebaseApp);
@@ -245,7 +247,7 @@ namespace GrooverAdmSPA.Controllers
 
             var user = new User(userData, credentials.Access_token, credentials.Expires_in, DateTime.UtcNow);
             await this.userService.CreateOrUpdateUser(user);
-            
+
             var token = await auth.CreateCustomTokenAsync(user.Id);
             return token;
         }

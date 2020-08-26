@@ -29,7 +29,7 @@ export class HomeClient {
      * Autenticación para el móvil y la App
      * @param refresh_token (optional) 
      */
-    auth(refresh_token: string | null | undefined): Observable<FileResponse> {
+    auth(refresh_token: string | null | undefined): Observable<AuthenticationResponse> {
         let url_ = this.baseUrl + "/home/auth?";
         if (refresh_token !== undefined && refresh_token !== null)
             url_ += "refresh_token=" + encodeURIComponent("" + refresh_token) + "&";
@@ -39,7 +39,7 @@ export class HomeClient {
             observe: "response",
             responseType: "blob",
             headers: new HttpHeaders({
-                "Accept": "application/octet-stream"
+                "Accept": "application/json"
             })
         };
 
@@ -50,31 +50,33 @@ export class HomeClient {
                 try {
                     return this.processAuth(<any>response_);
                 } catch (e) {
-                    return <Observable<FileResponse>><any>_observableThrow(e);
+                    return <Observable<AuthenticationResponse>><any>_observableThrow(e);
                 }
             } else
-                return <Observable<FileResponse>><any>_observableThrow(response_);
+                return <Observable<AuthenticationResponse>><any>_observableThrow(response_);
         }));
     }
 
-    protected processAuth(response: HttpResponseBase): Observable<FileResponse> {
+    protected processAuth(response: HttpResponseBase): Observable<AuthenticationResponse> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
             (<any>response).error instanceof Blob ? (<any>response).error : undefined;
 
         let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
-        if (status === 200 || status === 206) {
-            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
-            const fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
-            const fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
-            return _observableOf({ fileName: fileName, data: <any>responseBlob, status: status, headers: _headers });
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = AuthenticationResponse.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
         } else if (status !== 200 && status !== 204) {
             return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             }));
         }
-        return _observableOf<FileResponse>(<any>null);
+        return _observableOf<AuthenticationResponse>(<any>null);
     }
 
     /**
@@ -921,7 +923,7 @@ export class WeatherForecastClient {
 }
 
 export class AuthenticationResponse implements IAuthenticationResponse {
-    spotify?: AuthorizationCodeFlowResponse | undefined;
+    spotify?: IAuthResponse | undefined;
     spotifyUserData?: UserInfo | undefined;
     firebase?: string | undefined;
 
@@ -936,7 +938,7 @@ export class AuthenticationResponse implements IAuthenticationResponse {
 
     init(_data?: any) {
         if (_data) {
-            this.spotify = _data["spotify"] ? AuthorizationCodeFlowResponse.fromJS(_data["spotify"]) : <any>undefined;
+            this.spotify = _data["spotify"] ? IAuthResponse.fromJS(_data["spotify"]) : <any>undefined;
             this.spotifyUserData = _data["spotifyUserData"] ? UserInfo.fromJS(_data["spotifyUserData"]) : <any>undefined;
             this.firebase = _data["firebase"];
         }
@@ -959,18 +961,19 @@ export class AuthenticationResponse implements IAuthenticationResponse {
 }
 
 export interface IAuthenticationResponse {
-    spotify?: AuthorizationCodeFlowResponse | undefined;
+    spotify?: IAuthResponse | undefined;
     spotifyUserData?: UserInfo | undefined;
     firebase?: string | undefined;
 }
 
-export class AuthResponse implements IAuthResponse {
+export abstract class IAuthResponse implements IIAuthResponse {
     access_token?: string | undefined;
     token_type?: string | undefined;
     expires_in?: number;
     scope?: string | undefined;
+    refresh_Token?: string | undefined;
 
-    constructor(data?: IAuthResponse) {
+    constructor(data?: IIAuthResponse) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -985,14 +988,13 @@ export class AuthResponse implements IAuthResponse {
             this.token_type = _data["token_type"];
             this.expires_in = _data["expires_in"];
             this.scope = _data["scope"];
+            this.refresh_Token = _data["refresh_Token"];
         }
     }
 
-    static fromJS(data: any): AuthResponse {
+    static fromJS(data: any): IAuthResponse {
         data = typeof data === 'object' ? data : {};
-        let result = new AuthResponse();
-        result.init(data);
-        return result;
+        throw new Error("The abstract class 'IAuthResponse' cannot be instantiated.");
     }
 
     toJSON(data?: any) {
@@ -1001,48 +1003,17 @@ export class AuthResponse implements IAuthResponse {
         data["token_type"] = this.token_type;
         data["expires_in"] = this.expires_in;
         data["scope"] = this.scope;
+        data["refresh_Token"] = this.refresh_Token;
         return data; 
     }
 }
 
-export interface IAuthResponse {
+export interface IIAuthResponse {
     access_token?: string | undefined;
     token_type?: string | undefined;
     expires_in?: number;
     scope?: string | undefined;
-}
-
-export class AuthorizationCodeFlowResponse extends AuthResponse implements IAuthorizationCodeFlowResponse {
-    refresh_token?: string | undefined;
-
-    constructor(data?: IAuthorizationCodeFlowResponse) {
-        super(data);
-    }
-
-    init(_data?: any) {
-        super.init(_data);
-        if (_data) {
-            this.refresh_token = _data["refresh_token"];
-        }
-    }
-
-    static fromJS(data: any): AuthorizationCodeFlowResponse {
-        data = typeof data === 'object' ? data : {};
-        let result = new AuthorizationCodeFlowResponse();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["refresh_token"] = this.refresh_token;
-        super.toJSON(data);
-        return data; 
-    }
-}
-
-export interface IAuthorizationCodeFlowResponse extends IAuthResponse {
-    refresh_token?: string | undefined;
+    refresh_Token?: string | undefined;
 }
 
 export class UserInfo implements IUserInfo {

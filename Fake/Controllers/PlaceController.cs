@@ -87,17 +87,18 @@ namespace Fake.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("api/place/recommended")]
+        [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<ActionResult<IEnumerable<ComparedPlace>>> GetRecommendedEstablishmentsForPlaylist(string playlistId, double lat, double lon, double distance, string spoToken, int page = 1, int pageSize = 25)
+        public async Task<ActionResult<IEnumerable<ComparedPlace>>> GetRecommendedEstablishmentsForPlaylist(string playlistId, double lat, double lon, double distance, int page = 1, int pageSize = 25)
         {
-            //string userId = GetUserId();
+            string userId = GetUserId();
             var client = new HttpClient();
 
             //Get his spotify token
-            //var user = await _userService.GetUser(userId);
+            var user = await _userService.GetUser(userId);
 
-            var token = spoToken;
+            var token = user.CurrentToken;
             //Get playlist songs from spotify
 
             var spotiPlaylist = await _spotify.GetPlaylist(client, token, playlistId);
@@ -138,17 +139,18 @@ namespace Fake.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("api/place/recommended/top")]
+        [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<ActionResult<IEnumerable<ComparedPlace>>> GetRecommendedEstablishmentsForTop(double lat, double lon, double distance, string spoToken, int page = 1, int pageSize = 25)
+        public async Task<ActionResult<IEnumerable<ComparedPlace>>> GetRecommendedEstablishmentsForTop(double lat, double lon, double distance, int page = 1, int pageSize = 25)
         {
-            //string userId = GetUserId();
+            string userId = GetUserId();
             var client = new HttpClient();
 
             //Get his spotify token
-            //var user = await _userService.GetUser(userId);
+            var user = await _userService.GetUser(userId);
 
-            var token = spoToken;
+            var token = user.CurrentToken;
             //Get playlist songs from spotify
 
             var spotiPlaylist = await _spotify.GetUsersTopTracks(client, token);
@@ -180,6 +182,7 @@ namespace Fake.Controllers
         /// <param name="establishment"></param>
         /// <returns></returns>
         [HttpPost]
+        [Authorize]
         [Route("api/place")]
         public async Task<ActionResult<Place>> CreateEstablishment([FromBody] Place establishment)
         {
@@ -199,6 +202,7 @@ namespace Fake.Controllers
         }
 
         [HttpPatch]
+        [Authorize]
         [Route("api/place")]
         public async Task<ActionResult<Place>> UpdateEstablishment(Place establishment)
         {
@@ -214,6 +218,7 @@ namespace Fake.Controllers
         /// <param name="establishmentId"></param>
         /// <returns></returns>
         [HttpDelete]
+        [Authorize]
         [Route("api/place")]
         public async Task<IActionResult> DeleteEstablishment(string establishmentId)
         {
@@ -228,6 +233,7 @@ namespace Fake.Controllers
         /// <param name="song"></param>
         /// <returns></returns>
         [HttpPost]
+        [Authorize]
         [Route("api/place/{establishmentId}/song")]
         public async Task<IActionResult> RecognizeSong(string establishmentId, [FromBody] GrooverAdm.Entities.Application.Song song)
         {
@@ -247,6 +253,7 @@ namespace Fake.Controllers
         /// <param name="value"></param>
         /// <returns></returns>
         [HttpPost]
+        [Authorize]
         [Route("api/place/{placeId}/rate")]
         public async Task<IActionResult> RatePlace(string placeId, double value)
         {

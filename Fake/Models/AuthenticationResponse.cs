@@ -8,7 +8,7 @@ namespace Fake.Models
 {
     public class AuthenticationResponse
     {
-        public AuthorizationCodeFlowResponse Spotify { get; set; }
+        public IAuthResponse Spotify { get; set; }
         public UserInfo SpotifyUserData { get; set; }
         public string Firebase { get; set; }
 

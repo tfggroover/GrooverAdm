@@ -102,7 +102,7 @@ namespace GrooverAdm.Business.Services
             return null;
         }
 
-        public async Task<UserInfo> UserInfoRequest(HttpClient client, AuthResponse spotiCredentials)
+        public async Task<UserInfo> UserInfoRequest(HttpClient client, IAuthResponse spotiCredentials)
         {
             var success = false;
             while (!success)
