@@ -6,6 +6,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using Fake.Models;
 using Fake.Pages;
 using FirebaseAdmin;
 using FirebaseAdmin.Auth;
@@ -73,7 +74,7 @@ namespace GrooverAdmSPA.Controllers
         /// <param name="State">Cookie de estado</param>
         /// <returns></returns>
         [HttpGet("callback")]
-        public async Task<IActionResult> AuthCallback(string code, string State = null)
+        public async Task<ActionResult<AuthenticationResponse>> AuthCallback(string code, string State = null)
         {
 
             if (string.IsNullOrEmpty(Request.Cookies["State"]))
@@ -85,7 +86,7 @@ namespace GrooverAdmSPA.Controllers
                 return BadRequest("State verification failed.");
             }
 
-            object result = null;
+            AuthenticationResponse result = null;
 
             if (code.Length > 0)
             {
@@ -97,7 +98,7 @@ namespace GrooverAdmSPA.Controllers
 
                     var token = await GenerateToken(userData, spotiCredentials);
 
-                    result = new
+                    result = new AuthenticationResponse
                     {
                         Spotify = spotiCredentials,
                         SpotifyUserData = userData,
