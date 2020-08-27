@@ -62,6 +62,7 @@ namespace GrooverAdmSPA.Controllers
         /// <response code="400">The specified refresh token is not valid</response>
         [HttpGet("Auth")]
         [ProducesResponseType(Microsoft.AspNetCore.Http.StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(Microsoft.AspNetCore.Http.StatusCodes.Status200OK, Type = typeof(AuthenticationResponse))]
         public async Task<ActionResult<AuthenticationResponse>> Auth(string refresh_token)
         {
             if(string.IsNullOrEmpty(refresh_token))
