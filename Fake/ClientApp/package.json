@@ -3,13 +3,13 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
+    "start": "echo Starting... && ng serve",
     "build": "ng build",
     "build:ssr": "ng run Fake:server:dev",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e",
-    "build:services": "nswag swagger2tsclient /input:swagger.json /output:src/app/services/services.ts /InjectionTokenType:InjectionToken /template:Angular /WrapDtoExceptions:true /WrapResponse:true /TypeScriptVersion:3.7 /RxJsVersion:6.5"
+    "build:services": "nswag swagger2tsclient /input:swagger.json /output:src/app/services/services.ts /InjectionTokenType:InjectionToken /template:Angular /baseUrlTokenName:BASE_URL /WrapDtoExceptions:true /WrapResponse:true /TypeScriptVersion:3.7 /RxJsVersion:6.5"
   },
   "private": true,
   "dependencies": {
