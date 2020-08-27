@@ -29,7 +29,7 @@
             <param name="pageSize"></param>
             <returns></returns>
         </member>
-        <member name="M:Fake.Controllers.PlaceController.GetRecommendedEstablishmentsForPlaylist(System.String,System.Double,System.Double,System.Double,System.String,System.Int32,System.Int32)">
+        <member name="M:Fake.Controllers.PlaceController.GetRecommendedEstablishmentsForPlaylist(System.String,System.Double,System.Double,System.Double,System.Int32,System.Int32)">
             <summary>
             Obtiene los lugares recomendados en funcion de la playlist enviada
             </summary>
@@ -42,7 +42,7 @@
             <param name="pageSize"></param>
             <returns></returns>
         </member>
-        <member name="M:Fake.Controllers.PlaceController.GetRecommendedEstablishmentsForTop(System.Double,System.Double,System.Double,System.String,System.Int32,System.Int32)">
+        <member name="M:Fake.Controllers.PlaceController.GetRecommendedEstablishmentsForTop(System.Double,System.Double,System.Double,System.Int32,System.Int32)">
             <summary>
             Obtiene los lugares recomendados en funcion del top50 del usuario
             </summary>
@@ -111,6 +111,7 @@
             </summary>
             <param name="refresh_token"></param>
             <returns></returns>
+            <response code="400">The specified refresh token is not valid</response>
         </member>
         <member name="M:GrooverAdmSPA.Controllers.HomeController.AuthCallback(System.String,System.String)">
             <summary>
