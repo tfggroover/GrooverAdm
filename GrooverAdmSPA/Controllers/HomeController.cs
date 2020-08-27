@@ -143,7 +143,7 @@ namespace GrooverAdmSPA.Controllers
             return Redirect(spotifyCall);
         }
 
-        private async Task<string> GenerateToken(UserInfo userData, AuthResponse credentials)
+        private async Task<string> GenerateToken(UserInfo userData, IAuthResponse credentials)
         {
 
             var auth = FirebaseAuth.GetAuth(firebaseApp);
