@@ -1,8 +1,10 @@
 import { Injectable } from '@angular/core';
-import { User, UserManager, WebStorageStateStore } from 'oidc-client';
+import { WebStorageStateStore } from 'oidc-client';
 import { BehaviorSubject, concat, from, Observable } from 'rxjs';
 import { filter, map, mergeMap, take, tap } from 'rxjs/operators';
 import { ApplicationPaths, ApplicationName } from './api-authorization.constants';
+import { AngularFireAuth } from '@angular/fire/auth';
+import { User, UserManager, CompleteUser } from './user-manager/userManagerService';
 
 export type IAuthenticationResult =
   SuccessAuthenticationResult |
@@ -29,9 +31,6 @@ export enum AuthenticationResultStatus {
   Fail
 }
 
-export interface IUser {
-  name?: string;
-}
 
 @Injectable({
   providedIn: 'root'
@@ -40,25 +39,32 @@ export class AuthorizeService {
   // By default pop ups are disabled because they don't work properly on Edge.
   // If you want to enable pop up authentication simply set this flag to false.
 
+  constructor(public auth: AngularFireAuth, private userManager: UserManager) { }
+
   private popUpDisabled = true;
-  private userManager: UserManager;
-  private userSubject: BehaviorSubject<IUser | null> = new BehaviorSubject(null);
+  private userSubject: BehaviorSubject<User | null> = new BehaviorSubject(null);
 
   public isAuthenticated(): Observable<boolean> {
     return this.getUser().pipe(map(u => !!u));
   }
 
-  public getUser(): Observable<IUser | null> {
+  public getUser(): Observable<User | null> {
     return concat(
       this.userSubject.pipe(take(1), filter(u => !!u)),
       this.getUserFromStorage().pipe(filter(u => !!u), tap(u => this.userSubject.next(u))),
       this.userSubject.asObservable());
   }
 
-  public getAccessToken(): Observable<string> {
+  public getFirebaseAccessToken(): Observable<string> {
     return from(this.ensureUserManagerInitialized())
       .pipe(mergeMap(() => from(this.userManager.getUser())),
-        map(user => user && user.access_token));
+        mergeMap(user => user && user.firebaseAuthentication.getIdToken()));
+  }
+
+  public getSpotifyAccessToken(): Observable<string> {
+    return from(this.ensureUserManagerInitialized())
+      .pipe(mergeMap(() => from(this.userManager.getUser())),
+        map(user => user && user.spotifyAuthentication.access_token));
   }
 
   // We try to authenticate the user in three different ways:
@@ -71,10 +77,10 @@ export class AuthorizeService {
   //    redirect flow.
   public async signIn(state: any): Promise<IAuthenticationResult> {
     await this.ensureUserManagerInitialized();
-    let user: User = null;
+    let user: CompleteUser = null;
     try {
-      user = await this.userManager.signinSilent(this.createArguments());
-      this.userSubject.next(user.profile);
+      user = await this.userManager.signinSilent(this.createArguments()).toPromise();
+      this.userSubject.next(user);
       return this.success(state);
     } catch (silentError) {
       // User might not be authenticated, fallback to popup authentication
@@ -85,7 +91,7 @@ export class AuthorizeService {
           throw new Error('Popup disabled. Change \'authorize.service.ts:AuthorizeService.popupDisabled\' to false to enable it.');
         }
         user = await this.userManager.signinPopup(this.createArguments());
-        this.userSubject.next(user.profile);
+        this.userSubject.next(user);
         return this.success(state);
       } catch (popupError) {
         if (popupError.message === 'Popup window closed') {
@@ -94,15 +100,6 @@ export class AuthorizeService {
         } else if (!this.popUpDisabled) {
           console.log('Popup authentication error: ', popupError);
         }
-
-        // PopUps might be blocked by the user, fallback to redirect
-        try {
-          await this.userManager.signinRedirect(this.createArguments(state));
-          return this.redirect();
-        } catch (redirectError) {
-          console.log('Redirect authentication error: ', redirectError);
-          return this.error(redirectError);
-        }
       }
     }
   }
@@ -110,9 +107,9 @@ export class AuthorizeService {
   public async completeSignIn(url: string): Promise<IAuthenticationResult> {
     try {
       await this.ensureUserManagerInitialized();
-      const user = await this.userManager.signinCallback(url);
-      this.userSubject.next(user && user.profile);
-      return this.success(user && user.state);
+      //const user = await this.userManager.signinCallback(url);
+      this.userSubject.next(null);
+      return this.success(null);
     } catch (error) {
       console.log('There was an error signing in: ', error);
       return this.error('There was an error signing in.');
@@ -126,13 +123,13 @@ export class AuthorizeService {
       }
 
       await this.ensureUserManagerInitialized();
-      await this.userManager.signoutPopup(this.createArguments());
+      //this.userManager.signOut();
+
       this.userSubject.next(null);
       return this.success(state);
     } catch (popupSignOutError) {
       console.log('Popup signout error: ', popupSignOutError);
       try {
-        await this.userManager.signoutRedirect(this.createArguments(state));
         return this.redirect();
       } catch (redirectSignOutError) {
         console.log('Redirect signout error: ', popupSignOutError);
@@ -144,9 +141,9 @@ export class AuthorizeService {
   public async completeSignOut(url: string): Promise<IAuthenticationResult> {
     await this.ensureUserManagerInitialized();
     try {
-      const response = await this.userManager.signoutCallback(url);
+      //const response = await this.userManager.signoutCallback(url);
       this.userSubject.next(null);
-      return this.success(response && response.state);
+      return this.success(null);
     } catch (error) {
       console.log(`There was an error trying to log out '${error}'.`);
       return this.error(error);
@@ -174,26 +171,13 @@ export class AuthorizeService {
       return;
     }
 
-    const response = await fetch(ApplicationPaths.ApiAuthorizationClientConfigurationUrl);
-    if (!response.ok) {
-      throw new Error(`Could not load settings for '${ApplicationName}'`);
-    }
-
-    const settings: any = await response.json();
-    settings.automaticSilentRenew = true;
-    settings.includeIdTokenInSilentRenew = true;
-    this.userManager = new UserManager(settings);
-
-    this.userManager.events.addUserSignedOut(async () => {
-      await this.userManager.removeUser();
-      this.userSubject.next(null);
-    });
+    this.userSubject.next(null);
   }
 
-  private getUserFromStorage(): Observable<IUser> {
+  private getUserFromStorage(): Observable<User> {
     return from(this.ensureUserManagerInitialized())
       .pipe(
         mergeMap(() => this.userManager.getUser()),
-        map(u => u && u.profile));
+        map(u => u));
   }
 }
