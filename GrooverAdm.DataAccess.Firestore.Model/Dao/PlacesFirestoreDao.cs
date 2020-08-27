@@ -16,6 +16,7 @@ namespace GrooverAdm.DataAccess.Firestore.PlacesDao
         private readonly FirestoreDb _db;
 
         private static readonly string COLLECTION_REF = "places";
+        private static readonly string USERS_REF = "users";
 
         public  PlacesFirestoreDao(FirestoreDb db)
         {

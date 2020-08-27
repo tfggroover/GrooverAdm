@@ -9,7 +9,6 @@ namespace GrooverAdm.Entities.Application
     {
         public Place()
         {
-            Ratings = new List<Rating>();
             Owners = new List<User>();
             RecognizedMusic = new List<RecognizedSong>();
             Timetables = new List<Timetable>();
@@ -21,7 +20,7 @@ namespace GrooverAdm.Entities.Application
         public Geolocation Location { get; set; }
         public Playlist MainPlaylist { get; set; }
         public Dictionary<string, Playlist> WeeklyPlaylists { get; set; }
-        public List<Rating> Ratings { get; set; }
+        public double Ratings { get; set; }
         public List<User> Owners{ get; set; }
         public string Phone { get; set; }
         public string Geohash { get; set; }

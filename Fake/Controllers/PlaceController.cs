@@ -292,7 +292,7 @@ namespace Fake.Controllers
         }
 
         /// <summary>
-        /// NOT IMPLEMENTED
+        /// Rates a place for a user, if the register is already existing, it updates it
         /// </summary>
         /// <param name="placeId"></param>
         /// <param name="value"></param>
@@ -300,15 +300,16 @@ namespace Fake.Controllers
         [HttpPost]
         [Authorize]
         [Route("api/place/{placeId}/rate")]
-        public async Task<IActionResult> RatePlace(string placeId, double value)
+        public async Task<ActionResult<Place>> RatePlace(string placeId, double value)
         {
+            var user = GetUserId();
             //Get current user
+            var res = await _placesService.RatePlace(placeId, value, user);
 
             //Access places/{placeId}/ratings/{userId}
 
             //Create or updateValue
-
-            throw new NotImplementedException();
+            return Ok(res);
         }
 
 

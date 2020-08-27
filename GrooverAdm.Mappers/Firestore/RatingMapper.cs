@@ -25,7 +25,8 @@ namespace GrooverAdm.Mappers.Firestore
             {
                 Id = dbEntity.Reference.Id,
                 Value = dbEntity.Value,
-                User = _userMapper.ToApplicationEntity(dbEntity.User)
+                OldValue = dbEntity.OldValue,
+                New = dbEntity.New
             };
         }
 
@@ -39,7 +40,6 @@ namespace GrooverAdm.Mappers.Firestore
             var reference = _db.Collection(PARENT_REF).Document(placeId).Collection(COLLECTION_REF).Document(rating.Id);
             return new DataAccess.Firestore.Model.Rating
             {
-                User = _userMapper.ToDbEntity(rating.User),
                 Value =  rating.Value,
                 Reference = reference
             };

@@ -2,12 +2,13 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace GrooverAdm.DataAccess.Dao
 {
     public interface IRatingDao<T> where T : Rating
     {
-        T CreateRating(T rating, string placeId);
-        bool DeleteRating(string placeId, string ratingId);
+        Task<T> CreateOrUpdateRating(T rating, string placeId);
+        Task<bool> DeleteRating(string placeId, string ratingId);
     }
 }

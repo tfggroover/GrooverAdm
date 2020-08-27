@@ -24,6 +24,10 @@ namespace GrooverAdm.DataAccess.Firestore.Model
         public List<Timetable> Timetables { get; set; }
         [FirestoreProperty]
         public List<DocumentReference> Owners { get; set; }
+        [FirestoreProperty]
+        public int RatingCount { get; set; }
+        [FirestoreProperty]
+        public double RatingTotal { get; set; }
 
     }
 }

@@ -89,5 +89,13 @@ namespace GrooverAdm.Business.Services.Places
         /// <param name="song"></param>
         /// <returns></returns>
         Task<bool> RecognizeSong(string establishmentId, Entities.Application.Song song, string userId);
+        /// <summary>
+        /// Rates a place
+        /// </summary>
+        /// <param name="placeId"></param>
+        /// <param name="value"></param>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        Task<Place> RatePlace(string placeId, double value, string user);
     }
 }

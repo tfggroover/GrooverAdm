@@ -12,7 +12,7 @@ namespace GrooverAdm.DataAccess.Firestore.Model
         public DocumentReference Reference { get; set; }
         [FirestoreProperty]
         public double Value { get; set; }
-        [FirestoreProperty]
-        public User User { get; set; }
+        public bool New { get; set; }
+        public double OldValue { get; set; }
     }
 }

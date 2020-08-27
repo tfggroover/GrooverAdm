@@ -1,4 +1,5 @@
 ﻿using GrooverAdm.Business.Services.Playlist;
+using GrooverAdm.Business.Services.Rating;
 using GrooverAdm.Business.Services.Song;
 using GrooverAdm.Business.Services.User;
 using GrooverAdm.DataAccess.Dao;
@@ -21,8 +22,7 @@ namespace GrooverAdm.Business.Services.Places
     {
         private readonly IPlacesDao<DataAccess.Firestore.Model.Place> _dao;
         private readonly IPlaceMapper<DataAccess.Firestore.Model.Place> _mapper;
-        private readonly IRatingDao<DataAccess.Firestore.Model.Rating> _ratingDao;
-        private readonly IRatingMapper<DataAccess.Firestore.Model.Rating> _ratingMapper;
+        private readonly IRatingService ratingService;
         private readonly IUserService userService;
         private readonly IPlaylistService playlistService;
         private readonly ISongService songService;
@@ -30,7 +30,7 @@ namespace GrooverAdm.Business.Services.Places
 
 
         public PlacesService(IPlacesDao<DataAccess.Firestore.Model.Place> dao, IPlaceMapper<DataAccess.Firestore.Model.Place> mapper,
-            IPlaylistService playlistService, ISongService songService, RecommendationService recommendation, IUserService users)
+            IPlaylistService playlistService, ISongService songService, RecommendationService recommendation, IUserService users, IRatingService ratingService)
         {
             _dao = dao;
             _mapper = mapper;
@@ -38,6 +38,7 @@ namespace GrooverAdm.Business.Services.Places
             this.songService = songService;
             recommendationService = recommendation;
             userService = users;
+            this.ratingService = ratingService;
         }
 
         public async Task<Place> CreatePlace(Place place)
@@ -169,6 +170,24 @@ namespace GrooverAdm.Business.Services.Places
             var res = await _dao.GetPlaces(offset, quantity, user);
 
             return res.Select(p => _mapper.ToApplicationEntity(p));
+        }
+
+        public async Task<Place> RatePlace(string placeId, double value, string user)
+        {
+            var res = await this.ratingService.RatePlace(placeId, value, user);
+            var place = await this._dao.GetPlace(placeId);
+            if (res.New)
+            {
+                place.RatingTotal = ((place.RatingTotal * place.RatingCount) + value) / (place.RatingCount + 1);
+                place.RatingCount++;
+            } 
+            else
+            {
+                place.RatingTotal = ((place.RatingTotal * place.RatingCount) - res.OldValue.Value + value) / place.RatingCount;
+            }
+            var result = await this._dao.UpdatePlace(place);
+
+            return _mapper.ToApplicationEntity(result);
         }
     }
 }

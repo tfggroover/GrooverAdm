@@ -32,6 +32,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
 using NSwag;
 using NSwag.Generation.Processors.Security;
+using GrooverAdm.Business.Services.Rating;
 
 namespace Fake
 {
@@ -88,6 +89,7 @@ namespace Fake
             AddPlaylistServices(services);
             AddSongServices(services);
             AddUserServices(services);
+            AddRatingServices(services);
             services.AddScoped<SpotifyService>();
             services.AddScoped<LastFmService>();
             services.AddScoped<RecommendationService>();
@@ -123,7 +125,7 @@ namespace Fake
         private static void AddUserServices(IServiceCollection services)
         {
             services.AddScoped<GrooverAdm.Business.Services.User.IUserService, GrooverAdm.Business.Services.User.UserService>();
-            services.AddScoped<IUserDao<GrooverAdm.DataAccess.Firestore.Model.User>, GrooverAdm.DataAccess.Firestore.Dao.UserFirestoreDao>();
+            services.AddScoped<IUserDao<GrooverAdm.DataAccess.Firestore.Model.User>, UserFirestoreDao>();
             services.AddScoped<IUserMapper<GrooverAdm.DataAccess.Firestore.Model.User>, UserMapper>();
         }
 
@@ -146,6 +148,13 @@ namespace Fake
             services.AddScoped<ISongService, SongService>();
             services.AddScoped<ISongDao<GrooverAdm.DataAccess.Firestore.Model.Song>, SongFirestoreDao>();
             services.AddScoped<ISongMapper<GrooverAdm.DataAccess.Firestore.Model.Song>, SongMapper>();
+        }
+
+        private static void AddRatingServices(IServiceCollection services)
+        {
+            services.AddScoped<IRatingService, RatingService>();
+            services.AddScoped<IRatingDao<GrooverAdm.DataAccess.Firestore.Model.Rating>, RatingFirestoreDao>();
+            services.AddScoped<IRatingMapper<GrooverAdm.DataAccess.Firestore.Model.Rating>, RatingMapper>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

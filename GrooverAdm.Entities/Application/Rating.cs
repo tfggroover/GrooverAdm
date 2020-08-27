@@ -9,6 +9,7 @@ namespace GrooverAdm.Entities.Application
     {
         public string Id { get; set; }
         public double Value { get; set; }
-        public User User { get; set; }
+        public bool New { get; set; }
+        public double? OldValue { get; set; }
     }
 }
