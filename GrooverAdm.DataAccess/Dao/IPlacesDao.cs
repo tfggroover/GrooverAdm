@@ -47,6 +47,13 @@ namespace GrooverAdm.DataAccess.Dao
         /// <returns></returns>
         Task<IEnumerable<T>> GetPlaces(int offset, int quantity);
         /// <summary>
+        /// Gets <paramref name="quantity"/> places from the db skipping <paramref name="offset"/>
+        /// </summary>
+        /// <param name="offset"></param>
+        /// <param name="quantity"></param>
+        /// <returns></returns>
+        Task<IEnumerable<T>> GetPlaces(int offset, int quantity, string user);
+        /// <summary>
         /// Gets all the places surrounding a location (Not going to implement this on firestore)
         /// </summary>
         /// <param name="offset"></param>

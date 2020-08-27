@@ -2,6 +2,7 @@
 using GrooverAdm.Mappers.Interface;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -30,6 +31,14 @@ namespace GrooverAdm.Business.Services.User
         {
 
             throw new NotImplementedException();
+        }
+
+        public async Task<IEnumerable<Entities.Application.User>> GetOwners(IEnumerable<string> references)
+        {
+            var dbResult = await _userDao.GetUsers(references);
+
+
+            return dbResult.Select(u => _userMapper.ToApplicationEntity(u));
         }
 
         public async Task<Entities.Application.User> GetUser(string id)

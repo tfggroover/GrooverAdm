@@ -11,5 +11,6 @@ namespace GrooverAdm.DataAccess.Dao
         Task<T> CreateOrUpdateUser(T user);
         Task<T> GetUser(string id);
         Task<bool> DeleteUser(string id);
+        Task<IEnumerable<T>> GetUsers(IEnumerable<string> references);
     }
 }

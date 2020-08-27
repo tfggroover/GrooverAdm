@@ -3,6 +3,7 @@ using GrooverAdm.DataAccess.Dao;
 using GrooverAdm.DataAccess.Firestore.Model;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -45,12 +46,23 @@ namespace GrooverAdm.DataAccess.Firestore.Dao
         public async Task<User> GetUser(string id)
         {
             var snap = await _db.Collection(COLLECTION_REF).Document(id).GetSnapshotAsync();
-            if(snap.Exists)
+            if (snap.Exists)
                 return snap.ConvertTo<User>();
 
             return null;
         }
 
+        public async Task<IEnumerable<User>> GetUsers(IEnumerable<string> references)
+        {
+            var res = await references.ToAsyncEnumerable().SelectAwait(async r =>
+            {
+                var snap = await _db.Collection(COLLECTION_REF).Document(r).GetSnapshotAsync();
+                if (snap.Exists)
+                    return snap.ConvertTo<User>();
+                return null;
+            }).Where(u => u != null).ToListAsync();
 
+            return res;
+        }
     }
 }

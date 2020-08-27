@@ -60,6 +60,51 @@ namespace Fake.Controllers
         /// <param name="pageSize"></param>
         /// <returns></returns>
         [HttpGet]
+        [Route("api/place/list")]
+        public async Task<ActionResult<IEnumerable<Place>>> GetEstablishments(int page = 1, int pageSize = 25)
+        {
+
+            if (page < 1)
+                return BadRequest();
+            var result = await _placesService.GetPlaces(page, pageSize);
+
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Retrieves the establishments surrounding [<paramref name="lat"/>, <paramref name="lon"/>] in 
+        /// the distance provided
+        /// </summary>
+        /// <param name="lat">Latitude</param>
+        /// <param name="lon">Longitude</param>
+        /// <param name="distance">Distance in METERS</param>
+        /// <param name="page"></param>
+        /// <param name="pageSize"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Authorize]
+        [Route("api/place/mine")]
+        public async Task<ActionResult<IEnumerable<Place>>> GetMyEstablishments(int page = 1, int pageSize = 25)
+        {
+            var id = GetUserId();
+            if (page < 1)
+                return BadRequest();
+            var result = await _placesService.GetPlaces(page, pageSize, id);
+
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Retrieves the establishments surrounding [<paramref name="lat"/>, <paramref name="lon"/>] in 
+        /// the distance provided
+        /// </summary>
+        /// <param name="lat">Latitude</param>
+        /// <param name="lon">Longitude</param>
+        /// <param name="distance">Distance in METERS</param>
+        /// <param name="page"></param>
+        /// <param name="pageSize"></param>
+        /// <returns></returns>
+        [HttpGet]
         [Route("api/place")]
         public async Task<ActionResult<IEnumerable<Place>>> GetEstablishments(double lat, double lon, double distance, int page = 1, int pageSize = 25)
         {

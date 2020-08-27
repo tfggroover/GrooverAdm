@@ -93,5 +93,14 @@ namespace GrooverAdm.DataAccess.Firestore.PlacesDao
                 return place;
             return null;
         }
+
+        public async Task<IEnumerable<Place>> GetPlaces(int offset, int quantity, string user)
+        {
+            var userRef = _db.Collection(USERS_REF).Document(user);
+            var res = await _db.Collection(COLLECTION_REF).WhereArrayContains("Owners", userRef).Limit(quantity).Offset((offset - 1) * quantity)
+                .GetSnapshotAsync();
+
+            return res.Select(d => d.ConvertTo<Place>());
+        }
     }
 }

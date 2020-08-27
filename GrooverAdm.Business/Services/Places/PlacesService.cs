@@ -1,5 +1,6 @@
 ﻿using GrooverAdm.Business.Services.Playlist;
 using GrooverAdm.Business.Services.Song;
+using GrooverAdm.Business.Services.User;
 using GrooverAdm.DataAccess.Dao;
 using GrooverAdm.DataAccess.Firestore.Model;
 using GrooverAdm.Entities.Application;
@@ -22,19 +23,21 @@ namespace GrooverAdm.Business.Services.Places
         private readonly IPlaceMapper<DataAccess.Firestore.Model.Place> _mapper;
         private readonly IRatingDao<DataAccess.Firestore.Model.Rating> _ratingDao;
         private readonly IRatingMapper<DataAccess.Firestore.Model.Rating> _ratingMapper;
+        private readonly IUserService userService;
         private readonly IPlaylistService playlistService;
         private readonly ISongService songService;
         private readonly RecommendationService recommendationService;
 
 
         public PlacesService(IPlacesDao<DataAccess.Firestore.Model.Place> dao, IPlaceMapper<DataAccess.Firestore.Model.Place> mapper,
-            IPlaylistService playlistService, ISongService songService, RecommendationService recommendation)
+            IPlaylistService playlistService, ISongService songService, RecommendationService recommendation, IUserService users)
         {
             _dao = dao;
             _mapper = mapper;
             this.playlistService = playlistService;
             this.songService = songService;
             recommendationService = recommendation;
+            userService = users;
         }
 
         public async Task<Place> CreatePlace(Place place)
@@ -57,8 +60,9 @@ namespace GrooverAdm.Business.Services.Places
         public async Task<Place> GetPlace(string id)
         {
             var dbResult = await _dao.GetPlace(id);
-
-            return _mapper.ToApplicationEntity(dbResult);
+            var res = _mapper.ToApplicationEntity(dbResult);
+            res.Owners = (await userService.GetOwners(res.Owners.Select(o => o.Id))).ToList();
+            return res;
         }
 
         public async Task<IEnumerable<Place>> GetPlaces()
@@ -160,5 +164,11 @@ namespace GrooverAdm.Business.Services.Places
             return false;
         }
 
+        public async Task<IEnumerable<Place>> GetPlaces(int offset, int quantity, string user)
+        {
+            var res = await _dao.GetPlaces(offset, quantity, user);
+
+            return res.Select(p => _mapper.ToApplicationEntity(p));
+        }
     }
 }

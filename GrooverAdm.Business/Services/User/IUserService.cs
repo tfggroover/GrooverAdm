@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace GrooverAdm.Business.Services.User
 {
@@ -7,5 +9,6 @@ namespace GrooverAdm.Business.Services.User
         Task<Entities.Application.User> CreateOrUpdateUser(Entities.Application.User user);
         Task<Entities.Application.User> GetUser(string id);
         Task<bool> DeleteUser(string id);
+        Task<IEnumerable<Entities.Application.User>> GetOwners(IEnumerable<string> references);
     }
 }
