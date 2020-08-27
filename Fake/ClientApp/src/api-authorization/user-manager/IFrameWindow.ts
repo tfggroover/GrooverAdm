@@ -59,7 +59,7 @@ export class IFrameWindow {
         } else {
             const timeout = params.silentRequestTimeout || DefaultTimeout;
             Log.debug('IFrameWindow.navigate: Using timeout of:', timeout);
-            this._timer = window.setTimeout(this._timeout.bind(this), timeout);
+            //this._timer = window.setTimeout(this._timeout.bind(this), timeout);
             this._frame.src = params.url;
         }
 

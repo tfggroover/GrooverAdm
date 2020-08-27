@@ -3,8 +3,8 @@ import { AngularFirestore } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
 import 'firebase/firestore';
 import { Router } from '@angular/router';
-import { PlaceService } from '../../services/place.service';
-import { Place } from '../../models/Place';
+import { PlaceService, PlaceSearchStatusService, PlaceSearchStatus } from '../../services/place.service';
+import { Place } from 'src/app/services/services';
 
 @Component({
   selector: 'app-places',
@@ -13,10 +13,9 @@ import { Place } from '../../models/Place';
 })
 export class PlaceListComponent implements OnInit {
   items: Place[];
-  constructor(firestore: AngularFirestore,
-    private router: Router,
-    private placeService: PlaceService) {
-      this.placeService.getPlaces().subscribe(places => this.items = places);
+  constructor(placeSearchStatusService: PlaceSearchStatusService,
+    private router: Router) {
+      placeSearchStatusService.placeSearchStatus.subscribe(this.processSearchStatus.bind(this));
    }
 
   ngOnInit(): void {
@@ -30,6 +29,10 @@ export class PlaceListComponent implements OnInit {
 
   public addPlace() {
     this.router.navigate(['places/add']);
+  }
+
+  public processSearchStatus(status: PlaceSearchStatus){
+    this.items = status.places;
   }
 
 }

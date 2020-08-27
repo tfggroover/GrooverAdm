@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { Place } from '../../models/Place';
 import { PlaceService } from '../../services/place.service';
 import { Router } from '@angular/router';
+import { Place } from 'src/app/services/services';
 
 @Component({
   selector: 'app-place-add',
@@ -17,6 +17,12 @@ export class PlaceAddComponent implements OnInit {
   }
 
   public addPlace(place: Place) {
+    this.placeService.createPlace(place).subscribe(p => {
+      if (!!p) {
+        this.router.navigateByUrl('/place/list');
+      }
+    });
+
     //const result = this.placeService.createPlace(place);
     //if (result) {
     //  this.router.navigateByUrl('places');

@@ -10,6 +10,7 @@ import { AgmCoreModule } from '@agm/core';
 import { firebaseConfig } from '../app.module';
 import { MatGoogleMapsAutocompleteModule } from '@angular-material-extensions/google-maps-autocomplete';
 import { PlaceRoutingModule } from './place-routing.module';
+import { PlaceClient } from '../services/services';
 
 
 
@@ -28,7 +29,8 @@ import { PlaceRoutingModule } from './place-routing.module';
     PlaceRoutingModule
   ],
   providers: [
-    PlaceService
+    PlaceService,
+    PlaceClient
   ]
 })
 export class PlacesModule { }

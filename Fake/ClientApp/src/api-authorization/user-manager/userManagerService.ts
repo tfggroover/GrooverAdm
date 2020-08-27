@@ -12,7 +12,6 @@ import { map } from 'rxjs/operators';
 import { storage } from 'firebase';
 import { IFrameNavigator } from './IFrameNavigator';
 import { PopupNavigator } from './PopupNavigator';
-import { debug } from 'console';
 
 
 export class User {
@@ -49,7 +48,7 @@ export class UserManager {
 
     this.iframeNavigator = new IFrameNavigator();
     this.popupNavigator = new PopupNavigator();
-    this.authUrl = baseUrl + '/home/auth';
+    this.authUrl = baseUrl + 'home/auth';
   }
 
   private authUrl: string;

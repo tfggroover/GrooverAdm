@@ -162,5 +162,8 @@
       }
     }
   },
-  "defaultProject": "Fake"
+  "defaultProject": "Fake",
+  "cli": {
+    "analytics": false
+  }
 }
