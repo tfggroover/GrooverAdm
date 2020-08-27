@@ -17,6 +17,30 @@
             <param name="clientId"></param>
             <returns></returns>
         </member>
+        <member name="M:Fake.Controllers.PlaceController.GetEstablishments(System.Int32,System.Int32)">
+            <summary>
+            Retrieves the establishments surrounding [<paramref name="lat"/>, <paramref name="lon"/>] in 
+            the distance provided
+            </summary>
+            <param name="lat">Latitude</param>
+            <param name="lon">Longitude</param>
+            <param name="distance">Distance in METERS</param>
+            <param name="page"></param>
+            <param name="pageSize"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Fake.Controllers.PlaceController.GetMyEstablishments(System.Int32,System.Int32)">
+            <summary>
+            Retrieves the establishments surrounding [<paramref name="lat"/>, <paramref name="lon"/>] in 
+            the distance provided
+            </summary>
+            <param name="lat">Latitude</param>
+            <param name="lon">Longitude</param>
+            <param name="distance">Distance in METERS</param>
+            <param name="page"></param>
+            <param name="pageSize"></param>
+            <returns></returns>
+        </member>
         <member name="M:Fake.Controllers.PlaceController.GetEstablishments(System.Double,System.Double,System.Double,System.Int32,System.Int32)">
             <summary>
             Retrieves the establishments surrounding [<paramref name="lat"/>, <paramref name="lon"/>] in 

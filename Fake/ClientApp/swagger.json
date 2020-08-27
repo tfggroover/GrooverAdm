@@ -30,6 +30,9 @@
           }
         ],
         "responses": {
+          "400": {
+            "description": "The specified refresh token is not valid"
+          },
           "200": {
             "description": "",
             "content": {
@@ -164,6 +167,103 @@
         }
       }
     },
+    "/api/place/list": {
+      "get": {
+        "tags": [
+          "Place"
+        ],
+        "summary": "Retrieves the establishments surrounding [, ] in \nthe distance provided",
+        "operationId": "Place_GetEstablishmentsAll",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 1
+            },
+            "x-position": 1
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 25
+            },
+            "x-position": 2
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Place"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/place/mine": {
+      "get": {
+        "tags": [
+          "Place"
+        ],
+        "summary": "Retrieves the establishments surrounding [, ] in \nthe distance provided",
+        "operationId": "Place_GetMyEstablishments",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 1
+            },
+            "x-position": 1
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 25
+            },
+            "x-position": 2
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Place"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
     "/api/place": {
       "get": {
         "tags": [
@@ -268,7 +368,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
       },
       "patch": {
         "tags": [
@@ -298,7 +403,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
       },
       "delete": {
         "tags": [
@@ -329,7 +439,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
       }
     },
     "/api/place/recommended": {
@@ -377,16 +492,6 @@
             "x-position": 4
           },
           {
-            "name": "spoToken",
-            "in": "query",
-            "description": "Token de spotify",
-            "schema": {
-              "type": "string",
-              "nullable": true
-            },
-            "x-position": 5
-          },
-          {
             "name": "page",
             "in": "query",
             "schema": {
@@ -394,7 +499,7 @@
               "format": "int32",
               "default": 1
             },
-            "x-position": 6
+            "x-position": 5
           },
           {
             "name": "pageSize",
@@ -404,7 +509,7 @@
               "format": "int32",
               "default": 25
             },
-            "x-position": 7
+            "x-position": 6
           }
         ],
         "responses": {
@@ -431,7 +536,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
       }
     },
     "/api/place/recommended/top": {
@@ -470,16 +580,6 @@
             "x-position": 3
           },
           {
-            "name": "spoToken",
-            "in": "query",
-            "description": "Token de spotify",
-            "schema": {
-              "type": "string",
-              "nullable": true
-            },
-            "x-position": 4
-          },
-          {
             "name": "page",
             "in": "query",
             "schema": {
@@ -487,7 +587,7 @@
               "format": "int32",
               "default": 1
             },
-            "x-position": 5
+            "x-position": 4
           },
           {
             "name": "pageSize",
@@ -497,7 +597,7 @@
               "format": "int32",
               "default": 25
             },
-            "x-position": 6
+            "x-position": 5
           }
         ],
         "responses": {
@@ -524,7 +624,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
       }
     },
     "/api/place/{id}": {
@@ -602,7 +707,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
       }
     },
     "/api/place/{placeId}/rate": {
@@ -645,7 +755,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
       }
     },
     "/weatherforecast": {

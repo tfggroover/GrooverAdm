@@ -27,7 +27,7 @@ export class HomeClient {
 
     /**
      * Autenticación para el móvil y la App
-     * @param refresh_token (optional) 
+     * @param refresh_token (optional)
      */
     auth(refresh_token: string | null | undefined): Observable<AuthenticationResponse> {
         let url_ = this.baseUrl + "/home/auth?";
@@ -64,7 +64,11 @@ export class HomeClient {
             (<any>response).error instanceof Blob ? (<any>response).error : undefined;
 
         let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
-        if (status === 200) {
+        if (status === 400) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("The specified refresh token is not valid", status, _responseText, _headers);
+            }));
+        } else if (status === 200) {
             return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
@@ -268,13 +272,145 @@ export class PlaceClient {
     }
 
     /**
-     * Retrieves the establishments surrounding [, ] in 
+     * Retrieves the establishments surrounding [, ] in
+    the distance provided
+     * @param page (optional)
+     * @param pageSize (optional)
+     */
+    getEstablishmentsAll(page: number | undefined, pageSize: number | undefined): Observable<Place[]> {
+        let url_ = this.baseUrl + "/api/place/list?";
+        if (page === null)
+            throw new Error("The parameter 'page' cannot be null.");
+        else if (page !== undefined)
+            url_ += "page=" + encodeURIComponent("" + page) + "&";
+        if (pageSize === null)
+            throw new Error("The parameter 'pageSize' cannot be null.");
+        else if (pageSize !== undefined)
+            url_ += "pageSize=" + encodeURIComponent("" + pageSize) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetEstablishmentsAll(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetEstablishmentsAll(<any>response_);
+                } catch (e) {
+                    return <Observable<Place[]>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<Place[]>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processGetEstablishmentsAll(response: HttpResponseBase): Observable<Place[]> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(Place.fromJS(item));
+            }
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<Place[]>(<any>null);
+    }
+
+    /**
+     * Retrieves the establishments surrounding [, ] in
+    the distance provided
+     * @param page (optional)
+     * @param pageSize (optional)
+     */
+    getMyEstablishments(page: number | undefined, pageSize: number | undefined): Observable<Place[]> {
+        let url_ = this.baseUrl + "/api/place/mine?";
+        if (page === null)
+            throw new Error("The parameter 'page' cannot be null.");
+        else if (page !== undefined)
+            url_ += "page=" + encodeURIComponent("" + page) + "&";
+        if (pageSize === null)
+            throw new Error("The parameter 'pageSize' cannot be null.");
+        else if (pageSize !== undefined)
+            url_ += "pageSize=" + encodeURIComponent("" + pageSize) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetMyEstablishments(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetMyEstablishments(<any>response_);
+                } catch (e) {
+                    return <Observable<Place[]>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<Place[]>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processGetMyEstablishments(response: HttpResponseBase): Observable<Place[]> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(Place.fromJS(item));
+            }
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<Place[]>(<any>null);
+    }
+
+    /**
+     * Retrieves the establishments surrounding [, ] in
     the distance provided
      * @param lat (optional) Latitude
      * @param lon (optional) Longitude
      * @param distance (optional) Distance in METERS
-     * @param page (optional) 
-     * @param pageSize (optional) 
+     * @param page (optional)
+     * @param pageSize (optional)
      */
     getEstablishments(lat: number | undefined, lon: number | undefined, distance: number | undefined, page: number | undefined, pageSize: number | undefined): Observable<Place[]> {
         let url_ = this.baseUrl + "/api/place?";
@@ -457,7 +593,7 @@ export class PlaceClient {
 
     /**
      * NOT IMPLEMENTED
-     * @param establishmentId (optional) 
+     * @param establishmentId (optional)
      */
     deleteEstablishment(establishmentId: string | null | undefined): Observable<FileResponse> {
         let url_ = this.baseUrl + "/api/place?";
@@ -509,15 +645,14 @@ export class PlaceClient {
 
     /**
      * Obtiene los lugares recomendados en funcion de la playlist enviada
-     * @param playlistId (optional) 
-     * @param lat (optional) 
-     * @param lon (optional) 
-     * @param distance (optional) 
-     * @param spoToken (optional) Token de spotify
-     * @param page (optional) 
-     * @param pageSize (optional) 
+     * @param playlistId (optional)
+     * @param lat (optional)
+     * @param lon (optional)
+     * @param distance (optional)
+     * @param page (optional)
+     * @param pageSize (optional)
      */
-    getRecommendedEstablishmentsForPlaylist(playlistId: string | null | undefined, lat: number | undefined, lon: number | undefined, distance: number | undefined, spoToken: string | null | undefined, page: number | undefined, pageSize: number | undefined): Observable<ComparedPlace[]> {
+    getRecommendedEstablishmentsForPlaylist(playlistId: string | null | undefined, lat: number | undefined, lon: number | undefined, distance: number | undefined, page: number | undefined, pageSize: number | undefined): Observable<ComparedPlace[]> {
         let url_ = this.baseUrl + "/api/place/recommended?";
         if (playlistId !== undefined && playlistId !== null)
             url_ += "playlistId=" + encodeURIComponent("" + playlistId) + "&";
@@ -533,8 +668,6 @@ export class PlaceClient {
             throw new Error("The parameter 'distance' cannot be null.");
         else if (distance !== undefined)
             url_ += "distance=" + encodeURIComponent("" + distance) + "&";
-        if (spoToken !== undefined && spoToken !== null)
-            url_ += "spoToken=" + encodeURIComponent("" + spoToken) + "&";
         if (page === null)
             throw new Error("The parameter 'page' cannot be null.");
         else if (page !== undefined)
@@ -602,14 +735,13 @@ export class PlaceClient {
 
     /**
      * Obtiene los lugares recomendados en funcion del top50 del usuario
-     * @param lat (optional) 
-     * @param lon (optional) 
-     * @param distance (optional) 
-     * @param spoToken (optional) Token de spotify
-     * @param page (optional) 
-     * @param pageSize (optional) 
+     * @param lat (optional)
+     * @param lon (optional)
+     * @param distance (optional)
+     * @param page (optional)
+     * @param pageSize (optional)
      */
-    getRecommendedEstablishmentsForTop(lat: number | undefined, lon: number | undefined, distance: number | undefined, spoToken: string | null | undefined, page: number | undefined, pageSize: number | undefined): Observable<ComparedPlace[]> {
+    getRecommendedEstablishmentsForTop(lat: number | undefined, lon: number | undefined, distance: number | undefined, page: number | undefined, pageSize: number | undefined): Observable<ComparedPlace[]> {
         let url_ = this.baseUrl + "/api/place/recommended/top?";
         if (lat === null)
             throw new Error("The parameter 'lat' cannot be null.");
@@ -623,8 +755,6 @@ export class PlaceClient {
             throw new Error("The parameter 'distance' cannot be null.");
         else if (distance !== undefined)
             url_ += "distance=" + encodeURIComponent("" + distance) + "&";
-        if (spoToken !== undefined && spoToken !== null)
-            url_ += "spoToken=" + encodeURIComponent("" + spoToken) + "&";
         if (page === null)
             throw new Error("The parameter 'page' cannot be null.");
         else if (page !== undefined)
@@ -799,7 +929,7 @@ export class PlaceClient {
 
     /**
      * NOT IMPLEMENTED
-     * @param value (optional) 
+     * @param value (optional)
      */
     ratePlace(placeId: string | null, value: number | undefined): Observable<FileResponse> {
         let url_ = this.baseUrl + "/api/place/{placeId}/rate?";
@@ -956,7 +1086,7 @@ export class AuthenticationResponse implements IAuthenticationResponse {
         data["spotify"] = this.spotify ? this.spotify.toJSON() : <any>undefined;
         data["spotifyUserData"] = this.spotifyUserData ? this.spotifyUserData.toJSON() : <any>undefined;
         data["firebase"] = this.firebase;
-        return data; 
+        return data;
     }
 }
 
@@ -1004,7 +1134,7 @@ export abstract class IAuthResponse implements IIAuthResponse {
         data["expires_in"] = this.expires_in;
         data["scope"] = this.scope;
         data["refresh_Token"] = this.refresh_Token;
-        return data; 
+        return data;
     }
 }
 
@@ -1094,7 +1224,7 @@ export class UserInfo implements IUserInfo {
         data["product"] = this.product;
         data["type"] = this.type;
         data["uri"] = this.uri;
-        return data; 
+        return data;
     }
 }
 
@@ -1143,7 +1273,7 @@ export class ExplicitContentFilters implements IExplicitContentFilters {
         data = typeof data === 'object' ? data : {};
         data["filter_enabled"] = this.filter_enabled;
         data["filter_locked"] = this.filter_locked;
-        return data; 
+        return data;
     }
 }
 
@@ -1186,7 +1316,7 @@ export class Image implements IImage {
         data["height"] = this.height;
         data["width"] = this.width;
         data["url"] = this.url;
-        return data; 
+        return data;
     }
 }
 
@@ -1301,7 +1431,7 @@ export class Place implements IPlace {
             for (let item of this.timetables)
                 data["timetables"].push(item.toJSON());
         }
-        return data; 
+        return data;
     }
 }
 
@@ -1351,7 +1481,7 @@ export class Geolocation implements IGeolocation {
         data = typeof data === 'object' ? data : {};
         data["latitude"] = this.latitude;
         data["longitude"] = this.longitude;
-        return data; 
+        return data;
     }
 }
 
@@ -1414,7 +1544,7 @@ export class Playlist implements IPlaylist {
         data["snapshotVersion"] = this.snapshotVersion;
         data["url"] = this.url;
         data["changed"] = this.changed;
-        return data; 
+        return data;
     }
 }
 
@@ -1470,7 +1600,7 @@ export class Song implements ISong {
             for (let item of this.artists)
                 data["artists"].push(item.toJSON());
         }
-        return data; 
+        return data;
     }
 }
 
@@ -1511,7 +1641,7 @@ export class Artist implements IArtist {
         data = typeof data === 'object' ? data : {};
         data["id"] = this.id;
         data["name"] = this.name;
-        return data; 
+        return data;
     }
 }
 
@@ -1554,7 +1684,7 @@ export class Rating implements IRating {
         data["id"] = this.id;
         data["value"] = this.value;
         data["user"] = this.user ? this.user.toJSON() : <any>undefined;
-        return data; 
+        return data;
     }
 }
 
@@ -1607,7 +1737,7 @@ export class User implements IUser {
         data["currentToken"] = this.currentToken;
         data["expiresIn"] = this.expiresIn;
         data["tokenEmissionTime"] = this.tokenEmissionTime ? this.tokenEmissionTime.toISOString() : <any>undefined;
-        return data; 
+        return data;
     }
 }
 
@@ -1645,7 +1775,7 @@ export class RecognizedSong extends Song implements IRecognizedSong {
         data = typeof data === 'object' ? data : {};
         data["count"] = this.count;
         super.toJSON(data);
-        return data; 
+        return data;
     }
 }
 
@@ -1692,7 +1822,7 @@ export class Timetable implements ITimetable {
                 data["schedules"].push(item.toJSON());
         }
         data["day"] = this.day;
-        return data; 
+        return data;
     }
 }
 
@@ -1732,7 +1862,7 @@ export class Schedule implements ISchedule {
         data = typeof data === 'object' ? data : {};
         data["start"] = this.start ? this.start.toISOString() : <any>undefined;
         data["end"] = this.end ? this.end.toISOString() : <any>undefined;
-        return data; 
+        return data;
     }
 }
 
@@ -1776,7 +1906,7 @@ export class ComparedPlace extends Place implements IComparedPlace {
         data = typeof data === 'object' ? data : {};
         data["similitude"] = this.similitude;
         super.toJSON(data);
-        return data; 
+        return data;
     }
 }
 
@@ -1839,7 +1969,7 @@ export class ProblemDetails implements IProblemDetails {
                     data["extensions"][key] = this.extensions[key];
             }
         }
-        return data; 
+        return data;
     }
 }
 
@@ -1889,7 +2019,7 @@ export class WeatherForecast implements IWeatherForecast {
         data["temperatureC"] = this.temperatureC;
         data["temperatureF"] = this.temperatureF;
         data["summary"] = this.summary;
-        return data; 
+        return data;
     }
 }
 
