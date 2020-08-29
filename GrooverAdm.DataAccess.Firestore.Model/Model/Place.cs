@@ -28,6 +28,12 @@ namespace GrooverAdm.DataAccess.Firestore.Model
         public int RatingCount { get; set; }
         [FirestoreProperty]
         public double RatingTotal { get; set; }
+        [FirestoreProperty]
+        public bool Approved { get; set; }
+        [FirestoreProperty]
+        public bool PendingReview { get; set; }
+        [FirestoreProperty]
+        public string ReviewComment { get; set; }
 
     }
 }

@@ -21,11 +21,15 @@ namespace GrooverAdm.Entities.Application
         public Playlist MainPlaylist { get; set; }
         public Dictionary<string, Playlist> WeeklyPlaylists { get; set; }
         public double Ratings { get; set; }
+        public int RatingCount { get; set; }
         public List<User> Owners{ get; set; }
         public string Phone { get; set; }
         public string Geohash { get; set; }
         public List<RecognizedSong> RecognizedMusic{ get; set; }
         public List<Timetable> Timetables { get; set; }
+        public bool Approved { get; set; }
+        public bool PendingReview { get; set; }
+        public string ReviewComment { get; set; }
 
     }
 

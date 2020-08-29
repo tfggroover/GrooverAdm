@@ -35,7 +35,11 @@ namespace GrooverAdm.Mappers.Firestore
                     Day = t.Day,
                     Schedules = t.Schedules.Select(s => new DataAccess.Firestore.Model.Schedule { End = s.End, Start = s.Start }).ToList()
                 }).ToList(),
-                RatingTotal = entity.Ratings
+                RatingTotal = entity.Ratings,
+                RatingCount = entity.RatingCount,
+                Approved = entity.Approved,
+                PendingReview = entity.PendingReview,
+                ReviewComment = entity.ReviewComment
             };
         }
 
@@ -59,7 +63,11 @@ namespace GrooverAdm.Mappers.Firestore
                     Schedules = t.Schedules.Select(s => new Schedule { End = s.End, Start = s.Start }).ToList()
                 }).ToList(),
                 Owners = dbEntity.Owners.Select(u => new User { Id = u.Id }).ToList(),
-                Ratings = dbEntity.RatingTotal
+                Ratings = dbEntity.RatingTotal,
+                RatingCount = dbEntity.RatingCount,
+                Approved = dbEntity.Approved,
+                ReviewComment = dbEntity.ReviewComment,
+                PendingReview = dbEntity.PendingReview
             };
         }
     }
