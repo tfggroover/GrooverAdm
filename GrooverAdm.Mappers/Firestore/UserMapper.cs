@@ -25,7 +25,8 @@ namespace GrooverAdm.Mappers.Firestore
                 DisplayName = dbEntity.DisplayName,
                 ExpiresIn = dbEntity.ExpiresIn,
                 TokenEmissionTime = dbEntity.TokenEmissionTime,
-                Id = dbEntity.Reference.Id
+                Id = dbEntity.Reference.Id,
+                Admin = dbEntity.Admin
             };
         }
 
@@ -39,7 +40,8 @@ namespace GrooverAdm.Mappers.Firestore
                 DisplayName = entity.DisplayName,
                 ExpiresIn = entity.ExpiresIn,
                 TokenEmissionTime = entity.TokenEmissionTime,
-                Reference = reference
+                Reference = reference,
+                Admin = entity.Admin
             };
         }
     }

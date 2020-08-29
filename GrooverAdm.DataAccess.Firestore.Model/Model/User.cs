@@ -23,5 +23,7 @@ namespace GrooverAdm.DataAccess.Firestore.Model
         public int ExpiresIn { get; set; }
         [FirestoreProperty]
         public DateTime TokenEmissionTime { get; set; }
+        [FirestoreProperty]
+        public bool Admin { get; set; }
     }
 }

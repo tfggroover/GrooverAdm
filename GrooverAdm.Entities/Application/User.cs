@@ -21,6 +21,7 @@ namespace GrooverAdm.Entities.Application
         public int Born { get; set; }
         public string DisplayName { get; set; }
         public string Id { get; set; }
+        public bool Admin { get; set; }
         public string CurrentToken { get; set; }
         /// <summary>
         /// Expiration time in seconds
