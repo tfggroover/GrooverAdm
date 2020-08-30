@@ -30,23 +30,17 @@ namespace GrooverAdm.Controllers
     [ApiController]
     public class PlaceController : ControllerBase
     {
-        private readonly FirestoreDb _db;
         private readonly IPlacesService _placesService;
         private readonly IUserService _userService;
         private readonly SpotifyService _spotify;
-        private readonly LastFmService _lastFm;
-        private readonly IConfiguration Configuration;
         private readonly ILogger log;
 
 
-        public PlaceController(FirestoreDb db, IPlacesService placesService, IUserService userService, SpotifyService spotify, LastFmService lastFm, IConfiguration config, ILogger<PlaceController> log)
+        public PlaceController(PlacesService placesService, IUserService userService, SpotifyService spotify, ILogger<PlaceController> log)
         {
-            _db = db;
             _placesService = placesService;
             _userService = userService;
             _spotify = spotify;
-            _lastFm = lastFm;
-            Configuration = config;
             this.log = log;
         }
 
