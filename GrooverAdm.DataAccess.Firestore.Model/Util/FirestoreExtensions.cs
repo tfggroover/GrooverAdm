@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GrooverAdm.Common.Util
+namespace GrooverAdm.DataAccess.Firrestore.Util
 {
     public static class FirestoreExtensions
     {

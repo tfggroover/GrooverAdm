@@ -1,12 +1,12 @@
 ﻿using Google.Cloud.Firestore;
 using GrooverAdm.DataAccess.Dao;
 using GrooverAdm.DataAccess.Firestore.Model;
+using GrooverAdm.DataAccess.Firrestore.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using GrooverAdm.Common.Util;
 
 namespace GrooverAdm.DataAccess.Firestore.Dao
 {
