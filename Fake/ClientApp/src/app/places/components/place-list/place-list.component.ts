@@ -16,6 +16,7 @@ export class PlaceListComponent implements OnInit {
   constructor(placeSearchStatusService: PlaceSearchStatusService,
     private router: Router) {
       placeSearchStatusService.placeSearchStatus.subscribe(this.processSearchStatus.bind(this));
+      placeSearchStatusService.refreshAll();
    }
 
   ngOnInit(): void {
@@ -31,7 +32,7 @@ export class PlaceListComponent implements OnInit {
     this.router.navigate(['places/add']);
   }
 
-  public processSearchStatus(status: PlaceSearchStatus){
+  public processSearchStatus(status: PlaceSearchStatus) {
     this.items = status.places;
   }
 

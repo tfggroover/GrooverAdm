@@ -9,11 +9,11 @@ export class PlaceSearchStatus {
   // tslint:disable: no-inferrable-types
   public page: number = 1;
   public pageSize: number = 10;
-  public places: Place[];
+  public places: Place[] = [];
   public mineFilter: boolean = true;
   public moreResults: boolean = true;
 }
-
+@Injectable()
 export class PlaceSearchStatusService {
 
 
@@ -36,6 +36,15 @@ export class PlaceSearchStatusService {
     this._placeSearchStatus.next(new PlaceSearchStatus());
   }
 
+  public refreshAll() {
+    this.notifySubscribers(this.currentPlaceSearchStatus);
+  }
+
+  public notifySubscribers(current: PlaceSearchStatus) {
+    this._placeSearchStatus.next(current);
+    this.onPlaceSearchStatusChange$.next(current);
+}
+
   public onPlaceSearchStatusChange(current: PlaceSearchStatus) {
 
     if (current.mineFilter) {
@@ -54,9 +63,7 @@ export class PlaceSearchStatusService {
   }
 }
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable()
 export class PlaceService {
 
   public places: Place[];

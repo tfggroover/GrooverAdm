@@ -18,15 +18,15 @@
     </th>
   </thead>
   <tbody>
-    <tr class="items" *ngFor="let item of items | async">
+    <tr class="items" *ngFor="let item of items">
       <td>
-        {{item.displayname}}
+        {{item.displayName}}
       </td>
       <td>
         {{item.address}}
       </td>
       <td>
-        {{item.phonenumber}}
+        {{item.phone}}
       </td>
       <td>
         <button class="btn btn-success"  (click)="editPlace(item)">Edit</button>

@@ -77,6 +77,11 @@ export class UserManager {
         const result = new CompleteUser(fireUser.displayName, user.spotifyAuthentication, fireUser);
         return result;
       } else {
+        const fireUser = this.fireAuth.auth.currentUser;
+        if (!!fireUser) {
+          Log.info('UserManager.getUser: Spotify info missing, returning user for API');
+          return new CompleteUser(fireUser.displayName, null, fireUser);
+        }
         Log.info('UserManager.getUser: user not found in storage');
         return null;
       }

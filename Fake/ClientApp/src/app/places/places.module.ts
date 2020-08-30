@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { PlaceListComponent } from './components/place-list/place-list.component';
 import { PlaceAddComponent } from './components/place-add/place-add.component';
 import { PlaceEditComponent } from './components/place-edit/place-edit.component';
-import { PlaceService } from './services/place.service';
+import { PlaceService, PlaceSearchStatusService } from './services/place.service';
 import { PlaceFormComponent } from './components/shared/place-form/place-form.component';
 import { FormsModule } from '@angular/forms';
 import { AgmCoreModule } from '@agm/core';
@@ -30,7 +30,8 @@ import { PlaceClient } from '../services/services';
   ],
   providers: [
     PlaceService,
-    PlaceClient
+    PlaceClient,
+    PlaceSearchStatusService
   ]
 })
 export class PlacesModule { }
