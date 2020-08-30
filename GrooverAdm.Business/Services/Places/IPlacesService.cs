@@ -13,19 +13,19 @@ namespace GrooverAdm.Business.Services.Places
         /// </summary>
         /// <param name="place"></param>
         /// <returns>A place with the updated ID</returns>
-        Task<Place> CreatePlace(Place place);
+        Task<Place> CreatePlace(Place place, string user);
         /// <summary>
         /// Deletes a Place.
         /// </summary>
         /// <param name="id"></param>
         /// <returns>True if place was deleted</returns>
-        Task<bool> DeletePlace(string id);
+        Task<bool> DeletePlace(string id, string user);
         /// <summary>
         /// Updates a Place
         /// </summary>
         /// <param name="place"></param>
         /// <returns>The updated place</returns>
-        Task<Place> UpdatePlace(Place place);
+        Task<Place> UpdatePlace(Place place, string user);
         /// <summary>
         /// Gets a Place by id
         /// </summary>
@@ -80,6 +80,13 @@ namespace GrooverAdm.Business.Services.Places
         /// <returns></returns>
         Task<IEnumerable<ComparedPlace>> GetRecommendedPlaces(int offset, int quantity, Geolocation location, double distance, Entities.Application.Playlist playlist, string spotifyToken);
 
+        /// <summary>
+        /// Updates a playlist
+        /// </summary>
+        /// <param name="place"></param>
+        /// <param name="tags"></param>
+        /// <param name="genres"></param>
+        /// <returns></returns>
         Task<Entities.Application.Playlist> UpdatePlaylist(Place place, Dictionary<string, int> tags, Dictionary<string, int> genres);
 
         /// <summary>
@@ -97,5 +104,13 @@ namespace GrooverAdm.Business.Services.Places
         /// <param name="user"></param>
         /// <returns></returns>
         Task<Place> RatePlace(string placeId, double value, string user);
+        /// <summary>
+        /// Reviews a Place
+        /// </summary>
+        /// <param name="placeId"></param>
+        /// <param name="review"></param>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        Task<Place> ReviewPlace(string placeId, PlaceReview review, string user);
     }
 }

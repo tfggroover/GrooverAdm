@@ -20,8 +20,9 @@ namespace GrooverAdm.DataAccess.Dao
         /// Deletes a Place.
         /// </summary>
         /// <param name="id"></param>
+        ///  <param name="user"></param>
         /// <returns>True if place was deleted</returns>
-        Task<bool> DeletePlace(string id);
+        Task<bool> DeletePlace(string id, string user);
         /// <summary>
         /// Updates a Place
         /// </summary>
@@ -70,5 +71,13 @@ namespace GrooverAdm.DataAccess.Dao
         /// <param name="geohashes"></param>
         /// <returns></returns>
         Task<IEnumerable<T>> GetPlaces(int offset, int quantity, List<Tuple<string,string>> geohashes);
+        /// <summary>
+        /// Reviews a place
+        /// </summary>
+        /// <param name="placeId"></param>
+        /// <param name="approved"></param>
+        /// <param name="reviewComment"></param>
+        /// <returns></returns>
+        Task<T> ReviewPlace(string placeId, bool approved, string reviewComment);
     }
 }

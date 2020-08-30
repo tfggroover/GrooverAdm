@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace Fake.Data.Migrations
+namespace GrooverAdm.Data.Migrations
 {
     public partial class CreateIdentitySchema : Migration
     {

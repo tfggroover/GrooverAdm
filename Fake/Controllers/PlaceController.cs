@@ -13,6 +13,7 @@ using GrooverAdm.Business.Services;
 using GrooverAdm.Business.Services.Places;
 using GrooverAdm.Business.Services.Playlist;
 using GrooverAdm.Business.Services.User;
+using GrooverAdm.Common;
 using GrooverAdm.Entities.Application;
 using GrooverAdm.Entities.LastFm;
 using GrooverAdm.Entities.Spotify;
@@ -23,9 +24,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
-namespace Fake.Controllers
+namespace GrooverAdm.Controllers
 {
-    [Authorize]
+    //[Authorize]
     [ApiController]
     public class PlaceController : ControllerBase
     {
@@ -53,9 +54,6 @@ namespace Fake.Controllers
         /// Retrieves the establishments surrounding [<paramref name="lat"/>, <paramref name="lon"/>] in 
         /// the distance provided
         /// </summary>
-        /// <param name="lat">Latitude</param>
-        /// <param name="lon">Longitude</param>
-        /// <param name="distance">Distance in METERS</param>
         /// <param name="page"></param>
         /// <param name="pageSize"></param>
         /// <returns></returns>
@@ -75,9 +73,6 @@ namespace Fake.Controllers
         /// Retrieves the establishments surrounding [<paramref name="lat"/>, <paramref name="lon"/>] in 
         /// the distance provided
         /// </summary>
-        /// <param name="lat">Latitude</param>
-        /// <param name="lon">Longitude</param>
-        /// <param name="distance">Distance in METERS</param>
         /// <param name="page"></param>
         /// <param name="pageSize"></param>
         /// <returns></returns>
@@ -219,7 +214,7 @@ namespace Fake.Controllers
             return Ok(places);
         }
         /// <summary>
-        /// READY TO GO? NOT TESTED
+        /// Creates an establishment
         /// </summary>
         /// <param name="establishment"></param>
         /// <returns></returns>
@@ -227,14 +222,18 @@ namespace Fake.Controllers
         [Route("api/place")]
         public async Task<ActionResult<Place>> CreateEstablishment([FromBody] Place establishment)
         {
-            var userId = HttpContext.User.Identity.Name;
+            var userId = GetUserId();
 
-            var docRef = await _placesService.CreatePlace(establishment);
+            var docRef = await _placesService.CreatePlace(establishment, userId);
 
             return docRef;
         }
 
-
+        /// <summary>
+        /// Gets a single place from the db
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet]
         [Route("api/place/{id}")]
         public async Task<ActionResult<Place>> GetPlace([FromRoute] string id)
@@ -242,12 +241,17 @@ namespace Fake.Controllers
             return Ok(_placesService.GetPlace(id));
         }
 
+        /// <summary>
+        /// Updates a establishment
+        /// </summary>
+        /// <param name="establishment"></param>
+        /// <returns></returns>
         [HttpPatch]
         [Route("api/place")]
         public async Task<ActionResult<Place>> UpdateEstablishment(Place establishment)
         {
-
-            var docRef = await _placesService.UpdatePlace(establishment);
+            var user = GetUserId();
+            var docRef = await _placesService.UpdatePlace(establishment, user);
 
             return docRef;
         }
@@ -302,6 +306,35 @@ namespace Fake.Controllers
 
             //Create or updateValue
             return Ok(res);
+        }
+
+
+        /// <summary>
+        /// Rates a place for a user, if the register is already existing, it updates it
+        /// </summary>
+        /// <param name="placeId"></param>
+        /// <param name="review"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("api/place/{placeId}/review")]
+        public async Task<ActionResult<Place>> ReviewPlace(string placeId, PlaceReview review)
+        {
+            var user = GetUserId();
+            //Get current user
+            try
+            {
+                var res = await _placesService.ReviewPlace(placeId, review, user);
+
+                return res;
+            } catch (GrooverAuthException)
+            {
+                return Unauthorized("The current user is not authorized to review places");
+            }
+
+            //Access places/{placeId}/ratings/{userId}
+
+            //Create or updateValue
+            return BadRequest();
         }
 
 

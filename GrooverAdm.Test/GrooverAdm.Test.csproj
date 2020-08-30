@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\GrooverAdmSPA\GrooverAdmSPA.csproj" />
+    <Folder Include="Model\" />
   </ItemGroup>
 
 </Project>

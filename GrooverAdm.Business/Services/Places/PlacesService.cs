@@ -2,12 +2,14 @@
 using GrooverAdm.Business.Services.Rating;
 using GrooverAdm.Business.Services.Song;
 using GrooverAdm.Business.Services.User;
+using GrooverAdm.Common;
 using GrooverAdm.DataAccess.Dao;
 using GrooverAdm.DataAccess.Firestore.Model;
 using GrooverAdm.Entities.Application;
 using GrooverAdm.Mappers.Firestore;
 using GrooverAdm.Mappers.Interface;
 using GrooverAdmSPA.Business.Services;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,10 +29,11 @@ namespace GrooverAdm.Business.Services.Places
         private readonly IPlaylistService playlistService;
         private readonly ISongService songService;
         private readonly RecommendationService recommendationService;
+        private readonly ILogger log;
 
 
         public PlacesService(IPlacesDao<DataAccess.Firestore.Model.Place> dao, IPlaceMapper<DataAccess.Firestore.Model.Place> mapper,
-            IPlaylistService playlistService, ISongService songService, RecommendationService recommendation, IUserService users, IRatingService ratingService)
+            IPlaylistService playlistService, ISongService songService, RecommendationService recommendation, IUserService users, IRatingService ratingService, ILogger<PlacesService> log)
         {
             _dao = dao;
             _mapper = mapper;
@@ -39,10 +42,13 @@ namespace GrooverAdm.Business.Services.Places
             recommendationService = recommendation;
             userService = users;
             this.ratingService = ratingService;
+            this.log = log;
         }
 
-        public async Task<Place> CreatePlace(Place place)
+        public async Task<Place> CreatePlace(Place place, string user)
         {
+            if (!place.Owners.Any())
+                place.Owners.Add(new Entities.Application.User { Id = user });
             var converted = _mapper.ToDbEntity(place);
             var dbResult = await _dao.CreatePlace(converted);
 
@@ -53,9 +59,9 @@ namespace GrooverAdm.Business.Services.Places
             return _mapper.ToApplicationEntity(dbResult);
         }
 
-        public async Task<bool> DeletePlace(string id)
+        public async Task<bool> DeletePlace(string id, string user)
         {
-            return await _dao.DeletePlace(id);
+            return await _dao.DeletePlace(id, user);
         }
 
         public async Task<Place> GetPlace(string id)
@@ -139,7 +145,7 @@ namespace GrooverAdm.Business.Services.Places
             return false;
         }
 
-        public async Task<Place> UpdatePlace(Place place)
+        public async Task<Place> UpdatePlace(Place place, string user)
         {
             var converted = _mapper.ToDbEntity(place);
             var dbResult = await _dao.UpdatePlace(converted);
@@ -188,6 +194,16 @@ namespace GrooverAdm.Business.Services.Places
             var result = await this._dao.UpdatePlace(place);
 
             return _mapper.ToApplicationEntity(result);
+        }
+
+        public async Task<Place> ReviewPlace(string placeId, PlaceReview review, string user)
+        {
+            var dbUser = await userService.GetUser(user);
+            if(!dbUser.Admin)
+                throw new GrooverAuthException($"The current user is not an admin, user id: {user}");
+            var res = await _dao.ReviewPlace(placeId, review.Approved, review.ReviewComment);
+
+            return _mapper.ToApplicationEntity(res);
         }
     }
 }

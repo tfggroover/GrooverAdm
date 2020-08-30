@@ -8,8 +8,8 @@ using Microsoft.AspNetCore.Identity.UI;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.SpaServices.AngularCli;
 using Microsoft.EntityFrameworkCore;
-using Fake.Data;
-using Fake.Models;
+using GrooverAdm.Data;
+using GrooverAdm.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -34,7 +34,7 @@ using NSwag;
 using NSwag.Generation.Processors.Security;
 using GrooverAdm.Business.Services.Rating;
 
-namespace Fake
+namespace GrooverAdm
 {
     public partial class Startup
     {

@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Place = GrooverAdm.DataAccess.Firestore.Model.Place;
+using GrooverAdm.Common;
 
 namespace GrooverAdm.DataAccess.Firestore.PlacesDao
 {
@@ -31,12 +32,20 @@ namespace GrooverAdm.DataAccess.Firestore.PlacesDao
             return snap.ConvertTo<Place>();
         }
 
-        public  async Task<bool> DeletePlace(string id)
+        public  async Task<bool> DeletePlace(string id, string user)
         {
-            var res = await _db.Collection(COLLECTION_REF).Document(id).DeleteAsync();
-            if (res.UpdateTime != null)
-                return true;
-
+            var userRef = _db.Collection(USERS_REF).Document(user);
+            var reference = _db.Collection(COLLECTION_REF).Document(id);
+            var snap = await reference.GetSnapshotAsync();
+            if (snap.Exists && snap.ConvertTo<Place>().Owners.Contains(userRef))
+            {
+                var res = await reference.DeleteAsync();
+                if (res.UpdateTime != null)
+                    return true;
+                return false;
+            }
+            else if (!snap.ConvertTo<Place>().Owners.Contains(userRef))
+                throw new GrooverAuthException("The current user is not allowed to delete this place");
             return false;
         }
 
@@ -102,6 +111,20 @@ namespace GrooverAdm.DataAccess.Firestore.PlacesDao
                 .GetSnapshotAsync();
 
             return res.Select(d => d.ConvertTo<Place>());
+        }
+
+        public async Task<Place> ReviewPlace(string placeId, bool approved, string reviewComment)
+        {
+            var reference = _db.Collection(COLLECTION_REF).Document(placeId);
+            var snap = await reference.GetSnapshotAsync();
+            if (!snap.Exists)
+                return null;
+            var place = snap.ConvertTo<Place>();
+            place.Approved = approved;
+            place.ReviewComment = reviewComment;
+            place.PendingReview = false;
+            await reference.SetAsync(place);
+            return place;
         }
     }
 }
