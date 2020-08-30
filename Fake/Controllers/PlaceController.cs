@@ -51,8 +51,7 @@ namespace GrooverAdm.Controllers
         }
 
         /// <summary>
-        /// Retrieves the establishments surrounding [<paramref name="lat"/>, <paramref name="lon"/>] in 
-        /// the distance provided
+        /// Retrieves establishments
         /// </summary>
         /// <param name="page"></param>
         /// <param name="pageSize"></param>
@@ -70,8 +69,7 @@ namespace GrooverAdm.Controllers
         }
 
         /// <summary>
-        /// Retrieves the establishments surrounding [<paramref name="lat"/>, <paramref name="lon"/>] in 
-        /// the distance provided
+        /// Retrieves my establishments
         /// </summary>
         /// <param name="page"></param>
         /// <param name="pageSize"></param>
@@ -120,7 +118,6 @@ namespace GrooverAdm.Controllers
         /// <param name="lat"></param>
         /// <param name="lon"></param>
         /// <param name="distance"></param>
-        /// <param name="spoToken">Token de spotify</param>
         /// <param name="page"></param>
         /// <param name="pageSize"></param>
         /// <returns></returns>
@@ -171,7 +168,6 @@ namespace GrooverAdm.Controllers
         /// <param name="lat"></param>
         /// <param name="lon"></param>
         /// <param name="distance"></param>
-        /// <param name="spoToken">Token de spotify</param>
         /// <param name="page"></param>
         /// <param name="pageSize"></param>
         /// <returns></returns>
@@ -238,7 +234,7 @@ namespace GrooverAdm.Controllers
         [Route("api/place/{id}")]
         public async Task<ActionResult<Place>> GetPlace([FromRoute] string id)
         {
-            return Ok(_placesService.GetPlace(id));
+            return Ok(await _placesService.GetPlace(id));
         }
 
         /// <summary>
@@ -265,8 +261,11 @@ namespace GrooverAdm.Controllers
         [Route("api/place")]
         public async Task<IActionResult> DeleteEstablishment(string establishmentId)
         {
-
-            throw new NotImplementedException();
+            var user = GetUserId();
+            var res = await _placesService.DeletePlace(establishmentId, user);
+            if (res)
+                return Ok();
+            return BadRequest();
         }
 
         /// <summary>
@@ -321,20 +320,11 @@ namespace GrooverAdm.Controllers
         {
             var user = GetUserId();
             //Get current user
-            try
-            {
-                var res = await _placesService.ReviewPlace(placeId, review, user);
 
-                return res;
-            } catch (GrooverAuthException)
-            {
-                return Unauthorized("The current user is not authorized to review places");
-            }
+            var res = await _placesService.ReviewPlace(placeId, review, user);
 
-            //Access places/{placeId}/ratings/{userId}
+            return res;
 
-            //Create or updateValue
-            return BadRequest();
         }
 
 
