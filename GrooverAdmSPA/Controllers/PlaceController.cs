@@ -139,7 +139,7 @@ namespace GrooverAdmSPA.Controllers
         {
             var userId = HttpContext.User.Identity.Name;
 
-            var docRef = await  _placesService.CreatePlace(establishment);
+            var docRef = await  _placesService.CreatePlace(establishment, userId);
 
             return docRef;
         }
