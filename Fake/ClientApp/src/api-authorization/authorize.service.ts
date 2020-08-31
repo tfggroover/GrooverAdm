@@ -4,7 +4,8 @@ import { BehaviorSubject, concat, from, Observable } from 'rxjs';
 import { filter, map, mergeMap, take, tap } from 'rxjs/operators';
 import { ApplicationPaths, ApplicationName } from './api-authorization.constants';
 import { AngularFireAuth } from '@angular/fire/auth';
-import { User, UserManager, CompleteUser } from './user-manager/userManagerService';
+import { AuthUser, UserManager, CompleteUser } from './user-manager/userManagerService';
+import { UserClient } from 'src/app/services/services';
 
 export type IAuthenticationResult =
   SuccessAuthenticationResult |
@@ -39,16 +40,16 @@ export class AuthorizeService {
   // By default pop ups are disabled because they don't work properly on Edge.
   // If you want to enable pop up authentication simply set this flag to false.
 
-  constructor(public auth: AngularFireAuth, private userManager: UserManager) { }
+  constructor(public auth: AngularFireAuth, private userManager: UserManager, private userClient: UserClient) { }
 
   private popUpDisabled = true;
-  private userSubject: BehaviorSubject<User | null> = new BehaviorSubject(null);
+  private userSubject: BehaviorSubject<AuthUser | null> = new BehaviorSubject(null);
 
   public isAuthenticated(): Observable<boolean> {
     return this.getUser().pipe(map(u => !!u));
   }
 
-  public getUser(): Observable<User | null> {
+  public getUser(): Observable<AuthUser | null> {
     return concat(
       this.userSubject.pipe(take(1), filter(u => !!u)),
       this.getUserFromStorage().pipe(filter(u => !!u), tap(u => this.userSubject.next(u))),
@@ -65,6 +66,12 @@ export class AuthorizeService {
     return from(this.ensureUserManagerInitialized())
       .pipe(mergeMap(() => from(this.userManager.getUser())),
         map(user => user && user.spotifyAuthentication.access_token));
+  }
+
+  public setCurrentUser() {
+    this.userClient.getCurrentUser().subscribe(user => {
+      this.userManager.saveUser(user);
+    });
   }
 
   // We try to authenticate the user in three different ways:
@@ -174,7 +181,7 @@ export class AuthorizeService {
     this.userSubject.next(null);
   }
 
-  private getUserFromStorage(): Observable<User> {
+  private getUserFromStorage(): Observable<AuthUser> {
     return from(this.ensureUserManagerInitialized())
       .pipe(
         mergeMap(() => this.userManager.getUser()),

@@ -5,7 +5,7 @@
 import { BehaviorSubject, Observable, of, from } from 'rxjs';
 import { Injectable, Inject } from '@angular/core';
 import { UserStorageService } from './userStorageService';
-import { AuthenticationResponse, HomeClient, IAuthResponse } from 'src/app/services/services';
+import { AuthenticationResponse, HomeClient, User, IIAuthResponse } from 'src/app/services/services';
 import { AngularFireAuth } from '@angular/fire/auth';
 import { Log, CordovaPopupNavigator } from 'oidc-client';
 import { map } from 'rxjs/operators';
@@ -14,18 +14,18 @@ import { IFrameNavigator } from './IFrameNavigator';
 import { PopupNavigator } from './PopupNavigator';
 
 
-export class User {
-  constructor(name: string, auth: IAuthResponse) {
+export class AuthUser {
+  constructor(name: string, auth: IIAuthResponse) {
     this.name = name;
     this.spotifyAuthentication = auth;
   }
   public name?: string;
-  public spotifyAuthentication: IAuthResponse;
+  public spotifyAuthentication: IIAuthResponse;
 }
 
-export class CompleteUser extends User {
+export class CompleteUser extends AuthUser {
 
-  constructor(name: string, auth: IAuthResponse, fire: firebase.User) {
+  constructor(name: string, auth: IIAuthResponse, fire: firebase.User) {
     super(name, auth);
     this.firebaseAuthentication = fire;
   }
@@ -67,7 +67,19 @@ export class UserManager {
     return this.userStore;
   }
 
+  public isFirebaseLoggedIn(): Promise<boolean> {
+    return Promise.resolve(!!this.fireAuth.auth.currentUser);
+  }
 
+  public isSpotifyTokenStored(): Promise<Boolean> {
+    return this._loadUser().toPromise().then(user => !!user);
+  }
+
+  public saveUser(user: User) {
+    const currentUser = new AuthUser(this.fireAuth.auth.currentUser.displayName,
+      {access_token: user.currentToken, token_type: 'code', expires_in: user.expiresIn, refresh_Token: user.refreshToken});
+    this.storeUser(currentUser);
+  }
 
   public getUser(): Promise<CompleteUser> {
     return this._loadUser().toPromise().then(async user => {
@@ -140,7 +152,7 @@ export class UserManager {
       if (!!user?.spotifyAuthentication?.refresh_Token) {
         const authorizationResponse = await this.homeClient.auth(user.spotifyAuthentication.refresh_Token).toPromise();
         const fireUser = await this.fireAuth.auth.signInWithCustomToken(authorizationResponse.firebase);
-        const result = new CompleteUser(fireUser.user.displayName, authorizationResponse, fireUser.user);
+        const result = new CompleteUser(fireUser.user.displayName, authorizationResponse.spotify, fireUser.user);
         return result;
       } else {
         return this._signinSilentIframe();
@@ -225,11 +237,11 @@ export class UserManager {
   //  this._silentRenewService.stop();
   //}
 
-  _loadUser(): Observable<User> {
+  _loadUser(): Observable<AuthUser> {
     return of(this._userStore.getStorageToken());
   }
 
-  storeUser(user: User): Promise<void> {
+  storeUser(user: AuthUser): Promise<void> {
     if (user) {
       Log.debug('UserManager.storeUser: storing user');
 

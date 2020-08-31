@@ -1,5 +1,5 @@
 import {Injectable} from '@angular/core';
-import { User } from './userManagerService';
+import { AuthUser } from './userManagerService';
 
 @Injectable({
     providedIn: 'root'
@@ -7,13 +7,13 @@ import { User } from './userManagerService';
 export class UserStorageService {
 
     public spotifyKey: string = 'access';
-    public token: User;
+    public token: AuthUser;
 
-    public getToken(): User {
+    public getToken(): AuthUser {
         return this.token == null ? this.getStorageToken() : this.token;
     }
 
-    public setToken(token: User): void {
+    public setToken(token: AuthUser): void {
         this.token = token;
         this.saveStorageToken();
     }
@@ -31,7 +31,7 @@ export class UserStorageService {
         sessionStorage.setItem(this.spotifyKey, JSON.stringify(this.token));
     }
 
-    public getStorageToken(): User {
+    public getStorageToken(): AuthUser {
         return JSON.parse(sessionStorage.getItem(this.spotifyKey));
     }
 }
