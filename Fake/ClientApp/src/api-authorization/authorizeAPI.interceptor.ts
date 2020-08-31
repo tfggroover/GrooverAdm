@@ -7,11 +7,11 @@ import { mergeMap } from 'rxjs/operators';
 @Injectable({
   providedIn: 'root'
 })
-export class AuthorizeInterceptor implements HttpInterceptor {
-  constructor(private authorize: AuthorizeService, @Inject('BASE_URL') private baseUrl: string) { }
+export class AuthorizeAPIInterceptor implements HttpInterceptor {
+  constructor(private authorize: AuthorizeService) { }
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    if (req.url.indexOf(this.baseUrl) !== -1) {
+    if (this.isSameOriginUrl(req)) {
       return this.authorize.getFirebaseAccessToken()
       .pipe(mergeMap(token => this.processRequestWithToken(token, req, next)));
     }
