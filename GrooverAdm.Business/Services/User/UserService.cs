@@ -53,12 +53,12 @@ namespace GrooverAdm.Business.Services.User
             return true;
         }
 
-        public async Task<IEnumerable<Entities.Application.User>> GetOwners(IEnumerable<string> references)
+        public async Task<IEnumerable<Entities.Application.ListableUser>> GetOwners(IEnumerable<string> references)
         {
             var dbResult = await _userDao.GetUsers(references);
 
 
-            return dbResult.Select(u => _userMapper.ToApplicationEntity(u));
+            return dbResult.Select(u => new ListableUser(_userMapper.ToApplicationEntity(u)));
         }
 
         public async Task<Entities.Application.User> GetUser(string id)
@@ -77,14 +77,14 @@ namespace GrooverAdm.Business.Services.User
             return dbResult.Select(u => new ListableUser(_userMapper.ToApplicationEntity(u)));
         }
 
-        public async Task<Entities.Application.User> NameAdmin(string userId, string user)
+        public async Task<Entities.Application.ListableUser> NameAdmin(string userId, string user)
         {
             var current = await _userDao.GetUser(user);
             if (!current.Admin)
                 throw new GrooverAuthException("Only an admin can name new admins");
             var dbResult = await _userDao.SetAdmin(userId);
 
-            return _userMapper.ToApplicationEntity(dbResult);
+            return new ListableUser(_userMapper.ToApplicationEntity(dbResult));
         }
 
         public async Task<string> GenerateToken(UserInfo userData, IAuthResponse credentials)

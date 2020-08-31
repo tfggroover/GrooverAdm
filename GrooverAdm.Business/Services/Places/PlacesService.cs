@@ -48,7 +48,7 @@ namespace GrooverAdm.Business.Services.Places
         public async Task<Place> CreatePlace(Place place, string user)
         {
             if (!place.Owners.Any())
-                place.Owners.Add(new Entities.Application.User { Id = user });
+                place.Owners.Add(new Entities.Application.ListableUser { Id = user });
             var converted = _mapper.ToDbEntity(place);
             var dbResult = await _dao.CreatePlace(converted);
 

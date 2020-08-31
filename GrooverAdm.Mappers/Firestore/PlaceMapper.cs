@@ -62,7 +62,7 @@ namespace GrooverAdm.Mappers.Firestore
                     Day = t.Day,
                     Schedules = t.Schedules.Select(s => new Schedule { End = s.End, Start = s.Start }).ToList()
                 }).ToList(),
-                Owners = dbEntity.Owners.Select(u => new User { Id = u.Id }).ToList(),
+                Owners = dbEntity.Owners.Select(u => new ListableUser { Id = u.Id }).ToList(),
                 Ratings = dbEntity.RatingTotal,
                 RatingCount = dbEntity.RatingCount,
                 Approved = dbEntity.Approved,

@@ -149,6 +149,7 @@ namespace GrooverAdmSPA.Controllers
                     model.PhotoUrl = userData.Images[0]?.Url;
                     model.Token = token;
                     model.SpotiToken = spotiCredentials.Access_token;
+                    model.RefreshToken = spotiCredentials.Refresh_Token;
                 }
             }
 

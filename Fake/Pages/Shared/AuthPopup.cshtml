@@ -23,7 +23,8 @@
      tempApp.auth().signInWithCustomToken(token).then(function(user) {
 
          var object = {
-             currentToken: '@Model.SpotiToken'
+             CurrentToken: '@Model.SpotiToken',
+             RefreshToken: '@Model.RefreshToken'
          };
        // Saving the Instagram API access token in the Realtime Database.
        const tasks = [tempApp.firestore().doc('/users/' + user.user.uid)

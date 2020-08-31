@@ -41,7 +41,7 @@ namespace GrooverAdm.Controllers
         /// 
         [HttpPatch]
         [Route("{userId}/admin")]
-        public async Task<ActionResult> SetAdmin(string userId)
+        public async Task<ActionResult<ListableUser>> SetAdmin(string userId)
         {
             var user = GetUserId();
 
@@ -54,17 +54,15 @@ namespace GrooverAdm.Controllers
         /// <param name="page"></param>
         /// <param name="pageSize"></param>
         /// <param name="name"></param>
-        /// <param name="email"></param>
-        /// <param name="owner">Only owners</param>
         /// <param name="admin">Only admins</param>
         /// <returns></returns>
         /// 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<User>>> GetUsers(int page, int pageSize, string name, string email, bool owner, bool admin)
+        public async Task<ActionResult<IEnumerable<ListableUser>>> GetUsers(int page, int pageSize, string name, bool admin)
         {
             var user = GetUserId();
 
-            return Ok(await this.userService.GetUsers(page, pageSize, name, email, owner, admin));
+            return Ok(await this.userService.GetUsers(page, pageSize, name, admin));
         }
 
         /// <summary>
@@ -72,7 +70,7 @@ namespace GrooverAdm.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpDelete]
-        public async Task<ActionResult> DeleteAccount()
+        public async Task<ActionResult<bool>> DeleteAccount()
         {
             var user = GetUserId();
 

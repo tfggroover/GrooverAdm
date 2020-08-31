@@ -24,6 +24,7 @@ namespace GrooverAdm.Entities.Application
         public string Email { get; set; }
         public bool Admin { get; set; }
         public string CurrentToken { get; set; }
+        public string RefreshToken { get; set; }
         /// <summary>
         /// Expiration time in seconds
         /// </summary>

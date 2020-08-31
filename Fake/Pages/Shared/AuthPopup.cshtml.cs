@@ -15,6 +15,7 @@ namespace GrooverAdm.Pages
         public string PhotoUrl { get; set; }
         public string Token { get; set; }
         public string SpotiToken { get; set; }
+        public string RefreshToken { get; set; }
         public void OnGet()
         {
         }

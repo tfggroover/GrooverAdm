@@ -27,7 +27,8 @@ namespace GrooverAdm.Mappers.Firestore
                 TokenEmissionTime = dbEntity.TokenEmissionTime,
                 Id = dbEntity.Reference.Id,
                 Admin = dbEntity.Admin,
-                Email = dbEntity.Email
+                Email = dbEntity.Email,
+                RefreshToken = dbEntity.RefreshToken
             };
         }
 
@@ -43,7 +44,8 @@ namespace GrooverAdm.Mappers.Firestore
                 TokenEmissionTime = entity.TokenEmissionTime,
                 Reference = reference,
                 Admin = entity.Admin,
-                Email = entity.Email
+                Email = entity.Email,
+                RefreshToken = entity.RefreshToken
             };
         }
     }
