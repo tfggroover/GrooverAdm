@@ -16,7 +16,6 @@
         "tags": [
           "Home"
         ],
-        "summary": "Autenticación para el móvil y la App",
         "operationId": "Home_Auth",
         "parameters": [
           {
@@ -31,7 +30,7 @@
         ],
         "responses": {
           "400": {
-            "description": "The specified refresh token is not valid"
+            "description": ""
           },
           "200": {
             "description": "",
@@ -51,13 +50,11 @@
         "tags": [
           "Home"
         ],
-        "summary": "Callback de spotify con un token fresco",
         "operationId": "Home_AuthCallback",
         "parameters": [
           {
             "name": "code",
             "in": "query",
-            "description": "Token",
             "schema": {
               "type": "string",
               "nullable": true
@@ -67,7 +64,6 @@
           {
             "name": "State",
             "in": "query",
-            "description": "Cookie de estado",
             "schema": {
               "type": "string",
               "nullable": true
@@ -94,13 +90,11 @@
         "tags": [
           "Home"
         ],
-        "summary": "Callback de spotify con un token fresco",
         "operationId": "Home_AuthWebCallback",
         "parameters": [
           {
             "name": "code",
             "in": "query",
-            "description": "Token",
             "schema": {
               "type": "string",
               "nullable": true
@@ -110,7 +104,6 @@
           {
             "name": "State",
             "in": "query",
-            "description": "Cookie de estado",
             "schema": {
               "type": "string",
               "nullable": true
@@ -133,46 +126,11 @@
         }
       }
     },
-    "/_configuration/{clientId}": {
-      "get": {
-        "tags": [
-          "OidcConfiguration"
-        ],
-        "summary": "IGNORA ESTO",
-        "operationId": "OidcConfiguration_GetClientRequestParameters",
-        "parameters": [
-          {
-            "name": "clientId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "nullable": true
-            },
-            "x-position": 1
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/octet-stream": {
-                "schema": {
-                  "type": "string",
-                  "format": "binary"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/place/list": {
       "get": {
         "tags": [
           "Place"
         ],
-        "summary": "Retrieves the establishments surrounding [, ] in \nthe distance provided",
         "operationId": "Place_GetEstablishmentsAll",
         "parameters": [
           {
@@ -218,7 +176,6 @@
         "tags": [
           "Place"
         ],
-        "summary": "Retrieves the establishments surrounding [, ] in \nthe distance provided",
         "operationId": "Place_GetMyEstablishments",
         "parameters": [
           {
@@ -256,12 +213,7 @@
               }
             }
           }
-        },
-        "security": [
-          {
-            "JWT": []
-          }
-        ]
+        }
       }
     },
     "/api/place": {
@@ -269,13 +221,11 @@
         "tags": [
           "Place"
         ],
-        "summary": "Retrieves the establishments surrounding [, ] in \nthe distance provided",
         "operationId": "Place_GetEstablishments",
         "parameters": [
           {
             "name": "lat",
             "in": "query",
-            "description": "Latitude",
             "schema": {
               "type": "number",
               "format": "double"
@@ -285,7 +235,6 @@
           {
             "name": "lon",
             "in": "query",
-            "description": "Longitude",
             "schema": {
               "type": "number",
               "format": "double"
@@ -295,7 +244,6 @@
           {
             "name": "distance",
             "in": "query",
-            "description": "Distance in METERS",
             "schema": {
               "type": "number",
               "format": "double"
@@ -343,7 +291,6 @@
         "tags": [
           "Place"
         ],
-        "summary": "READY TO GO? NOT TESTED",
         "operationId": "Place_CreateEstablishment",
         "requestBody": {
           "x-name": "establishment",
@@ -368,12 +315,7 @@
               }
             }
           }
-        },
-        "security": [
-          {
-            "JWT": []
-          }
-        ]
+        }
       },
       "patch": {
         "tags": [
@@ -403,18 +345,12 @@
               }
             }
           }
-        },
-        "security": [
-          {
-            "JWT": []
-          }
-        ]
+        }
       },
       "delete": {
         "tags": [
           "Place"
         ],
-        "summary": "NOT IMPLEMENTED",
         "operationId": "Place_DeleteEstablishment",
         "parameters": [
           {
@@ -439,12 +375,7 @@
               }
             }
           }
-        },
-        "security": [
-          {
-            "JWT": []
-          }
-        ]
+        }
       }
     },
     "/api/place/recommended": {
@@ -452,7 +383,6 @@
         "tags": [
           "Place"
         ],
-        "summary": "Obtiene los lugares recomendados en funcion de la playlist enviada",
         "operationId": "Place_GetRecommendedEstablishmentsForPlaylist",
         "parameters": [
           {
@@ -536,12 +466,7 @@
               }
             }
           }
-        },
-        "security": [
-          {
-            "JWT": []
-          }
-        ]
+        }
       }
     },
     "/api/place/recommended/top": {
@@ -549,7 +474,6 @@
         "tags": [
           "Place"
         ],
-        "summary": "Obtiene los lugares recomendados en funcion del top50 del usuario",
         "operationId": "Place_GetRecommendedEstablishmentsForTop",
         "parameters": [
           {
@@ -624,12 +548,7 @@
               }
             }
           }
-        },
-        "security": [
-          {
-            "JWT": []
-          }
-        ]
+        }
       }
     },
     "/api/place/{id}": {
@@ -669,7 +588,6 @@
         "tags": [
           "Place"
         ],
-        "summary": "We gucci",
         "operationId": "Place_RecognizeSong",
         "parameters": [
           {
@@ -707,12 +625,7 @@
               }
             }
           }
-        },
-        "security": [
-          {
-            "JWT": []
-          }
-        ]
+        }
       }
     },
     "/api/place/{placeId}/rate": {
@@ -720,7 +633,6 @@
         "tags": [
           "Place"
         ],
-        "summary": "NOT IMPLEMENTED",
         "operationId": "Place_RatePlace",
         "parameters": [
           {
@@ -747,29 +659,155 @@
           "200": {
             "description": "",
             "content": {
-              "application/octet-stream": {
+              "application/json": {
                 "schema": {
-                  "type": "string",
-                  "format": "binary"
+                  "$ref": "#/components/schemas/Place"
                 }
               }
             }
           }
-        },
-        "security": [
-          {
-            "JWT": []
-          }
-        ]
+        }
       }
     },
-    "/weatherforecast": {
+    "/api/place/{placeId}/review": {
+      "post": {
+        "tags": [
+          "Place"
+        ],
+        "operationId": "Place_ReviewPlace",
+        "parameters": [
+          {
+            "name": "placeId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "x-position": 1
+          }
+        ],
+        "requestBody": {
+          "x-name": "review",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlaceReview"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 2
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Place"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/user/currentuser": {
       "get": {
         "tags": [
-          "WeatherForecast"
+          "User"
         ],
-        "summary": "IGNORA ESTO",
-        "operationId": "WeatherForecast_Get",
+        "operationId": "User_GetCurrentUser",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/user/{userId}/admin": {
+      "patch": {
+        "tags": [
+          "User"
+        ],
+        "operationId": "User_SetAdmin",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListableUser"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/user": {
+      "get": {
+        "tags": [
+          "User"
+        ],
+        "operationId": "User_GetUsers",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "x-position": 1
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "x-position": 2
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "x-position": 3
+          },
+          {
+            "name": "admin",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            },
+            "x-position": 4
+          }
+        ],
         "responses": {
           "200": {
             "description": "",
@@ -778,18 +816,31 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/WeatherForecast"
+                    "$ref": "#/components/schemas/ListableUser"
                   }
                 }
               }
             }
           }
-        },
-        "security": [
-          {
-            "JWT": []
+        }
+      },
+      "delete": {
+        "tags": [
+          "User"
+        ],
+        "operationId": "User_DeleteAccount",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
           }
-        ]
+        }
       }
     }
   },
@@ -980,17 +1031,18 @@
             }
           },
           "ratings": {
-            "type": "array",
-            "nullable": true,
-            "items": {
-              "$ref": "#/components/schemas/Rating"
-            }
+            "type": "number",
+            "format": "double"
+          },
+          "ratingCount": {
+            "type": "integer",
+            "format": "int32"
           },
           "owners": {
             "type": "array",
             "nullable": true,
             "items": {
-              "$ref": "#/components/schemas/User"
+              "$ref": "#/components/schemas/ListableUser"
             }
           },
           "phone": {
@@ -1014,6 +1066,16 @@
             "items": {
               "$ref": "#/components/schemas/Timetable"
             }
+          },
+          "approved": {
+            "type": "boolean"
+          },
+          "pendingReview": {
+            "type": "boolean"
+          },
+          "reviewComment": {
+            "type": "string",
+            "nullable": true
           }
         }
       },
@@ -1102,29 +1164,7 @@
           }
         }
       },
-      "Rating": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "id": {
-            "type": "string",
-            "nullable": true
-          },
-          "value": {
-            "type": "number",
-            "format": "double"
-          },
-          "user": {
-            "nullable": true,
-            "oneOf": [
-              {
-                "$ref": "#/components/schemas/User"
-              }
-            ]
-          }
-        }
-      },
-      "User": {
+      "ListableUser": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -1140,17 +1180,12 @@
             "type": "string",
             "nullable": true
           },
-          "currentToken": {
+          "email": {
             "type": "string",
             "nullable": true
           },
-          "expiresIn": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "tokenEmissionTime": {
-            "type": "string",
-            "format": "date-time"
+          "admin": {
+            "type": "boolean"
           }
         }
       },
@@ -1272,25 +1307,57 @@
           }
         }
       },
-      "WeatherForecast": {
+      "PlaceReview": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "date": {
-            "type": "string",
-            "format": "date-time"
+          "approved": {
+            "type": "boolean"
           },
-          "temperatureC": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "temperatureF": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "summary": {
+          "reviewComment": {
             "type": "string",
             "nullable": true
+          }
+        }
+      },
+      "User": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "born": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "displayName": {
+            "type": "string",
+            "nullable": true
+          },
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "admin": {
+            "type": "boolean"
+          },
+          "currentToken": {
+            "type": "string",
+            "nullable": true
+          },
+          "refreshToken": {
+            "type": "string",
+            "nullable": true
+          },
+          "expiresIn": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "tokenEmissionTime": {
+            "type": "string",
+            "format": "date-time"
           }
         }
       }

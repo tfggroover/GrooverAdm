@@ -12,8 +12,7 @@
         </member>
         <member name="M:GrooverAdm.Controllers.PlaceController.GetEstablishments(System.Int32,System.Int32)">
             <summary>
-            Retrieves the establishments surrounding [<paramref name="lat"/>, <paramref name="lon"/>] in 
-            the distance provided
+            Retrieves establishments
             </summary>
             <param name="page"></param>
             <param name="pageSize"></param>
@@ -21,8 +20,7 @@
         </member>
         <member name="M:GrooverAdm.Controllers.PlaceController.GetMyEstablishments(System.Int32,System.Int32)">
             <summary>
-            Retrieves the establishments surrounding [<paramref name="lat"/>, <paramref name="lon"/>] in 
-            the distance provided
+            Retrieves my establishments
             </summary>
             <param name="page"></param>
             <param name="pageSize"></param>
@@ -48,7 +46,6 @@
             <param name="lat"></param>
             <param name="lon"></param>
             <param name="distance"></param>
-            <param name="spoToken">Token de spotify</param>
             <param name="page"></param>
             <param name="pageSize"></param>
             <returns></returns>
@@ -60,7 +57,6 @@
             <param name="lat"></param>
             <param name="lon"></param>
             <param name="distance"></param>
-            <param name="spoToken">Token de spotify</param>
             <param name="page"></param>
             <param name="pageSize"></param>
             <returns></returns>
@@ -117,18 +113,47 @@
             <param name="review"></param>
             <returns></returns>
         </member>
+        <member name="M:GrooverAdm.Controllers.UserController.GetCurrentUser">
+            <summary>
+            Returns the currentUser
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:GrooverAdm.Controllers.UserController.SetAdmin(System.String)">
+            <summary>
+            Sets a user as admin
+            </summary>
+            <param name="userId"></param>
+            <returns></returns>
+            
+        </member>
+        <member name="M:GrooverAdm.Controllers.UserController.GetUsers(System.Int32,System.Int32,System.String,System.Boolean)">
+            <summary>
+            Returns users according to the filters specified
+            </summary>
+            <param name="page"></param>
+            <param name="pageSize"></param>
+            <param name="name"></param>
+            <param name="admin">Only admins</param>
+            <returns></returns>
+            
+        </member>
+        <member name="M:GrooverAdm.Controllers.UserController.DeleteAccount">
+            <summary>
+            Delete the current user's account
+            </summary>
+            <returns></returns>
+        </member>
         <member name="T:GrooverAdmSPA.Controllers.HomeController">
             <summary>
             Will be renamed to authController
             </summary>
         </member>
-        <member name="M:GrooverAdmSPA.Controllers.HomeController.#ctor(Microsoft.Extensions.Configuration.IConfiguration,FirebaseAdmin.FirebaseApp,Google.Cloud.Firestore.FirestoreDb,GrooverAdm.Business.Services.SpotifyService,GrooverAdm.Business.Services.User.IUserService)">
+        <member name="M:GrooverAdmSPA.Controllers.HomeController.#ctor(Microsoft.Extensions.Configuration.IConfiguration,GrooverAdm.Business.Services.SpotifyService,GrooverAdm.Business.Services.User.IUserService)">
             <summary>
             Constructor
             </summary>
             <param name="configuration"></param>
-            <param name="app"></param>
-            <param name="db"></param>
             <param name="spotifyService"></param>
             <param name="userService"></param>
         </member>
