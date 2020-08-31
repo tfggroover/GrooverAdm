@@ -11,10 +11,11 @@ import { ApiAuthorizationModule } from 'src/api-authorization/api-authorization.
 import { AuthorizeGuard } from 'src/api-authorization/authorize.guard';
 import { AngularFireModule } from '@angular/fire';
 import { AngularFireAuthModule } from '@angular/fire/auth';
-import { AuthorizeInterceptor } from 'src/api-authorization/authorize.interceptor';
+import { AuthorizeAPIInterceptor } from 'src/api-authorization/authorizeAPI.interceptor';
 import { AgmCoreModule } from '@agm/core';
 import { MatGoogleMapsAutocompleteModule } from '@angular-material-extensions/google-maps-autocomplete';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { AuthorizeSpotifyInterceptor } from 'src/api-authorization/authorize-spotify.interceptor';
 
 export const firebaseConfig = {
   apiKey: 'AIzaSyASCdn-XXWI2uQmRDvTHJauYN0Qca07-oE',
@@ -53,7 +54,8 @@ export const firebaseConfig = {
     BrowserAnimationsModule
   ],
   providers: [
-    { provide: HTTP_INTERCEPTORS, useClass: AuthorizeInterceptor, multi: true }
+    { provide: HTTP_INTERCEPTORS, useClass: AuthorizeAPIInterceptor, multi: true },
+    { provide: HTTP_INTERCEPTORS, useClass: AuthorizeSpotifyInterceptor, multi: true }
   ],
   bootstrap: [AppComponent]
 })
