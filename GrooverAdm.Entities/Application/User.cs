@@ -21,6 +21,7 @@ namespace GrooverAdm.Entities.Application
         public int Born { get; set; }
         public string DisplayName { get; set; }
         public string Id { get; set; }
+        public string Email { get; set; }
         public bool Admin { get; set; }
         public string CurrentToken { get; set; }
         /// <summary>
@@ -28,7 +29,23 @@ namespace GrooverAdm.Entities.Application
         /// </summary>
         public int ExpiresIn { get; set; }
         public DateTime TokenEmissionTime { get; set; }
+    }
 
-
+    public class ListableUser: IApplicationEntity
+    {
+        public ListableUser() { }
+        public ListableUser(User user)
+        {
+            this.Born = user.Born;
+            this.DisplayName = user.DisplayName;
+            this.Id = user.Id;
+            this.Email = user.Email;
+            this.Admin = user.Admin;
+        }
+        public int Born { get; set; }
+        public string DisplayName { get; set; }
+        public string Id { get; set; }
+        public string Email { get; set; }
+        public bool Admin { get; set; }
     }
 }

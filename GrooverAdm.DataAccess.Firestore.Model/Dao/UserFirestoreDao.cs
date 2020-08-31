@@ -64,5 +64,26 @@ namespace GrooverAdm.DataAccess.Firestore.Dao
 
             return res;
         }
+
+        public async Task<IEnumerable<User>> GetUsers(int page, int pageSize, string name, bool admin)
+        {
+            var query = _db.Collection(COLLECTION_REF).WhereEqualTo(nameof(User.Admin), admin);
+            if(!string.IsNullOrWhiteSpace(name))
+               query = query.WhereEqualTo(nameof(User.DisplayName), name);
+            query = query.Limit(pageSize).Offset((page - 1) * pageSize);
+
+            var res = await query.GetSnapshotAsync();
+
+            return res.Select(d => d.ConvertTo<User>());
+        }
+
+        public async Task<User> SetAdmin(string userId)
+        {
+            var reference = _db.Collection(COLLECTION_REF).Document(userId);
+
+            await _db.Collection(COLLECTION_REF).Document(userId).UpdateAsync(new Dictionary<string, object> { { nameof(User.Admin), true } });
+
+            return (await reference.GetSnapshotAsync()).ConvertTo<User>();
+        }
     }
 }

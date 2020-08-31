@@ -12,5 +12,7 @@ namespace GrooverAdm.DataAccess.Dao
         Task<T> GetUser(string id);
         Task<bool> DeleteUser(string id);
         Task<IEnumerable<T>> GetUsers(IEnumerable<string> references);
+        Task<IEnumerable<T>> GetUsers(int page, int pageSize, string name, bool admin);
+        Task<T> SetAdmin(string userId);
     }
 }

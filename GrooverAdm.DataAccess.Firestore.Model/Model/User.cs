@@ -25,5 +25,7 @@ namespace GrooverAdm.DataAccess.Firestore.Model
         public DateTime TokenEmissionTime { get; set; }
         [FirestoreProperty]
         public bool Admin { get; set; }
+        [FirestoreProperty]
+        public string Email { get; set; }
     }
 }

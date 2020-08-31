@@ -30,9 +30,7 @@ namespace GrooverAdmSPA.Controllers
     public class HomeController : Controller
     {
 
-        private readonly FirebaseApp firebaseApp;
         private readonly IConfiguration Configuration;
-        private readonly FirestoreDb firestoreDb;
         private readonly SpotifyService _spotifyService;
         private readonly IUserService userService;
 
@@ -40,15 +38,11 @@ namespace GrooverAdmSPA.Controllers
         /// Constructor
         /// </summary>
         /// <param name="configuration"></param>
-        /// <param name="app"></param>
-        /// <param name="db"></param>
         /// <param name="spotifyService"></param>
         /// <param name="userService"></param>
-        public HomeController(IConfiguration configuration, FirebaseApp app, FirestoreDb db, SpotifyService spotifyService, IUserService userService)
+        public HomeController(IConfiguration configuration, SpotifyService spotifyService, IUserService userService)
         {
             Configuration = configuration;
-            firebaseApp = app;
-            firestoreDb = db;
             _spotifyService = spotifyService;
             this.userService = userService;
         }
@@ -99,7 +93,7 @@ namespace GrooverAdmSPA.Controllers
 
                     var userData = await _spotifyService.UserInfoRequest(client, spotiCredentials);
 
-                    var token = await GenerateToken(userData, spotiCredentials);
+                    var token = await this.userService.GenerateToken(userData, spotiCredentials);
 
                     result = new AuthenticationResponse
                     {
@@ -149,7 +143,7 @@ namespace GrooverAdmSPA.Controllers
                         BadRequest("Invalid request to spotify");
                     var userData = await _spotifyService.UserInfoRequest(client, spotiCredentials);
 
-                    var token = await GenerateToken(userData, spotiCredentials);
+                    var token = await this.userService.GenerateToken(userData, spotiCredentials);
 
                     model.DisplayName = userData.Display_name;
                     model.PhotoUrl = userData.Images[0]?.Url;
@@ -175,7 +169,7 @@ namespace GrooverAdmSPA.Controllers
                 }
                 var userData = await _spotifyService.UserInfoRequest(client, spotiCredentials);
 
-                var token = await GenerateToken(userData, spotiCredentials);
+                var token = await this.userService.GenerateToken(userData, spotiCredentials);
 
                 result = new AuthenticationResponse
                 {
@@ -216,41 +210,6 @@ namespace GrooverAdmSPA.Controllers
             var spotifyCall = $"{authEndpoint}?client_id={UrlEncoder.Default.Encode(clientID)}&response_type=code&redirect_uri={UrlEncoder.Default.Encode(redirectUri)}&state={UrlEncoder.Default.Encode(nonce)}&scope={UrlEncoder.Default.Encode(scopes)}";
 
             return Redirect(spotifyCall);
-        }
-
-
-        private async Task<string> GenerateToken(UserInfo userData, IAuthResponse credentials)
-        {
-
-            var auth = FirebaseAuth.GetAuth(firebaseApp);
-
-            try
-            {
-                await auth.GetUserAsync(userData.Id); // If the user does not exist an exception is thrown
-                await auth.UpdateUserAsync(new UserRecordArgs()
-                {
-                    Email = userData.Email,
-                    DisplayName = userData.Display_name,
-                    Uid = userData.Id,
-                    PhotoUrl = userData.Images.FirstOrDefault()?.Url
-                });
-            }
-            catch (FirebaseAuthException)
-            {
-                await auth.CreateUserAsync(new UserRecordArgs()
-                {
-                    Email = userData.Email,
-                    DisplayName = userData.Display_name,
-                    Uid = userData.Id,
-                    PhotoUrl = userData.Images.FirstOrDefault()?.Url
-                });
-            }
-
-            var user = new User(userData, credentials.Access_token, credentials.Expires_in, DateTime.UtcNow);
-            await this.userService.CreateOrUpdateUser(user);
-
-            var token = await auth.CreateCustomTokenAsync(user.Id);
-            return token;
         }
 
     }
