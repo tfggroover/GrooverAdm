@@ -16,6 +16,8 @@ import { AgmCoreModule } from '@agm/core';
 import { MatGoogleMapsAutocompleteModule } from '@angular-material-extensions/google-maps-autocomplete';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { AuthorizeSpotifyInterceptor } from 'src/api-authorization/authorize-spotify.interceptor';
+import { MatButtonModule } from '@angular/material/button';
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 
 export const firebaseConfig = {
   apiKey: 'AIzaSyASCdn-XXWI2uQmRDvTHJauYN0Qca07-oE',
@@ -51,7 +53,9 @@ export const firebaseConfig = {
     ]),
     MatGoogleMapsAutocompleteModule,
     AgmCoreModule.forRoot(),
-    BrowserAnimationsModule
+    BrowserAnimationsModule,
+    MatButtonModule,
+    FontAwesomeModule
   ],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: AuthorizeAPIInterceptor, multi: true },
