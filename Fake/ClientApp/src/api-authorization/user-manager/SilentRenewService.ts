@@ -37,7 +37,7 @@ export class SilentRenewService {
     }
 
     _tokenExpiring() {
-        this._userManager.signinSilent({}).toPromise().then(user => {
+        this._userManager.signinSilent().toPromise().then(user => {
             Log.debug("SilentRenewService._tokenExpiring: Silent token renewal successful");
         }, err => {
             Log.error("SilentRenewService._tokenExpiring: Error from signinSilent:", err.message);

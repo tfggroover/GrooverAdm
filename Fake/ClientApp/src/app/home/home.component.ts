@@ -1,21 +1,33 @@
-import { Component, Inject } from '@angular/core';
-import { HttpClient, HttpBackend } from '@angular/common/http';
+import { Component, Inject, SecurityContext } from '@angular/core';
+import { HttpClient, HttpBackend, HttpHeaders } from '@angular/common/http';
+import { faSpotify } from '@fortawesome/free-brands-svg-icons';
+import { SafeResourceUrl, DomSanitizer } from '@angular/platform-browser';
+import { AuthorizeService } from 'src/api-authorization/authorize.service';
+import { map } from 'rxjs/internal/operators/map';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
 })
 export class HomeComponent {
-
-  public HomeComponent(handler: HttpBackend, @Inject('BASE_URL') baseUrl: string) {
-    const http = new HttpClient(handler);
-    http.get(baseUrl + 'home/auth').subscribe(result => {
-      console.log(result);
-    }, error => console.error(error));
+  faspoty = faSpotify;
+  public timer;
+  url: string;
+  public isAuthenticated: boolean;
+  public userName: string;
+  constructor(sanitizer: DomSanitizer, @Inject('BASE_URL') public baseUrl: string, public authService: AuthorizeService) {
+    this.url = sanitizer.sanitize(SecurityContext.URL, baseUrl + 'home/auth');
+    this.authService.userChanged.subscribe(u => {
+      this.isAuthenticated = !!u;
+      this.userName = u?.name;
+    });
+    this.authService.trySignInSilent();
   }
 
   public onSignInButtonClick() {
     // Open the Auth flow in a popup.
-    window.open('/home/auth', 'firebaseAuth', 'height=315,width=400');
+    this.authService.signIn();
   }
+
 }
