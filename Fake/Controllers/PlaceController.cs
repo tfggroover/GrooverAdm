@@ -26,7 +26,7 @@ using Microsoft.Extensions.Logging;
 
 namespace GrooverAdm.Controllers
 {
-    //[Authorize]
+    [Authorize]
     [ApiController]
     public class PlaceController : ControllerBase
     {
@@ -36,7 +36,7 @@ namespace GrooverAdm.Controllers
         private readonly ILogger log;
 
 
-        public PlaceController(PlacesService placesService, IUserService userService, SpotifyService spotify, ILogger<PlaceController> log)
+        public PlaceController(IPlacesService placesService, IUserService userService, SpotifyService spotify, ILogger<PlaceController> log)
         {
             _placesService = placesService;
             _userService = userService;
