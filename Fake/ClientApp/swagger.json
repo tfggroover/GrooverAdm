@@ -152,51 +152,24 @@
               "default": 25
             },
             "x-position": 2
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Place"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/place/mine": {
-      "get": {
-        "tags": [
-          "Place"
-        ],
-        "operationId": "Place_GetMyEstablishments",
-        "parameters": [
-          {
-            "name": "page",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32",
-              "default": 1
-            },
-            "x-position": 1
           },
           {
-            "name": "pageSize",
+            "name": "mine",
             "in": "query",
             "schema": {
-              "type": "integer",
-              "format": "int32",
-              "default": 25
+              "type": "boolean",
+              "default": true
             },
-            "x-position": 2
+            "x-position": 3
+          },
+          {
+            "name": "pendingReview",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": true
+            },
+            "x-position": 4
           }
         ],
         "responses": {
@@ -213,7 +186,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
       }
     },
     "/api/place": {
@@ -285,7 +263,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
       },
       "post": {
         "tags": [
@@ -315,7 +298,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
       },
       "patch": {
         "tags": [
@@ -345,7 +333,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
       },
       "delete": {
         "tags": [
@@ -375,7 +368,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
       }
     },
     "/api/place/recommended": {
@@ -466,7 +464,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
       }
     },
     "/api/place/recommended/top": {
@@ -548,7 +551,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
       }
     },
     "/api/place/{id}": {
@@ -580,7 +588,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
       }
     },
     "/api/place/{establishmentId}/song": {
@@ -625,7 +638,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
       }
     },
     "/api/place/{placeId}/rate": {
@@ -666,7 +684,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
       }
     },
     "/api/place/{placeId}/review": {
@@ -710,7 +733,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
       }
     },
     "/api/user/currentuser": {
