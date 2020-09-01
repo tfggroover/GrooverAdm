@@ -20,6 +20,8 @@ export class AuthorizeSpotifyInterceptor implements HttpInterceptor {
       return this.authorize.getSpotifyAccessToken()
       .pipe(mergeMap(token => this.processRequestWithToken(token, request, next)));
     }
+      return next.handle(request);
+
   }
 
   private processRequestWithToken(token: string, req: HttpRequest<any>, next: HttpHandler) {

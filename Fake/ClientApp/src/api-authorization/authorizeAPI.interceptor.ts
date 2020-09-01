@@ -15,6 +15,7 @@ export class AuthorizeAPIInterceptor implements HttpInterceptor {
       return this.authorize.getFirebaseAccessToken()
       .pipe(mergeMap(token => this.processRequestWithToken(token, req, next)));
     }
+    return next.handle(req);
   }
 
   // Checks if there is an access_token available in the authorize service
