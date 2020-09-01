@@ -194,10 +194,11 @@ namespace GrooverAdm
                 // see https://go.microsoft.com/fwlink/?linkid=864501
 
                 spa.Options.SourcePath = "ClientApp";
-
+                spa.Options.StartupTimeout = TimeSpan.FromSeconds(200);
                 if (env.IsDevelopment())
                 {
                     spa.UseAngularCliServer(npmScript: "start");
+
                 }
             });
         }
