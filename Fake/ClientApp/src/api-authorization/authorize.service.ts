@@ -5,7 +5,7 @@ import { filter, map, mergeMap, take, tap } from 'rxjs/operators';
 import { ApplicationPaths, ApplicationName } from './api-authorization.constants';
 import { AngularFireAuth } from '@angular/fire/auth';
 import { AuthUser, UserManager, CompleteUser } from './user-manager/userManagerService';
-import { UserClient } from 'src/app/services/services';
+import { UserClient, User } from 'src/app/services/services';
 
 export type IAuthenticationResult =
   SuccessAuthenticationResult |
@@ -42,17 +42,21 @@ export class AuthorizeService {
 
 
   private popUpDisabled = true;
-  private userSubject: BehaviorSubject<AuthUser | null> = new BehaviorSubject(null);
-  public userChanged: Observable<AuthUser>;
+  private userSubject: BehaviorSubject<CompleteUser | null> = new BehaviorSubject(null);
+  public userChanged: Observable<CompleteUser>;
+  private userData: BehaviorSubject<User> = new BehaviorSubject(null);
+  public userDataChanged: Observable<User>;
+  private timer;
 
   constructor(public auth: AngularFireAuth, private userManager: UserManager, private userClient: UserClient) {
     this.userChanged = this.userSubject.asObservable();
+    this.userDataChanged = this.userData.asObservable();
    }
   public isAuthenticated(): Observable<boolean> {
     return this.getUser().pipe(map(u => !!u));
   }
 
-  public getUser(): Observable<AuthUser | null> {
+  public getUser(): Observable<CompleteUser | null> {
     return concat(
       this.userSubject.pipe(take(1), filter(u => !!u)),
       this.getUserFromStorage().pipe(filter(u => !!u), tap(u => this.userSubject.next(u))),
@@ -74,15 +78,19 @@ export class AuthorizeService {
   public setCurrentUser() {
     this.userClient.getCurrentUser().subscribe(user => {
       const current = this.userManager.saveUser(user);
+      this.timer = setTimeout(() => this.trySignInSilent(), user.expiresIn);
       this.userSubject.next(current);
+      this.userData.next(user);
     });
   }
+
 
   public async trySignInSilent() {
     await this.ensureUserManagerInitialized();
     let user: CompleteUser = null;
     try {
       user = await this.userManager.signinSilent().toPromise();
+      this.userManager.storeUser(user);
       this.userSubject.next(user);
     } catch (silentError) {
       // User might not be authenticated, fallback to popup authentication
@@ -136,13 +144,10 @@ export class AuthorizeService {
 
   public async signOut(state: any): Promise<IAuthenticationResult> {
     try {
-      if (this.popUpDisabled) {
-        throw new Error('Popup disabled. Change \'authorize.service.ts:AuthorizeService.popupDisabled\' to false to enable it.');
-      }
+
 
       await this.ensureUserManagerInitialized();
-      //this.userManager.signOut();
-
+      this.userManager.signOut();
       this.userSubject.next(null);
       return this.success(state);
     } catch (popupSignOutError) {
@@ -192,7 +197,7 @@ export class AuthorizeService {
     this.userSubject.next(null);
   }
 
-  private getUserFromStorage(): Observable<AuthUser> {
+  private getUserFromStorage(): Observable<CompleteUser> {
     return from(this.ensureUserManagerInitialized())
       .pipe(
         mergeMap(() => this.userManager.getUser()),

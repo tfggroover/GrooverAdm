@@ -77,11 +77,13 @@ export class UserManager {
     return this._loadUser().toPromise().then(user => !!user);
   }
 
-  public saveUser(user: User): AuthUser {
+  public saveUser(user: User): CompleteUser {
     const currentUser = new AuthUser(this.fireAuth.auth.currentUser.displayName,
       { access_token: user.currentToken, token_type: 'code', expires_in: user.expiresIn, refresh_Token: user.refreshToken });
     this.storeUser(currentUser);
-    return currentUser;
+    const result = new CompleteUser(this.fireAuth.auth.currentUser.displayName,
+       currentUser.spotifyAuthentication, this.fireAuth.auth.currentUser);
+    return result;
   }
 
   public getUser(): Promise<CompleteUser> {
@@ -115,6 +117,10 @@ export class UserManager {
       clearInterval(this.timer);
       this.closedEvent.next(true);
     }
+  }
+
+  public signOut() {
+    this.removeUser();
   }
 
 

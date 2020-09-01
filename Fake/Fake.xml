@@ -10,20 +10,14 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:GrooverAdm.Controllers.PlaceController.GetEstablishments(System.Int32,System.Int32)">
+        <member name="M:GrooverAdm.Controllers.PlaceController.GetEstablishments(System.Int32,System.Int32,System.Boolean,System.Boolean)">
             <summary>
             Retrieves establishments
             </summary>
             <param name="page"></param>
             <param name="pageSize"></param>
-            <returns></returns>
-        </member>
-        <member name="M:GrooverAdm.Controllers.PlaceController.GetMyEstablishments(System.Int32,System.Int32)">
-            <summary>
-            Retrieves my establishments
-            </summary>
-            <param name="page"></param>
-            <param name="pageSize"></param>
+            <param name="mine"></param>
+            <param name="pendingReview"></param>
             <returns></returns>
         </member>
         <member name="M:GrooverAdm.Controllers.PlaceController.GetEstablishments(System.Double,System.Double,System.Double,System.Int32,System.Int32)">
