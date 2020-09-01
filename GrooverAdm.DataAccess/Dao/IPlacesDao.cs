@@ -45,15 +45,18 @@ namespace GrooverAdm.DataAccess.Dao
         /// </summary>
         /// <param name="offset"></param>
         /// <param name="quantity"></param>
+        /// <param name="onlyPending"></param>
         /// <returns></returns>
-        Task<IEnumerable<T>> GetPlaces(int offset, int quantity);
+        Task<IEnumerable<T>> GetPlaces(int offset, int quantity, bool onlyPending);
         /// <summary>
-        /// Gets <paramref name="quantity"/> places from the db skipping <paramref name="offset"/>
+        /// Gets <paramref name="quantity"/> places from the db skipping <paramref name="offset"/> from <paramref name="user"/>
         /// </summary>
         /// <param name="offset"></param>
         /// <param name="quantity"></param>
+        /// <param name="user"></param>
+        /// <param name="onlyPending"></param>
         /// <returns></returns>
-        Task<IEnumerable<T>> GetPlaces(int offset, int quantity, string user);
+        Task<IEnumerable<T>> GetPlaces(int offset, int quantity, string user, bool onlyPending);
         /// <summary>
         /// Gets all the places surrounding a location (Not going to implement this on firestore)
         /// </summary>

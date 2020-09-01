@@ -65,10 +65,14 @@ namespace GrooverAdm.DataAccess.Firestore.PlacesDao
             return res;
         }
 
-        public async Task<IEnumerable<Place>> GetPlaces(int offset, int quantity)
+        public async Task<IEnumerable<Place>> GetPlaces(int offset, int quantity, bool onlyPending)
         {
+            if (onlyPending)
+            {
+                var result = (await _db.Collection(COLLECTION_REF).WhereEqualTo(nameof(Place.PendingReview), onlyPending).Limit(quantity).Offset((offset - 1) * quantity).GetSnapshotAsync()).Select(r => r.ConvertTo<Place>()).ToList();
+                return result;
+            }
             var res = await _db.Collection(COLLECTION_REF).ListDocumentsAsync().Take(quantity).Skip(offset).SelectAwait(async r => (await r.GetSnapshotAsync()).ConvertTo<Place>()).ToListAsync();
-
             return res;
         }
 
@@ -104,13 +108,16 @@ namespace GrooverAdm.DataAccess.Firestore.PlacesDao
             return null;
         }
 
-        public async Task<IEnumerable<Place>> GetPlaces(int offset, int quantity, string user)
+        public async Task<IEnumerable<Place>> GetPlaces(int offset, int quantity, string user, bool onlyPending)
         {
             var userRef = _db.Collection(USERS_REF).Document(user);
-            var res = await _db.Collection(COLLECTION_REF).WhereArrayContains("Owners", userRef).Limit(quantity).Offset((offset - 1) * quantity)
+            var baseQuery = _db.Collection(COLLECTION_REF).WhereArrayContains("Owners", userRef);
+            if (onlyPending)
+                baseQuery = baseQuery.WhereEqualTo(nameof(Place.PendingReview), onlyPending);
+            var result = await baseQuery.Limit(quantity).Offset((offset - 1) * quantity)
                 .GetSnapshotAsync();
 
-            return res.Select(d => d.ConvertTo<Place>());
+            return result.Select(d => d.ConvertTo<Place>());
         }
 
         public async Task<Place> ReviewPlace(string placeId, bool approved, string reviewComment)

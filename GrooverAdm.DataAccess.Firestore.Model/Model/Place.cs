@@ -8,6 +8,12 @@ namespace GrooverAdm.DataAccess.Firestore.Model
     [FirestoreData]
     public class Place : DataAccess.Model.Place
     {
+
+        public Place()
+        {
+            Timetables = new List<Timetable>();
+            Owners = new List<DocumentReference>();
+        }
         [FirestoreDocumentId]
         public DocumentReference Reference { get; set; }
         [FirestoreProperty("address")]

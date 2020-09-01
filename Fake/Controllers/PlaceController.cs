@@ -49,33 +49,17 @@ namespace GrooverAdm.Controllers
         /// </summary>
         /// <param name="page"></param>
         /// <param name="pageSize"></param>
+        /// <param name="mine"></param>
+        /// <param name="pendingReview"></param>
         /// <returns></returns>
         [HttpGet]
         [Route("api/place/list")]
-        public async Task<ActionResult<IEnumerable<Place>>> GetEstablishments(int page = 1, int pageSize = 25)
+        public async Task<ActionResult<IEnumerable<Place>>> GetEstablishments(int page = 1, int pageSize = 25, bool mine=true, bool pendingReview=true)
         {
-
+            var user = GetUserId();
             if (page < 1)
                 return BadRequest();
-            var result = await _placesService.GetPlaces(page, pageSize);
-
-            return Ok(result);
-        }
-
-        /// <summary>
-        /// Retrieves my establishments
-        /// </summary>
-        /// <param name="page"></param>
-        /// <param name="pageSize"></param>
-        /// <returns></returns>
-        [HttpGet]
-        [Route("api/place/mine")]
-        public async Task<ActionResult<IEnumerable<Place>>> GetMyEstablishments(int page = 1, int pageSize = 25)
-        {
-            var id = GetUserId();
-            if (page < 1)
-                return BadRequest();
-            var result = await _placesService.GetPlaces(page, pageSize, id);
+            var result = await _placesService.GetPlaces(page, pageSize, user, mine, pendingReview);
 
             return Ok(result);
         }

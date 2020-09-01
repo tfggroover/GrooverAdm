@@ -81,7 +81,7 @@ namespace GrooverAdm.Business.Services.Places
 
         public async Task<IEnumerable<Place>> GetPlaces(int offset, int quantity)
         {
-            var dbResult = await _dao.GetPlaces(offset, quantity);
+            var dbResult = await _dao.GetPlaces(offset, quantity, false);
 
             return dbResult.Select(p => _mapper.ToApplicationEntity(p));
         }
@@ -171,10 +171,13 @@ namespace GrooverAdm.Business.Services.Places
             return false;
         }
 
-        public async Task<IEnumerable<Place>> GetPlaces(int offset, int quantity, string user)
+        public async Task<IEnumerable<Place>> GetPlaces(int offset, int quantity, string user, bool onlyUser, bool pendingReview)
         {
-            var res = await _dao.GetPlaces(offset, quantity, user);
-
+            IEnumerable<DataAccess.Firestore.Model.Place> res;
+            if (onlyUser)
+                res = await _dao.GetPlaces(offset, quantity, user, pendingReview);
+            else
+                res = await _dao.GetPlaces(offset, quantity, pendingReview);
             return res.Select(p => _mapper.ToApplicationEntity(p));
         }
 

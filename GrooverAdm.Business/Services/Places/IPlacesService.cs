@@ -51,7 +51,7 @@ namespace GrooverAdm.Business.Services.Places
         /// <param name="quantity"></param>
         /// <param name="user"></param>
         /// <returns></returns>
-        Task<IEnumerable<Place>> GetPlaces(int offset, int quantity, string user);
+        Task<IEnumerable<Place>> GetPlaces(int offset, int quantity, string user, bool onlyUser, bool pendingReview);
         /// <summary>
         /// Gets the places surrounding a location checking for the distance to each place at the end of the process
         /// </summary>
