@@ -11,6 +11,7 @@ export class PlaceSearchStatus {
   public pageSize: number = 10;
   public places: Place[] = [];
   public mineFilter: boolean = true;
+  public pendingReview: boolean = true;
   public moreResults: boolean = true;
 }
 @Injectable()
@@ -32,8 +33,21 @@ export class PlaceSearchStatusService {
     return this._placeSearchStatus.getValue();
   }
 
+  public setFilter(owner: boolean, pendingReview: boolean) {
+    const status = new PlaceSearchStatus();
+    status.mineFilter = owner;
+    status.pendingReview = pendingReview;
+    this.notifySubscribers(status);
+  }
+
+  public loadMore() {
+    const status = this.currentPlaceSearchStatus;
+    status.page++;
+    this.notifySubscribers(status);
+  }
+
   public reset() {
-    this._placeSearchStatus.next(new PlaceSearchStatus());
+    this.notifySubscribers(new PlaceSearchStatus());
   }
 
   public refreshAll() {
@@ -47,16 +61,13 @@ export class PlaceSearchStatusService {
 
   public onPlaceSearchStatusChange(current: PlaceSearchStatus) {
 
-    if (current.mineFilter) {
-      this.placeService.getMyPlaces(current.page, current.pageSize).toPromise().then(places => this.processResponse(places, current));
-    } else {
-      this.placeService.getPlaces(current.page, current.pageSize).toPromise().then(places => this.processResponse(places, current));
-    }
+    this.placeService.getPlaces(current.page, current.pageSize, current.mineFilter, current.pendingReview)
+      .toPromise().then(places => this.processResponse(places, current));
   }
 
   private processResponse(places: Place[], current: PlaceSearchStatus) {
     const currentNow = current;
-    currentNow.places.concat(...places);
+    currentNow.places.push(...places);
     currentNow.moreResults = places.length < current.pageSize;
 
     this._placeSearchStatus.next(currentNow);
@@ -75,12 +86,8 @@ export class PlaceService {
     return this.placeClient.getPlace(placeId);
   }
 
-  public getPlaces(page: number, pageSize: number): Observable<Place[]> {
-    return this.placeClient.getEstablishmentsAll(page, pageSize);
-  }
-
-  public getMyPlaces(page: number, pageSize: number): Observable<Place[]> {
-    return this.placeClient.getMyEstablishments(page, pageSize);
+  public getPlaces(page: number, pageSize: number, mine: boolean, pendingReview: boolean): Observable<Place[]> {
+    return this.placeClient.getEstablishmentsAll(page, pageSize, mine, pendingReview);
   }
 
   public createPlace(place: Place) {
