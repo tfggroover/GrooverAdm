@@ -26,7 +26,8 @@ namespace GrooverAdm.Business.Services
         }
 
 
-        public async Task<IEnumerable<ComparedPlace>> GetSimilarPlaylistsOrdered(Entities.Application.Playlist compared, List<Place> places, string spotifyToken)
+        public async Task<IEnumerable<ComparedPlace>> 
+            GetSimilarPlaylistsOrdered(Entities.Application.Playlist compared, List<Place> places, string spotifyToken)
         {
             var client = new HttpClient();
 
@@ -41,8 +42,10 @@ namespace GrooverAdm.Business.Services
             // ordenar según getSimilitud según la ponderación que se quiera
             var result = places.Select(p =>
             {
-                var similitude = GetSimilitude(ponderedTags[compared.Id], ponderedTags[p.MainPlaylist.Id]) * (fmSucc ? fmCoeff : 0.5)
-                    + GetSimilitude(ponderedGenres[compared.Id], ponderedGenres[p.MainPlaylist.Id]) * (spoSucc ? spoCoeff : 0.5);
+                var similitude = GetSimilitude(ponderedTags[compared.Id], ponderedTags[p.MainPlaylist.Id]) 
+                            * (fmSucc ? fmCoeff : 0.5)
+                    + GetSimilitude(ponderedGenres[compared.Id], ponderedGenres[p.MainPlaylist.Id]) 
+                            * (spoSucc ? spoCoeff : 0.5);
                 var res = new ComparedPlace (p);
                 res.Similitude = similitude;
                 return res;
@@ -51,7 +54,8 @@ namespace GrooverAdm.Business.Services
             return result;
         }
 
-        private static Dictionary<string, Dictionary<string, double>> PonderOccurences(ConcurrentDictionary<string, Dictionary<string, int>> occurrences)
+        private static Dictionary<string, Dictionary<string, double>> 
+            PonderOccurences(ConcurrentDictionary<string, Dictionary<string, int>> occurrences)
         {
             var tags = new Dictionary<string, Dictionary<string, int>>(occurrences);
             var ponderedTags = new Dictionary<string, Dictionary<string, double>>();
@@ -85,7 +89,8 @@ namespace GrooverAdm.Business.Services
             return ponderedTags;
         }
 
-        private async Task<OccurrenceSearcher> FindPlaylistOccurences(Entities.Application.Playlist compared, List<Place> places, string spotifyToken, HttpClient client)
+        private async Task<OccurrenceSearcher> FindPlaylistOccurences(Entities.Application.Playlist compared, 
+                List<Place> places, string spotifyToken, HttpClient client)
         {
             var occurrences = new OccurrenceSearcher();
 
@@ -94,14 +99,20 @@ namespace GrooverAdm.Business.Services
                 var header = await _spotify.GetPlaylistHeader(client, spotifyToken, place.MainPlaylist.Id);
                 if (header != null)
                 {
-                    if (header.Snapshot_id == place.MainPlaylist.SnapshotVersion && place.MainPlaylist.Tags != null && place.MainPlaylist.Tags.Any() && place.MainPlaylist.Genres != null && place.MainPlaylist.Genres.Any())
+                    if (header.Snapshot_id == place.MainPlaylist.SnapshotVersion 
+                        && place.MainPlaylist.Tags != null 
+                        && place.MainPlaylist.Tags.Any() 
+                        && place.MainPlaylist.Genres != null 
+                        && place.MainPlaylist.Genres.Any())
                     {
                         occurrences.UpdateTags(place.MainPlaylist.Tags, place.MainPlaylist.Id);
                         occurrences.UpdateGenres(place.MainPlaylist.Genres, place.MainPlaylist.Id);
                     }
                     else
                     {
-                        var playlistSongs = (await _spotify.GetSongsFromPlaylist(client, spotifyToken, place.MainPlaylist.Id)).Items.Select(s => new Entities.Application.Song(s)).ToList();
+                        var playlistSongs = 
+                            (await _spotify.GetSongsFromPlaylist(client, spotifyToken, place.MainPlaylist.Id))
+                            .Items.Select(s => new Entities.Application.Song(s)).ToList();
 
                         await GetTagsAndGenresFromSongs(spotifyToken, place.MainPlaylist.Id, playlistSongs, occurrences);
 
@@ -210,9 +221,12 @@ namespace GrooverAdm.Business.Services
 
     public class OccurrenceSearcher
     {
-        public ConcurrentDictionary<string, Dictionary<string, int>> Tags = new ConcurrentDictionary<string, Dictionary<string, int>>();
-        public ConcurrentDictionary<string, Dictionary<string, int>> Genres = new ConcurrentDictionary<string, Dictionary<string, int>>();
-        public ConcurrentDictionary<string, List<string>> Artists = new ConcurrentDictionary<string, List<string>>();
+        public ConcurrentDictionary<string, Dictionary<string, int>> Tags = 
+            new ConcurrentDictionary<string, Dictionary<string, int>>();
+        public ConcurrentDictionary<string, Dictionary<string, int>> Genres = 
+            new ConcurrentDictionary<string, Dictionary<string, int>>();
+        public ConcurrentDictionary<string, List<string>> Artists = 
+            new ConcurrentDictionary<string, List<string>>();
 
 
         public Dictionary<string, int> GetTags(string playlist)
