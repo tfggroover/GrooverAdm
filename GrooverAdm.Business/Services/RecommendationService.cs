@@ -18,6 +18,8 @@ namespace GrooverAdm.Business.Services
         private readonly LastFmService lastFmService;
         private readonly IConfiguration Configuration;
 
+        public RecommendationService() { }
+
         public RecommendationService(SpotifyService spotify, LastFmService lastFmService, IConfiguration configuration)
         {
             _spotify = spotify;
