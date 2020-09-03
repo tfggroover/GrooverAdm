@@ -97,8 +97,8 @@ namespace GrooverAdmSPA.Controllers
 
                     if (spotiCredentials == null)
                         return BadRequest("Spotify returned a 400");
-
-                    log.LogInformation($"Spotify credentials provided Expires in: {spotiCredentials.Expires_in}");
+                    
+                    log.LogInformation($"Spotify credentials provided: {JsonConvert.SerializeObject(spotiCredentials)}");
                     var userData = await _spotifyService.UserInfoRequest(client, spotiCredentials);
 
                     log.LogInformation($"User data: name: {userData.Display_name} user: {userData.Id}");
