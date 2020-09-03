@@ -78,7 +78,7 @@
         </member>
         <member name="M:GrooverAdm.Controllers.PlaceController.DeleteEstablishment(System.String)">
             <summary>
-            NOT IMPLEMENTED
+            Deletes an establishment
             </summary>
             <param name="establishmentId"></param>
             <returns></returns>

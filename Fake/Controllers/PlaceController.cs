@@ -231,7 +231,7 @@ namespace GrooverAdm.Controllers
         }
 
         /// <summary>
-        /// NOT IMPLEMENTED
+        /// Deletes an establishment
         /// </summary>
         /// <param name="establishmentId"></param>
         /// <returns></returns>
