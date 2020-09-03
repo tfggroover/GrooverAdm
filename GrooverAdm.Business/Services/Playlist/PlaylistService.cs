@@ -59,7 +59,7 @@ namespace GrooverAdm.Business.Services.Playlist
             // If it is not up to date, update it
             var result = _mapper.ToApplicationEntity(dbResult);
             if (includeSongs)
-                result.Songs = await _songService.GetSongsFromPlaylist(place, dbResult.Reference.Id, page, pageSize);
+                result.Songs = await _songService.GetSongsFromPlaylist(place, "mainPlaylist", page, pageSize);
             result.ResetChange();
             return result;
         }
