@@ -51,7 +51,7 @@ export class AuthorizeService {
   constructor(public auth: AngularFireAuth, private userManager: UserManager, private userClient: UserClient) {
     this.userChanged = this.userSubject.asObservable();
     this.userDataChanged = this.userData.asObservable();
-   }
+  }
   public isAuthenticated(): Observable<boolean> {
     return this.getUser().pipe(map(u => !!u));
   }
@@ -78,7 +78,7 @@ export class AuthorizeService {
   public setCurrentUser() {
     this.userClient.getCurrentUser().subscribe(user => {
       const current = this.userManager.saveUser(user);
-      this.timer = setTimeout(() => this.trySignInSilent(), user.expiresIn);
+      this.timer = setTimeout(() => this.trySignInSilent(), user.expiresIn * 1000);
       this.userSubject.next(current);
       this.userData.next(user);
     });
@@ -90,6 +90,7 @@ export class AuthorizeService {
     let user: CompleteUser = null;
     try {
       user = await this.userManager.signinSilent().toPromise();
+      this.timer = setTimeout(() => this.trySignInSilent(), user.spotifyAuthentication.expires_in * 1000);
       this.userManager.storeUser(user);
       this.userSubject.next(user);
     } catch (silentError) {
@@ -142,23 +143,11 @@ export class AuthorizeService {
     }
   }
 
-  public async signOut(state: any): Promise<IAuthenticationResult> {
-    try {
-
-
-      await this.ensureUserManagerInitialized();
-      this.userManager.signOut();
-      this.userSubject.next(null);
-      return this.success(state);
-    } catch (popupSignOutError) {
-      console.log('Popup signout error: ', popupSignOutError);
-      try {
-        return this.redirect();
-      } catch (redirectSignOutError) {
-        console.log('Redirect signout error: ', popupSignOutError);
-        return this.error(redirectSignOutError);
-      }
-    }
+  public async signOut(state?: any): Promise<IAuthenticationResult> {
+    await this.ensureUserManagerInitialized();
+    this.userManager.signOut();
+    this.userSubject.next(null);
+    return this.success(state);
   }
 
   public async completeSignOut(url: string): Promise<IAuthenticationResult> {

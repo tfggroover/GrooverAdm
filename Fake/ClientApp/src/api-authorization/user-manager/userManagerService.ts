@@ -48,7 +48,7 @@ export class UserManager {
 
     this.iframeNavigator = new IFrameNavigator();
     this.popupNavigator = new PopupNavigator();
-    this.authUrl = baseUrl + 'home/auth';
+    this.authUrl = baseUrl + '/home/auth';
     this.closedPopup = this.closedEvent.asObservable();
   }
 
@@ -121,6 +121,7 @@ export class UserManager {
 
   public signOut() {
     this.removeUser();
+    this.fireAuth.auth.signOut();
   }
 
 
@@ -160,6 +161,7 @@ export class UserManager {
     return from(this._loadUser().toPromise().then(async user => {
       if (!!user?.spotifyAuthentication?.refresh_Token) {
         const authorizationResponse = await this.homeClient.auth(user.spotifyAuthentication.refresh_Token).toPromise();
+        authorizationResponse.spotify.refresh_Token = user.spotifyAuthentication.refresh_Token;
         const fireUser = await this.fireAuth.auth.signInWithCustomToken(authorizationResponse.firebase);
         const result = new CompleteUser(fireUser.user.displayName, authorizationResponse.spotify, fireUser.user);
         return result;
