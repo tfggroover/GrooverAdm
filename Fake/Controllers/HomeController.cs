@@ -20,6 +20,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
+using Microsoft.Extensions.Logging;
 
 namespace GrooverAdmSPA.Controllers
 {
@@ -33,6 +34,7 @@ namespace GrooverAdmSPA.Controllers
         private readonly IConfiguration Configuration;
         private readonly SpotifyService _spotifyService;
         private readonly IUserService userService;
+        private readonly ILogger log;
 
         /// <summary>
         /// Constructor
@@ -40,11 +42,12 @@ namespace GrooverAdmSPA.Controllers
         /// <param name="configuration"></param>
         /// <param name="spotifyService"></param>
         /// <param name="userService"></param>
-        public HomeController(IConfiguration configuration, SpotifyService spotifyService, IUserService userService)
+        public HomeController(IConfiguration configuration, SpotifyService spotifyService, IUserService userService, ILogger<HomeController> log)
         {
             Configuration = configuration;
             _spotifyService = spotifyService;
             this.userService = userService;
+            this.log = log;
         }
 
 
@@ -73,7 +76,7 @@ namespace GrooverAdmSPA.Controllers
         [HttpGet("callback")]
         public async Task<ActionResult<AuthenticationResponse>> AuthCallback(string code, string State = null)
         {
-
+            this.log.LogInformation("Entered mobile callback");
             if (string.IsNullOrEmpty(Request.Cookies["State"]))
             {
                 return BadRequest("State cookie not set or expired. Maybe you took too long to authorize. Please try again.");
@@ -89,10 +92,16 @@ namespace GrooverAdmSPA.Controllers
             {
                 using (HttpClient client = new HttpClient())
                 {
-                    var spotiCredentials = await _spotifyService.AuthRequest(code, client);
+                    log.LogInformation("Entering Spotify AuthResquest");
+                    var spotiCredentials = await _spotifyService.AuthRequest(code, client, false);
 
+                    if (spotiCredentials == null)
+                        return BadRequest("Spotify returned a 400");
+
+                    log.LogInformation($"Spotify credentials provided Expires in: {spotiCredentials.Expires_in}");
                     var userData = await _spotifyService.UserInfoRequest(client, spotiCredentials);
 
+                    log.LogInformation($"User data: name: {userData.Display_name} user: {userData.Id}");
                     var token = await this.userService.GenerateToken(userData, spotiCredentials);
 
                     result = new AuthenticationResponse
@@ -138,7 +147,7 @@ namespace GrooverAdmSPA.Controllers
             {
                 using (HttpClient client = new HttpClient())
                 {
-                    var spotiCredentials = await _spotifyService.AuthRequest(code, client);
+                    var spotiCredentials = await _spotifyService.AuthRequest(code, client, true);
                     if (spotiCredentials == null)
                         BadRequest("Invalid request to spotify");
                     var userData = await _spotifyService.UserInfoRequest(client, spotiCredentials);

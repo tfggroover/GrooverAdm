@@ -16,6 +16,7 @@ namespace GrooverAdm.Business.Services
         private readonly string _clientId;
         private readonly string _accessEndpoint;
         private readonly string _redirectURI;
+        private readonly string redirectURIMobile;
         private readonly string _clientSecret;
         private readonly string _scopes;
 
@@ -27,10 +28,11 @@ namespace GrooverAdm.Business.Services
             _redirectURI = _configuration["RedirectURI"];
             _clientSecret = _configuration["ClientSecret"];
             _scopes = _configuration["Scopes"];
+            redirectURIMobile = _configuration["RedirectURIMobile"];
         }
 
 
-        public async Task<AuthorizationCodeFlowResponse> AuthRequest(string code, HttpClient client)
+        public async Task<AuthorizationCodeFlowResponse> AuthRequest(string code, HttpClient client, bool web)
         {
             var success = false;
             while (!success)
@@ -43,7 +45,7 @@ namespace GrooverAdm.Business.Services
                     Content = new FormUrlEncodedContent(new[]
                     {
                             new KeyValuePair<string, string>("code", code),
-                            new KeyValuePair<string, string>("redirect_uri", _redirectURI),
+                            new KeyValuePair<string, string>("redirect_uri", web ? _redirectURI : redirectURIMobile),
                             new KeyValuePair<string, string>("grant_type", "authorization_code")
                         })
                 };
@@ -62,7 +64,7 @@ namespace GrooverAdm.Business.Services
                 else if (response.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
                     Thread.Sleep((int)response.Headers.RetryAfter.Delta.Value.TotalMilliseconds);
                 else
-                    break;
+                    throw new GrooverAdm.Common.GrooverException($"Spotify returned with 400 response: message {await response.Content.ReadAsStringAsync()}", 400);
             }
             return null;
         }

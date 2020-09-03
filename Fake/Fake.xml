@@ -143,7 +143,7 @@
             Will be renamed to authController
             </summary>
         </member>
-        <member name="M:GrooverAdmSPA.Controllers.HomeController.#ctor(Microsoft.Extensions.Configuration.IConfiguration,GrooverAdm.Business.Services.SpotifyService,GrooverAdm.Business.Services.User.IUserService)">
+        <member name="M:GrooverAdmSPA.Controllers.HomeController.#ctor(Microsoft.Extensions.Configuration.IConfiguration,GrooverAdm.Business.Services.SpotifyService,GrooverAdm.Business.Services.User.IUserService,Microsoft.Extensions.Logging.ILogger{GrooverAdmSPA.Controllers.HomeController})">
             <summary>
             Constructor
             </summary>
