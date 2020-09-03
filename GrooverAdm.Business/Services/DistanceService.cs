@@ -145,7 +145,7 @@ namespace GrooverAdmSPA.Business.Services
         /// Validates the inputted geohash and throws an error if it is invalid.
         /// </summary>
         /// <param name="geohash">The geohash to be Validated</param>
-        private static void ValidateGeohash(string geohash)
+        public static void ValidateGeohash(string geohash)
         {
             if(string.IsNullOrWhiteSpace(geohash))
                 throw new ArgumentException("Geohash cannot be an empty string");

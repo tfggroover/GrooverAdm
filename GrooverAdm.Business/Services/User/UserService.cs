@@ -113,8 +113,9 @@ namespace GrooverAdm.Business.Services.User
                     PhotoUrl = userData.Images.FirstOrDefault()?.Url
                 });
             }
-
             var user = new Entities.Application.User(userData, credentials.Access_token, credentials.Expires_in, DateTime.UtcNow);
+            if (!string.IsNullOrEmpty(credentials.Refresh_Token))
+                user.RefreshToken = credentials.Refresh_Token;
             await this.CreateOrUpdateUser(user);
 
             var token = await auth.CreateCustomTokenAsync(user.Id);

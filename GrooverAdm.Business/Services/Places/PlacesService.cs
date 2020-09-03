@@ -10,10 +10,12 @@ using GrooverAdm.Mappers.Firestore;
 using GrooverAdm.Mappers.Interface;
 using GrooverAdmSPA.Business.Services;
 using Microsoft.Extensions.Logging;
+using NGeoHash;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Place = GrooverAdm.Entities.Application.Place;
 
@@ -49,15 +51,27 @@ namespace GrooverAdm.Business.Services.Places
         {
             if (!place.Owners.Any())
                 place.Owners.Add(new Entities.Application.ListableUser { Id = user });
+            if(place.MainPlaylist.Id != null && string.IsNullOrEmpty(place.MainPlaylist.Name))
+            {
+                var dbUser = await this.userService.GetUser(user);
+                var play = await this.playlistService.GetPlaylistFromSpotify(place.MainPlaylist.Id, dbUser.CurrentToken);
+                if (play != null)
+                    place.MainPlaylist = play;
+            }
+
+            place.Geohash = GeoHash.Encode(place.Location.Latitude, place.Location.Longitude);
+
             var converted = _mapper.ToDbEntity(place);
             var dbResult = await _dao.CreatePlace(converted);
 
             if (place.MainPlaylist != null)
-                await this.playlistService.CreatePlaylist(place.Id, place.MainPlaylist);
+                await this.playlistService.CreatePlaylist(dbResult.Reference.Id, place.MainPlaylist);
 
 
             return _mapper.ToApplicationEntity(dbResult);
         }
+
+
 
         public async Task<bool> DeletePlace(string id, string user)
         {
@@ -68,6 +82,7 @@ namespace GrooverAdm.Business.Services.Places
         {
             var dbResult = await _dao.GetPlace(id);
             var res = _mapper.ToApplicationEntity(dbResult);
+            res.MainPlaylist = await playlistService.GetMainPlaylistFromPlace(res.Id, true, 1, int.MaxValue);
             res.Owners = (await userService.GetOwners(res.Owners.Select(o => o.Id))).ToList();
             return res;
         }
@@ -147,8 +162,30 @@ namespace GrooverAdm.Business.Services.Places
 
         public async Task<Place> UpdatePlace(Place place, string user)
         {
-            var converted = _mapper.ToDbEntity(place);
+            var old = await this.GetPlace(place.Id);
+            if (!old.Owners.Select(o => o.Id).Contains(user))
+                throw new GrooverAuthException("Current User has no permissions to update this place");
+            var fullUser = await this.userService.GetUser(user);
+            var playlistNeedsUpdate = false;
+            var dbFormat = PlaylistService.ParseSpotifyPlaylist(place.MainPlaylist.Id);
+            if(old.MainPlaylist?.Id != dbFormat || (!old.MainPlaylist?.Songs?.Any() ?? true))
+            {
+                old.MainPlaylist = await this.playlistService.GetPlaylistFromSpotify(place.MainPlaylist.Id, fullUser.CurrentToken);
+                playlistNeedsUpdate = true;
+            }
+
+            old.DisplayName = place.DisplayName;
+            old.Location = place.Location;
+            old.Address = place.Address;
+            old.PendingReview = !old.Approved;
+            old.Phone = place.Phone;
+            old.Timetables = place.Timetables;
+            old.Geohash = GeoHash.Encode(old.Location.Latitude, old.Location.Longitude);
+
+            var converted = _mapper.ToDbEntity(old);
             var dbResult = await _dao.UpdatePlace(converted);
+            if (playlistNeedsUpdate)
+                await playlistService.SetPlaylist(old.Id, old.MainPlaylist, true);
 
             return _mapper.ToApplicationEntity(dbResult);
         }

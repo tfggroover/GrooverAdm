@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace GrooverAdm.Business.Services.Playlist
@@ -16,12 +17,17 @@ namespace GrooverAdm.Business.Services.Playlist
         private readonly IPlaylistDao<DataAccess.Firestore.Model.Playlist> _dao;
         private readonly IPlaylistMapper<DataAccess.Firestore.Model.Playlist> _mapper;
         private readonly ISongService _songService;
+        private readonly SpotifyService spotify;
        
-        public PlaylistService(IPlaylistDao<DataAccess.Firestore.Model.Playlist> dao, IPlaylistMapper<DataAccess.Firestore.Model.Playlist> mapper, ISongService songService)
+        public PlaylistService(IPlaylistDao<DataAccess.Firestore.Model.Playlist> dao,
+            IPlaylistMapper<DataAccess.Firestore.Model.Playlist> mapper,
+            ISongService songService,
+            SpotifyService spotify)
         {
             this._dao = dao;
             this._mapper = mapper;
             this._songService = songService;
+            this.spotify = spotify;
         }
 
         public async Task<Entities.Application.Playlist> CreatePlaylist(string place, Entities.Application.Playlist playlist)
@@ -69,6 +75,39 @@ namespace GrooverAdm.Business.Services.Playlist
             if (includeSongs)
                 result.Songs = await _songService.GetSongsFromPlaylist(place, dbResult.Reference.Id, 1, int.MaxValue);
             return result;
+        }
+
+        public async Task<Entities.Application.Playlist> GetPlaylistFromSpotify(string id, string token)
+        {
+            id = ParseSpotifyPlaylist(id);
+            var playlist = await this.spotify.GetPlaylist(new System.Net.Http.HttpClient(), token, id);
+            if (playlist == null)
+                return null;
+            return new Entities.Application.Playlist
+            {
+                Id = playlist.Id,
+                ImageUrl = playlist.Images.Count > 0 ? playlist.Images[0].Url : "",
+                SnapshotVersion = playlist.Snapshot_id,
+                Name = playlist.Name,
+                Songs = playlist.Tracks.Items.Select(i => new Entities.Application.Song
+                {
+                    Name = i.Track.Name,
+                    Id = i.Track.Id,
+                    Artists = i.Track.Artists.Select(a => new Artist { Id = a.Id, Name = a.Name }).ToList()
+                }).ToList()
+            };
+        }
+
+        public static string ParseSpotifyPlaylist(string input)
+        {
+            var id = input;
+            if (Regex.IsMatch(id, "spotify:playlist:\\w+"))
+            {
+                var split = id.Split(":");
+                id = split[split.Length - 1];
+            }
+
+            return id;
         }
 
         public async Task<List<Entities.Application.Playlist>> GetWeeklyPlaylistsFromPlace(string place, bool includeSongs)
