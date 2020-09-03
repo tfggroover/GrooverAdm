@@ -7,7 +7,7 @@
   },
   "servers": [
     {
-      "url": "https://tfggroover.azurewebsites.net/"
+      "url": "https://localhost:44335"
     }
   ],
   "paths": {
@@ -16,6 +16,7 @@
         "tags": [
           "Home"
         ],
+        "summary": "Autenticación para el móvil y la App",
         "operationId": "Home_Auth",
         "parameters": [
           {
@@ -30,7 +31,7 @@
         ],
         "responses": {
           "400": {
-            "description": ""
+            "description": "The specified refresh token is not valid"
           },
           "200": {
             "description": "",
@@ -50,11 +51,13 @@
         "tags": [
           "Home"
         ],
+        "summary": "Callback de spotify con un token fresco",
         "operationId": "Home_AuthCallback",
         "parameters": [
           {
             "name": "code",
             "in": "query",
+            "description": "Token",
             "schema": {
               "type": "string",
               "nullable": true
@@ -64,6 +67,7 @@
           {
             "name": "State",
             "in": "query",
+            "description": "Cookie de estado",
             "schema": {
               "type": "string",
               "nullable": true
@@ -90,11 +94,13 @@
         "tags": [
           "Home"
         ],
+        "summary": "Callback de spotify con un token fresco",
         "operationId": "Home_AuthWebCallback",
         "parameters": [
           {
             "name": "code",
             "in": "query",
+            "description": "Token",
             "schema": {
               "type": "string",
               "nullable": true
@@ -104,6 +110,7 @@
           {
             "name": "State",
             "in": "query",
+            "description": "Cookie de estado",
             "schema": {
               "type": "string",
               "nullable": true
@@ -131,6 +138,7 @@
         "tags": [
           "Place"
         ],
+        "summary": "Retrieves establishments",
         "operationId": "Place_GetEstablishmentsAll",
         "parameters": [
           {
@@ -199,11 +207,13 @@
         "tags": [
           "Place"
         ],
+        "summary": "Retrieves the establishments surrounding [, ] in \nthe distance provided",
         "operationId": "Place_GetEstablishments",
         "parameters": [
           {
             "name": "lat",
             "in": "query",
+            "description": "Latitude",
             "schema": {
               "type": "number",
               "format": "double"
@@ -213,6 +223,7 @@
           {
             "name": "lon",
             "in": "query",
+            "description": "Longitude",
             "schema": {
               "type": "number",
               "format": "double"
@@ -222,6 +233,7 @@
           {
             "name": "distance",
             "in": "query",
+            "description": "Distance in METERS",
             "schema": {
               "type": "number",
               "format": "double"
@@ -274,6 +286,7 @@
         "tags": [
           "Place"
         ],
+        "summary": "Creates an establishment",
         "operationId": "Place_CreateEstablishment",
         "requestBody": {
           "x-name": "establishment",
@@ -309,6 +322,7 @@
         "tags": [
           "Place"
         ],
+        "summary": "Updates a establishment",
         "operationId": "Place_UpdateEstablishment",
         "requestBody": {
           "x-name": "establishment",
@@ -344,6 +358,7 @@
         "tags": [
           "Place"
         ],
+        "summary": "Deletes an establishment",
         "operationId": "Place_DeleteEstablishment",
         "parameters": [
           {
@@ -381,6 +396,7 @@
         "tags": [
           "Place"
         ],
+        "summary": "Obtiene los lugares recomendados en funcion de la playlist enviada",
         "operationId": "Place_GetRecommendedEstablishmentsForPlaylist",
         "parameters": [
           {
@@ -477,6 +493,7 @@
         "tags": [
           "Place"
         ],
+        "summary": "Obtiene los lugares recomendados en funcion del top50 del usuario",
         "operationId": "Place_GetRecommendedEstablishmentsForTop",
         "parameters": [
           {
@@ -564,6 +581,7 @@
         "tags": [
           "Place"
         ],
+        "summary": "Gets a single place from the db",
         "operationId": "Place_GetPlace",
         "parameters": [
           {
@@ -601,6 +619,7 @@
         "tags": [
           "Place"
         ],
+        "summary": "We gucci",
         "operationId": "Place_RecognizeSong",
         "parameters": [
           {
@@ -651,6 +670,7 @@
         "tags": [
           "Place"
         ],
+        "summary": "Rates a place for a user, if the register is already existing, it updates it",
         "operationId": "Place_RatePlace",
         "parameters": [
           {
@@ -697,6 +717,7 @@
         "tags": [
           "Place"
         ],
+        "summary": "Rates a place for a user, if the register is already existing, it updates it",
         "operationId": "Place_ReviewPlace",
         "parameters": [
           {
@@ -746,6 +767,7 @@
         "tags": [
           "User"
         ],
+        "summary": "Returns the currentUser",
         "operationId": "User_GetCurrentUser",
         "responses": {
           "200": {
@@ -766,6 +788,7 @@
         "tags": [
           "User"
         ],
+        "summary": "Sets a user as admin",
         "operationId": "User_SetAdmin",
         "parameters": [
           {
@@ -798,6 +821,7 @@
         "tags": [
           "User"
         ],
+        "summary": "Returns users according to the filters specified",
         "operationId": "User_GetUsers",
         "parameters": [
           {
@@ -830,6 +854,7 @@
           {
             "name": "admin",
             "in": "query",
+            "description": "Only admins",
             "schema": {
               "type": "boolean"
             },
@@ -856,6 +881,7 @@
         "tags": [
           "User"
         ],
+        "summary": "Delete the current user's account",
         "operationId": "User_DeleteAccount",
         "responses": {
           "200": {

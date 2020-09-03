@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GrooverAdm.DataAccess", "Gr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GrooverAdm.Entities", "GrooverAdm.Entities\GrooverAdm.Entities.csproj", "{3EC77722-34EF-49CA-A1CB-1AC77DCFC922}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GrooverAdm", "Fake\GrooverAdm.csproj", "{82F1853C-B11E-4A27-A5E0-B101F12EF5E1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GrooverAdm", "GrooverAdm\GrooverAdm.csproj", "{82F1853C-B11E-4A27-A5E0-B101F12EF5E1}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GrooverAdm.DataAccess.Firestore", "GrooverAdm.DataAccess.Firestore.Model\GrooverAdm.DataAccess.Firestore.csproj", "{60C5DB43-712B-4A41-9726-991EA7B2DCE4}"
 EndProject

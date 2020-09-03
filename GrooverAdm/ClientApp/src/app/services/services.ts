@@ -22,9 +22,13 @@ export class HomeClient {
 
     constructor(@Inject(HttpClient) http: HttpClient, @Optional() @Inject(BASE_URL) baseUrl?: string) {
         this.http = http;
-        this.baseUrl = baseUrl ? baseUrl : "https://tfggroover.azurewebsites.net";
+        this.baseUrl = baseUrl ? baseUrl : "https://localhost:44335";
     }
 
+    /**
+     * Autenticación para el móvil y la App
+     * @param refresh_token (optional) 
+     */
     auth(refresh_token: string | null | undefined): Observable<AuthenticationResponse> {
         let url_ = this.baseUrl + "/home/auth?";
         if (refresh_token !== undefined && refresh_token !== null)
@@ -62,7 +66,7 @@ export class HomeClient {
         let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
         if (status === 400) {
             return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
-            return throwException("A server side error occurred.", status, _responseText, _headers);
+            return throwException("The specified refresh token is not valid", status, _responseText, _headers);
             }));
         } else if (status === 200) {
             return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
@@ -79,6 +83,11 @@ export class HomeClient {
         return _observableOf<AuthenticationResponse>(<any>null);
     }
 
+    /**
+     * Callback de spotify con un token fresco
+     * @param code (optional) Token
+     * @param state (optional) Cookie de estado
+     */
     authCallback(code: string | null | undefined, state: string | null | undefined): Observable<AuthenticationResponse> {
         let url_ = this.baseUrl + "/home/callback?";
         if (code !== undefined && code !== null)
@@ -131,6 +140,11 @@ export class HomeClient {
         return _observableOf<AuthenticationResponse>(<any>null);
     }
 
+    /**
+     * Callback de spotify con un token fresco
+     * @param code (optional) Token
+     * @param state (optional) Cookie de estado
+     */
     authWebCallback(code: string | null | undefined, state: string | null | undefined): Observable<FileResponse> {
         let url_ = this.baseUrl + "/home/web-callback?";
         if (code !== undefined && code !== null)
@@ -190,9 +204,16 @@ export class PlaceClient {
 
     constructor(@Inject(HttpClient) http: HttpClient, @Optional() @Inject(BASE_URL) baseUrl?: string) {
         this.http = http;
-        this.baseUrl = baseUrl ? baseUrl : "https://tfggroover.azurewebsites.net/";
+        this.baseUrl = baseUrl ? baseUrl : "https://localhost:44335";
     }
 
+    /**
+     * Retrieves establishments
+     * @param page (optional) 
+     * @param pageSize (optional) 
+     * @param mine (optional) 
+     * @param pendingReview (optional) 
+     */
     getEstablishmentsAll(page: number | undefined, pageSize: number | undefined, mine: boolean | undefined, pendingReview: boolean | undefined): Observable<Place[]> {
         let url_ = this.baseUrl + "/api/place/list?";
         if (page === null)
@@ -261,6 +282,15 @@ export class PlaceClient {
         return _observableOf<Place[]>(<any>null);
     }
 
+    /**
+     * Retrieves the establishments surrounding [, ] in 
+    the distance provided
+     * @param lat (optional) Latitude
+     * @param lon (optional) Longitude
+     * @param distance (optional) Distance in METERS
+     * @param page (optional) 
+     * @param pageSize (optional) 
+     */
     getEstablishments(lat: number | undefined, lon: number | undefined, distance: number | undefined, page: number | undefined, pageSize: number | undefined): Observable<Place[]> {
         let url_ = this.baseUrl + "/api/place?";
         if (lat === null)
@@ -333,6 +363,9 @@ export class PlaceClient {
         return _observableOf<Place[]>(<any>null);
     }
 
+    /**
+     * Creates an establishment
+     */
     createEstablishment(establishment: Place): Observable<Place> {
         let url_ = this.baseUrl + "/api/place";
         url_ = url_.replace(/[?&]$/, "");
@@ -385,6 +418,9 @@ export class PlaceClient {
         return _observableOf<Place>(<any>null);
     }
 
+    /**
+     * Updates a establishment
+     */
     updateEstablishment(establishment: Place): Observable<Place> {
         let url_ = this.baseUrl + "/api/place";
         url_ = url_.replace(/[?&]$/, "");
@@ -437,6 +473,10 @@ export class PlaceClient {
         return _observableOf<Place>(<any>null);
     }
 
+    /**
+     * Deletes an establishment
+     * @param establishmentId (optional) 
+     */
     deleteEstablishment(establishmentId: string | null | undefined): Observable<FileResponse> {
         let url_ = this.baseUrl + "/api/place?";
         if (establishmentId !== undefined && establishmentId !== null)
@@ -485,6 +525,15 @@ export class PlaceClient {
         return _observableOf<FileResponse>(<any>null);
     }
 
+    /**
+     * Obtiene los lugares recomendados en funcion de la playlist enviada
+     * @param playlistId (optional) 
+     * @param lat (optional) 
+     * @param lon (optional) 
+     * @param distance (optional) 
+     * @param page (optional) 
+     * @param pageSize (optional) 
+     */
     getRecommendedEstablishmentsForPlaylist(playlistId: string | null | undefined, lat: number | undefined, lon: number | undefined, distance: number | undefined, page: number | undefined, pageSize: number | undefined): Observable<ComparedPlace[]> {
         let url_ = this.baseUrl + "/api/place/recommended?";
         if (playlistId !== undefined && playlistId !== null)
@@ -566,6 +615,14 @@ export class PlaceClient {
         return _observableOf<ComparedPlace[]>(<any>null);
     }
 
+    /**
+     * Obtiene los lugares recomendados en funcion del top50 del usuario
+     * @param lat (optional) 
+     * @param lon (optional) 
+     * @param distance (optional) 
+     * @param page (optional) 
+     * @param pageSize (optional) 
+     */
     getRecommendedEstablishmentsForTop(lat: number | undefined, lon: number | undefined, distance: number | undefined, page: number | undefined, pageSize: number | undefined): Observable<ComparedPlace[]> {
         let url_ = this.baseUrl + "/api/place/recommended/top?";
         if (lat === null)
@@ -645,6 +702,9 @@ export class PlaceClient {
         return _observableOf<ComparedPlace[]>(<any>null);
     }
 
+    /**
+     * Gets a single place from the db
+     */
     getPlace(id: string | null): Observable<Place> {
         let url_ = this.baseUrl + "/api/place/{id}";
         if (id === undefined || id === null)
@@ -696,6 +756,9 @@ export class PlaceClient {
         return _observableOf<Place>(<any>null);
     }
 
+    /**
+     * We gucci
+     */
     recognizeSong(establishmentId: string | null, song: Song): Observable<FileResponse> {
         let url_ = this.baseUrl + "/api/place/{establishmentId}/song";
         if (establishmentId === undefined || establishmentId === null)
@@ -749,6 +812,10 @@ export class PlaceClient {
         return _observableOf<FileResponse>(<any>null);
     }
 
+    /**
+     * Rates a place for a user, if the register is already existing, it updates it
+     * @param value (optional) 
+     */
     ratePlace(placeId: string | null, value: number | undefined): Observable<Place> {
         let url_ = this.baseUrl + "/api/place/{placeId}/rate?";
         if (placeId === undefined || placeId === null)
@@ -804,6 +871,9 @@ export class PlaceClient {
         return _observableOf<Place>(<any>null);
     }
 
+    /**
+     * Rates a place for a user, if the register is already existing, it updates it
+     */
     reviewPlace(placeId: string | null, review: PlaceReview): Observable<Place> {
         let url_ = this.baseUrl + "/api/place/{placeId}/review";
         if (placeId === undefined || placeId === null)
@@ -868,9 +938,12 @@ export class UserClient {
 
     constructor(@Inject(HttpClient) http: HttpClient, @Optional() @Inject(BASE_URL) baseUrl?: string) {
         this.http = http;
-        this.baseUrl = baseUrl ? baseUrl : "https://tfggroover.azurewebsites.net/";
+        this.baseUrl = baseUrl ? baseUrl : "https://localhost:44335";
     }
 
+    /**
+     * Returns the currentUser
+     */
     getCurrentUser(): Observable<User> {
         let url_ = this.baseUrl + "/api/user/currentuser";
         url_ = url_.replace(/[?&]$/, "");
@@ -919,6 +992,9 @@ export class UserClient {
         return _observableOf<User>(<any>null);
     }
 
+    /**
+     * Sets a user as admin
+     */
     setAdmin(userId: string | null): Observable<ListableUser> {
         let url_ = this.baseUrl + "/api/user/{userId}/admin";
         if (userId === undefined || userId === null)
@@ -970,6 +1046,13 @@ export class UserClient {
         return _observableOf<ListableUser>(<any>null);
     }
 
+    /**
+     * Returns users according to the filters specified
+     * @param page (optional) 
+     * @param pageSize (optional) 
+     * @param name (optional) 
+     * @param admin (optional) Only admins
+     */
     getUsers(page: number | undefined, pageSize: number | undefined, name: string | null | undefined, admin: boolean | undefined): Observable<ListableUser[]> {
         let url_ = this.baseUrl + "/api/user?";
         if (page === null)
@@ -1036,6 +1119,9 @@ export class UserClient {
         return _observableOf<ListableUser[]>(<any>null);
     }
 
+    /**
+     * Delete the current user's account
+     */
     deleteAccount(): Observable<boolean> {
         let url_ = this.baseUrl + "/api/user";
         url_ = url_.replace(/[?&]$/, "");
@@ -1119,7 +1205,7 @@ export class AuthenticationResponse implements IAuthenticationResponse {
         data["spotify"] = this.spotify ? this.spotify.toJSON() : <any>undefined;
         data["spotifyUserData"] = this.spotifyUserData ? this.spotifyUserData.toJSON() : <any>undefined;
         data["firebase"] = this.firebase;
-        return data;
+        return data; 
     }
 }
 
@@ -1167,7 +1253,7 @@ export abstract class IAuthResponse implements IIAuthResponse {
         data["expires_in"] = this.expires_in;
         data["scope"] = this.scope;
         data["refresh_Token"] = this.refresh_Token;
-        return data;
+        return data; 
     }
 }
 
@@ -1257,7 +1343,7 @@ export class UserInfo implements IUserInfo {
         data["product"] = this.product;
         data["type"] = this.type;
         data["uri"] = this.uri;
-        return data;
+        return data; 
     }
 }
 
@@ -1306,7 +1392,7 @@ export class ExplicitContentFilters implements IExplicitContentFilters {
         data = typeof data === 'object' ? data : {};
         data["filter_enabled"] = this.filter_enabled;
         data["filter_locked"] = this.filter_locked;
-        return data;
+        return data; 
     }
 }
 
@@ -1349,7 +1435,7 @@ export class Image implements IImage {
         data["height"] = this.height;
         data["width"] = this.width;
         data["url"] = this.url;
-        return data;
+        return data; 
     }
 }
 
@@ -1468,7 +1554,7 @@ export class Place implements IPlace {
         data["approved"] = this.approved;
         data["pendingReview"] = this.pendingReview;
         data["reviewComment"] = this.reviewComment;
-        return data;
+        return data; 
     }
 }
 
@@ -1522,7 +1608,7 @@ export class Geolocation implements IGeolocation {
         data = typeof data === 'object' ? data : {};
         data["latitude"] = this.latitude;
         data["longitude"] = this.longitude;
-        return data;
+        return data; 
     }
 }
 
@@ -1585,7 +1671,7 @@ export class Playlist implements IPlaylist {
         data["snapshotVersion"] = this.snapshotVersion;
         data["url"] = this.url;
         data["changed"] = this.changed;
-        return data;
+        return data; 
     }
 }
 
@@ -1641,7 +1727,7 @@ export class Song implements ISong {
             for (let item of this.artists)
                 data["artists"].push(item.toJSON());
         }
-        return data;
+        return data; 
     }
 }
 
@@ -1682,7 +1768,7 @@ export class Artist implements IArtist {
         data = typeof data === 'object' ? data : {};
         data["id"] = this.id;
         data["name"] = this.name;
-        return data;
+        return data; 
     }
 }
 
@@ -1731,7 +1817,7 @@ export class ListableUser implements IListableUser {
         data["id"] = this.id;
         data["email"] = this.email;
         data["admin"] = this.admin;
-        return data;
+        return data; 
     }
 }
 
@@ -1768,7 +1854,7 @@ export class RecognizedSong extends Song implements IRecognizedSong {
         data = typeof data === 'object' ? data : {};
         data["count"] = this.count;
         super.toJSON(data);
-        return data;
+        return data; 
     }
 }
 
@@ -1815,7 +1901,7 @@ export class Timetable implements ITimetable {
                 data["schedules"].push(item.toJSON());
         }
         data["day"] = this.day;
-        return data;
+        return data; 
     }
 }
 
@@ -1855,7 +1941,7 @@ export class Schedule implements ISchedule {
         data = typeof data === 'object' ? data : {};
         data["start"] = this.start ? this.start.toISOString() : <any>undefined;
         data["end"] = this.end ? this.end.toISOString() : <any>undefined;
-        return data;
+        return data; 
     }
 }
 
@@ -1899,7 +1985,7 @@ export class ComparedPlace extends Place implements IComparedPlace {
         data = typeof data === 'object' ? data : {};
         data["similitude"] = this.similitude;
         super.toJSON(data);
-        return data;
+        return data; 
     }
 }
 
@@ -1962,7 +2048,7 @@ export class ProblemDetails implements IProblemDetails {
                     data["extensions"][key] = this.extensions[key];
             }
         }
-        return data;
+        return data; 
     }
 }
 
@@ -2006,7 +2092,7 @@ export class PlaceReview implements IPlaceReview {
         data = typeof data === 'object' ? data : {};
         data["approved"] = this.approved;
         data["reviewComment"] = this.reviewComment;
-        return data;
+        return data; 
     }
 }
 
@@ -2067,7 +2153,7 @@ export class User implements IUser {
         data["refreshToken"] = this.refreshToken;
         data["expiresIn"] = this.expiresIn;
         data["tokenEmissionTime"] = this.tokenEmissionTime ? this.tokenEmissionTime.toISOString() : <any>undefined;
-        return data;
+        return data; 
     }
 }
 
