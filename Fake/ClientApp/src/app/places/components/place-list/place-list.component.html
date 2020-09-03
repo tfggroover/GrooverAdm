@@ -1,0 +1,50 @@
+<div class="margins">
+  <div class="flexHeader">
+    <h2>Places list</h2> <a mat-raised-button class="flexButton btn btn-success" [routerLink]="['create']"
+      routerLinkActive="router-link-active">Add</a>
+  </div>
+  <hr />
+  <app-place-filter></app-place-filter>
+  <hr />
+  <ng-container *ngIf="items.length > 0">
+
+    <table class="table table-striped">
+      <thead>
+        <th>
+          Name
+        </th>
+        <th>
+          Address
+        </th>
+        <th>
+          Phone
+        </th>
+        <th>
+        </th>
+      </thead>
+      <tbody>
+        <tr class="items" *ngFor="let item of items">
+          <td>
+            {{item.displayName}}
+          </td>
+          <td>
+            {{item.address}}
+          </td>
+          <td>
+            {{item.phone}}
+          </td>
+          <td>
+            <a *ngIf="item.showEdit" mat-raised-button class="btn btn-warning" [routerLink]="['edit/' + item.id]"
+              routerLinkActive="router-link-active">Edit</a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </ng-container>
+  <ng-container *ngIf="items.length === 0">
+    There are no places to be shown, maybe try adjusting your search pattern?
+  </ng-container>
+  <div *ngIf="showMoreButton" class="margins flex">
+    <button mat-raised-button color="primary" class="searchMore" type="button">Show more</button>
+  </div>
+</div>

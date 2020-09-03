@@ -1,0 +1,37 @@
+<div class="two-cols">
+  <section>
+
+    <dl>
+      <dt class="col-md-2" for="Name">Name</dt>
+      <dd class="col-md-4" >{{this.place.displayName</dd>
+      </dl>
+  </section>
+  <div class="formcontrol">
+    <label class="col-md-2" for="Address">Address</label>
+    <input class="col-md-4" name="Address" [(ngModel)]="this.place.address" />
+  </div>
+  <div class="formcontrol">
+    <label class="col-md-2" for="Latitude">Latitude</label>
+    <input class="col-md-4" name="Latitude" [(ngModel)]="this.place.location.latitude" />
+  </div>
+  <div class="formcontrol">
+    <label class="col-md-2" for="Longitude">Longitude</label>
+    <input class="col-md-4" name="Longitude" [(ngModel)]="this.place.location.longitude" />
+  </div>
+  <div class="container" fxLayout="column" fxLayoutAlign="center">
+
+    <div fxFlex>
+      <agm-map [latitude]="this.marker.lat" [longitude]="this.marker.lng" [scrollwheel]="false" [zoom]="zoom">
+        <agm-marker [latitude]="this.marker.lng" [longitude]="this.marker.lng"></agm-marker>
+      </agm-map>
+    </div>
+
+  </div>
+  <div class="formcontrol">
+    <label class="col-md-2" for="Phone">Phone</label>
+    <input class="col-md-4" name="Phone" [(ngModel)]="this.place.phone" />
+  </div>
+  <hr/>
+  <button mat-raised-button class="btn btn-alternative">Back</button>
+  <button mat-raised-button class="btn btn-warning">Edit</button>
+</div>

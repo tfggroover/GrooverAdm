@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace GrooverAdmSPA.Model
+namespace GrooverAdm.Entities.Spotify
 {
-    public class SpotifyUserInfo
+    public class UserInfo
     {
         public string Country { get; set; }
         public string Display_name { get; set; }
@@ -14,7 +14,7 @@ namespace GrooverAdmSPA.Model
         public Dictionary<string,string> External_urls { get; set; }
         public string Href { get; set; }
         public string Id { get; set; }
-        public List<string> Images { get; set; }
+        public List<Image> Images { get; set; }
         public string Product { get; set; } //Probablemente sea mejor un enum
         public string Type { get; set; }
         public string Uri { get; set; } //Solo útil en un móvil
@@ -25,5 +25,12 @@ namespace GrooverAdmSPA.Model
     {
         public bool Filter_enabled { get; set; }
         public bool Filter_locked { get; set; }
+    }
+
+    public class Image
+    {
+        public int? Height { get; set; }
+        public int? Width { get; set; }
+        public string Url { get; set; }
     }
 }

@@ -1,0 +1,49 @@
+﻿
+@model GrooverAdm.Pages.AuthPopupModel
+@{
+}
+<script src="https://www.gstatic.com/firebasejs/7.19.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.19.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.19.0/firebase-firestore.js"></script>
+<script src="promise.min.js"></script><!-- Promise Polyfill for older browsers -->
+<script>
+     var token = '@Model.Token';
+     var firebaseConfig = {
+        apiKey: "AIzaSyASCdn-XXWI2uQmRDvTHJauYN0Qca07-oE",
+        authDomain: "groover-3b82a.firebaseapp.com",
+        databaseURL: "https://groover-3b82a.firebaseio.com",
+        projectId: "groover-3b82a",
+        storageBucket: "groover-3b82a.appspot.com",
+        messagingSenderId: "427397483542",
+        appId: "1:427397483542:web:9468e5b824c4f97a"
+      };
+
+    // We sign in via a temporary Firebase app to update the profile.
+    var tempApp = firebase.initializeApp(firebaseConfig, '_temp_');
+     tempApp.auth().signInWithCustomToken(token).then(function(user) {
+
+         var object = {
+             CurrentToken: '@Model.SpotiToken',
+             RefreshToken: '@Model.RefreshToken'
+         };
+       // Saving the Instagram API access token in the Realtime Database.
+       const tasks = [tempApp.firestore().doc('/users/' + user.user.uid)
+           .update(object)];
+
+       // Updating the displayname and photoURL if needed.
+       if ('@Model.DisplayName' !== user.user.displayName || '@Model.PhotoUrl' !== user.user.photoURL) {
+         tasks.push(user.user.updateProfile({displayName: '@Model.DisplayName', photoURL: '@Model.PhotoUrl'}));
+       }
+
+       // Wait for completion of above tasks.
+       return Promise.all(tasks).then(function() {
+         // Delete temporary Firebase app and sign in the default Firebase app, then close the popup.
+           var defaultApp = firebase.initializeApp(firebaseConfig);
+         Promise.all([
+             defaultApp.auth().signInWithCustomToken(token),
+             tempApp.delete()]).then(function() {
+           window.close(); // We’re done! Closing the popup.
+         });
+       });
+     });
+</script>

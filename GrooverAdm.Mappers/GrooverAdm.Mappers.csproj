@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="3.1.7" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\GrooverAdm.DataAccess.Firestore.Model\GrooverAdm.DataAccess.Firestore.csproj" />
+    <ProjectReference Include="..\GrooverAdm.Entities\GrooverAdm.Entities.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,11 @@
+<ul class="navbar-nav" *ngIf="isAuthenticated | async">
+
+    <li class="nav-item">
+        <a  class="nav-link text-dark" (click)="logout()" title="Logout">Logout</a>
+    </li>
+</ul>
+<ul class="navbar-nav" *ngIf="!(isAuthenticated | async)">
+    <li class="nav-item">
+        <a class="nav-link text-dark" (click)="login()">Login</a>
+    </li>
+</ul>

@@ -1,0 +1,179 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>GrooverAdm</name>
+    </assembly>
+    <members>
+        <member name="M:GrooverAdm.Controllers.ControllerBase.GetUserId">
+            <summary>
+            Get authenticated user id.        
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:GrooverAdm.Controllers.PlaceController.GetEstablishments(System.Int32,System.Int32,System.Boolean,System.Boolean)">
+            <summary>
+            Retrieves establishments
+            </summary>
+            <param name="page"></param>
+            <param name="pageSize"></param>
+            <param name="mine"></param>
+            <param name="pendingReview"></param>
+            <returns></returns>
+        </member>
+        <member name="M:GrooverAdm.Controllers.PlaceController.GetEstablishments(System.Double,System.Double,System.Double,System.Int32,System.Int32)">
+            <summary>
+            Retrieves the establishments surrounding [<paramref name="lat"/>, <paramref name="lon"/>] in 
+            the distance provided
+            </summary>
+            <param name="lat">Latitude</param>
+            <param name="lon">Longitude</param>
+            <param name="distance">Distance in METERS</param>
+            <param name="page"></param>
+            <param name="pageSize"></param>
+            <returns></returns>
+        </member>
+        <member name="M:GrooverAdm.Controllers.PlaceController.GetRecommendedEstablishmentsForPlaylist(System.String,System.Double,System.Double,System.Double,System.Int32,System.Int32)">
+            <summary>
+            Obtiene los lugares recomendados en funcion de la playlist enviada
+            </summary>
+            <param name="playlistId"></param>
+            <param name="lat"></param>
+            <param name="lon"></param>
+            <param name="distance"></param>
+            <param name="page"></param>
+            <param name="pageSize"></param>
+            <returns></returns>
+        </member>
+        <member name="M:GrooverAdm.Controllers.PlaceController.GetRecommendedEstablishmentsForTop(System.Double,System.Double,System.Double,System.Int32,System.Int32)">
+            <summary>
+            Obtiene los lugares recomendados en funcion del top50 del usuario
+            </summary>
+            <param name="lat"></param>
+            <param name="lon"></param>
+            <param name="distance"></param>
+            <param name="page"></param>
+            <param name="pageSize"></param>
+            <returns></returns>
+        </member>
+        <member name="M:GrooverAdm.Controllers.PlaceController.CreateEstablishment(GrooverAdm.Entities.Application.Place)">
+            <summary>
+            Creates an establishment
+            </summary>
+            <param name="establishment"></param>
+            <returns></returns>
+        </member>
+        <member name="M:GrooverAdm.Controllers.PlaceController.GetPlace(System.String)">
+            <summary>
+            Gets a single place from the db
+            </summary>
+            <param name="id"></param>
+            <returns></returns>
+        </member>
+        <member name="M:GrooverAdm.Controllers.PlaceController.UpdateEstablishment(GrooverAdm.Entities.Application.Place)">
+            <summary>
+            Updates a establishment
+            </summary>
+            <param name="establishment"></param>
+            <returns></returns>
+        </member>
+        <member name="M:GrooverAdm.Controllers.PlaceController.DeleteEstablishment(System.String)">
+            <summary>
+            Deletes an establishment
+            </summary>
+            <param name="establishmentId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:GrooverAdm.Controllers.PlaceController.RecognizeSong(System.String,GrooverAdm.Entities.Application.Song)">
+            <summary>
+            We gucci
+            </summary>
+            <param name="establishmentId"></param>
+            <param name="song"></param>
+            <returns></returns>
+        </member>
+        <member name="M:GrooverAdm.Controllers.PlaceController.RatePlace(System.String,System.Double)">
+            <summary>
+            Rates a place for a user, if the register is already existing, it updates it
+            </summary>
+            <param name="placeId"></param>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:GrooverAdm.Controllers.PlaceController.ReviewPlace(System.String,GrooverAdm.Entities.Application.PlaceReview)">
+            <summary>
+            Rates a place for a user, if the register is already existing, it updates it
+            </summary>
+            <param name="placeId"></param>
+            <param name="review"></param>
+            <returns></returns>
+        </member>
+        <member name="M:GrooverAdm.Controllers.UserController.GetCurrentUser">
+            <summary>
+            Returns the currentUser
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:GrooverAdm.Controllers.UserController.SetAdmin(System.String)">
+            <summary>
+            Sets a user as admin
+            </summary>
+            <param name="userId"></param>
+            <returns></returns>
+            
+        </member>
+        <member name="M:GrooverAdm.Controllers.UserController.GetUsers(System.Int32,System.Int32,System.String,System.Boolean)">
+            <summary>
+            Returns users according to the filters specified
+            </summary>
+            <param name="page"></param>
+            <param name="pageSize"></param>
+            <param name="name"></param>
+            <param name="admin">Only admins</param>
+            <returns></returns>
+            
+        </member>
+        <member name="M:GrooverAdm.Controllers.UserController.DeleteAccount">
+            <summary>
+            Delete the current user's account
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:GrooverAdmSPA.Controllers.HomeController">
+            <summary>
+            Will be renamed to authController
+            </summary>
+        </member>
+        <member name="M:GrooverAdmSPA.Controllers.HomeController.#ctor(Microsoft.Extensions.Configuration.IConfiguration,GrooverAdm.Business.Services.SpotifyService,GrooverAdm.Business.Services.User.IUserService,Microsoft.Extensions.Logging.ILogger{GrooverAdmSPA.Controllers.HomeController})">
+            <summary>
+            Constructor
+            </summary>
+            <param name="configuration"></param>
+            <param name="spotifyService"></param>
+            <param name="userService"></param>
+        </member>
+        <member name="M:GrooverAdmSPA.Controllers.HomeController.Auth(System.String)">
+            <summary>
+            Autenticación para el móvil y la App
+            </summary>
+            <param name="refresh_token"></param>
+            <returns></returns>
+            <response code="400">The specified refresh token is not valid</response>
+        </member>
+        <member name="M:GrooverAdmSPA.Controllers.HomeController.AuthCallback(System.String,System.String)">
+            <summary>
+            Callback de spotify con un token fresco
+            </summary>
+            <param name="code">Token</param>
+            <param name="State">Cookie de estado</param>
+            <returns></returns>
+        </member>
+        <member name="M:GrooverAdmSPA.Controllers.HomeController.AuthWebCallback(System.String,System.String)">
+            <summary>
+            Callback de spotify con un token fresco
+            </summary>
+            <param name="code">Token</param>
+            <param name="State">Cookie de estado</param>
+            <returns></returns>
+        </member>
+    </members>
+</doc>

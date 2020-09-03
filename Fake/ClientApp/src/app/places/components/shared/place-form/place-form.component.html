@@ -1,0 +1,148 @@
+<form [formGroup]="form" (ngSubmit)="this.onSubmit()" class="">
+  <div class="container">
+    <fieldset class="item" title="General information">
+      <legend>General information</legend>
+      <mat-form-field appearance="outline">
+        <mat-label>Name</mat-label>
+        <input matInput placeholder="Name" formControlName="name" />
+        <mat-error *ngIf="hasError(['name'], 'required')">Name is required</mat-error>
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Phone</mat-label>
+        <input matInput placeholder="Phone" formControlName="phone" />
+      </mat-form-field>
+    </fieldset>
+    <ng-container *ngIf="!!this.place && !!this.user && (this.user.admin || (!place.pendingReview && place.reviewComment))">
+      <fieldset class="item" title="Status">
+        <legend>Status</legend>
+        <mat-checkbox class="latMargin" formControlName="approved" [disabled]="!this.user.admin">
+          Approved
+        </mat-checkbox>
+        <mat-form-field appearance="outline" *ngIf="this.user.admin">
+          <mat-label>Review Comment</mat-label>
+          <textarea matInput formControlName="reviewComment"></textarea>
+        </mat-form-field>
+        <p *ngIf="!this.user.admin">{{this.place.reviewComment}}</p>
+      </fieldset>
+    </ng-container>
+  </div>
+  <div>
+    <fieldset>
+      <legend>Address</legend>
+      <div class="container">
+        <div class="item">
+          <mat-google-maps-autocomplete *ngIf="!this.place || !this.place.address || forceAutocomplete"
+            (onAutocompleteSelected)="onAutocompleteSelected($event)" (onLocationSelected)="onLocationSelected($event)"
+            [appearance]="appearance.OUTLINE" #autocomplete>
+          </mat-google-maps-autocomplete>
+          <mat-form-field appearance="outline" *ngIf="(!!this.place && !!this.place.address) && !forceAutocomplete">
+            <mat-label>Address</mat-label>
+            <input matInput placeholder="Address" type="text" formControlName="address" (focus)="forceAuto()" />
+            <mat-error *ngIf="hasError(['address'], 'required')">The address is required</mat-error>
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Latitude</mat-label>
+            <input matInput placeholder="Latitude" type="number" formControlName="latitude" />
+            <mat-error *ngIf="hasError(['latitude'], 'required')">The latitude is required</mat-error>
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Longitude</mat-label>
+            <input matInput placeholder="Longitude" type="number" formControlName="longitude" />
+            <mat-error *ngIf="hasError(['longitude'], 'required')">The longitude is required</mat-error>
+          </mat-form-field>
+        </div>
+        <div class="item">
+          <div fxFlex>
+            <agm-map [latitude]="this.marker.lat" [longitude]="this.marker.lng" [scrollwheel]="false" [zoom]="zoom">
+              <agm-marker [latitude]="this.marker.lat" [longitude]="this.marker.lng"></agm-marker>
+            </agm-map>
+          </div>
+        </div>
+      </div>
+    </fieldset>
+  </div>
+  <div class="container">
+    <fieldset title="Timetable" class="bigItem">
+      <legend>Timetable</legend>
+      <table class="table table-striped">
+        <thead>
+          <th class="table-item">Day of the week</th>
+          <th class="table-item">Turn start</th>
+          <th class="table-item">Turn end</th>
+          <th class="table-button">
+            <button mat-mini-fab (click)="addRow()" type="button">
+              <mat-icon>add</mat-icon>
+            </button>
+          </th>
+        </thead>
+        <tbody formArrayName="timetables">
+          <tr [formGroupName]="i" *ngFor="let timetable of $any(this.form.controls['timetables']).controls; index as i">
+            <td class="table-item">
+              <mat-form-field appearance="outline">
+                <mat-label>Select a day of the week</mat-label>
+                <input type="text" placeholder="Pick one" aria-label="Number" matInput name="dayOfWeek"
+                  formControlName="dayOfWeek" [matAutocomplete]="auto" />
+                <mat-autocomplete #auto="matAutocomplete" name="DayOfWeek" [displayWith]="displayFn">
+                  <mat-option *ngFor="let option of days" [value]="option">
+                    {{option.text}}
+                  </mat-option>
+                </mat-autocomplete>
+                <mat-error *ngIf="hasError(['timetables'], 'duplicateDay')">A day can only be set once</mat-error>
+                <mat-error *ngIf="hasError(['timetables', i, 'dayOfWeek'], 'required')">The day is required</mat-error>
+              </mat-form-field>
+            </td>
+            <td colspan="2">
+              <table formArrayName="schedules">
+                <tr [formGroupName]="j" *ngFor="let schedule of timetable.controls['schedules'].controls; index as j">
+                  <td class="table-item">
+                    <mat-form-field appearance="outline">
+                      <input matInput formControlName="start" type="time" />
+                      <mat-error *ngIf="hasError(['timetables', i, 'schedules', j, 'start'], 'required')">The start is
+                        required</mat-error>
+                      <mat-error *ngIf="hasError(['timetables', i, 'schedules', j], 'endBeforeStart')">The end must be
+                        after the start</mat-error>
+                    </mat-form-field>
+                  </td>
+                  <td class="table-item">
+                    <mat-form-field appearance="outline">
+                      <input matInput formControlName="end" type="time" name="scheduleEnd" />
+                      <mat-error *ngIf="hasError(['timetables', i, 'schedules', j, 'start'], 'required')">The end is
+                        required</mat-error>
+                      <mat-error *ngIf="hasError(['timetables', i, 'schedules', j], 'endBeforeStart')">The end must be
+                        after the start</mat-error>
+                    </mat-form-field>
+                  </td>
+                  <!--<td><button mat-mini-fab (click)="removeSchedule(j, timetable)" type="button" color="warn"><mat-icon>remove</mat-icon></button></td> Solo habrá un botón de momento -->
+                </tr>
+              </table>
+            </td>
+            <td class="table-button">
+              <!-- <button mat-mini-fab (click)="addSchedule(timetable)" type="button"><mat-icon>add</mat-icon></button> Solo un turno de momento -->
+              <button mat-mini-fab (click)="removeTimetable(i)" type="button" color="warn">
+                <mat-icon>remove</mat-icon>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </fieldset>
+  </div>
+  <div class="container">
+
+  </div>
+  <fieldset title="Playlist" class="item">
+    <legend>Playlist</legend>
+    <mat-form-field appearance="outline">
+      <mat-label>Playlist URI</mat-label>
+      <input matInput formControlName="playlist" name="mainPlaylist" placeholder="spotify:playlist:xxxxxxxx" />
+      <mat-hint>Right click on a Playlist > Share > SpotifyURI</mat-hint>
+      <mat-error *ngIf="hasError(['playlist'], 'required')">Playlist id is required</mat-error>
+    </mat-form-field>
+  </fieldset>
+  <hr />
+  <div class="container">
+    <a mat-raised-button color="accent" class="separator" type="button" [routerLink]="['/place']"
+      routerLinkActive="router-link-active">Cancel</a>
+    <button mat-raised-button type="submit" class="separator" color="primary">Submit</button>
+  </div>
+</form>

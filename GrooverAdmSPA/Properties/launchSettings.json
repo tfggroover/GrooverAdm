@@ -2,9 +2,13 @@
   "iisSettings": {
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
+    "iis": {
+      "applicationUrl": "http://localhost/GrooverAdmSPA",
+      "sslPort": 0
+    },
     "iisExpress": {
-      "applicationUrl": "http://localhost:50599",
-      "sslPort": 44335
+      "applicationUrl": "http://localhost:55552",
+      "sslPort": 44358
     }
   },
   "profiles": {

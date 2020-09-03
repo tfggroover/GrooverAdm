@@ -1,0 +1,7 @@
+<h1 *ngIf="!isAuthenticated">Welcome!</h1>
+<h1 *ngIf="isAuthenticated">Welcome, {{this.userName}}!</h1>
+<p>Welcome to Groover, the platform that helps you connect with your clients via music</p>
+<ng-container *ngIf="!isAuthenticated">
+  <p>Please, log in before proceeding</p>
+  <button mat-button (click)="onSignInButtonClick()">Log in with Spotify <fa-icon [icon]="faspoty"></fa-icon></button>
+</ng-container>

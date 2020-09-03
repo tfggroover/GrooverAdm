@@ -1,0 +1,13 @@
+<section class="section">
+
+  <mat-checkbox class="lat-margin" color="primary" [(ngModel)]="pendingReview"> Pending Review</mat-checkbox>
+  <mat-checkbox class="lat-margin" color="primary" [(ngModel)]="owner"> Mine</mat-checkbox>
+  <div class="floatRight">
+    <button mat-raised-button type="button" class="lat-margin btn--secondary" (click)="reset()">
+      Reset
+    </button>
+    <button mat-raised-button type="submit" class="lat-margin btn-success" (click)="doSearch()">
+      Search
+    </button>
+  </div>
+</section>

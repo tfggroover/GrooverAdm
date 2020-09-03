@@ -1,0 +1,29 @@
+.floatRight {
+  float: right;
+}
+
+.flexHeader {
+  display: inline-flex;
+  flex-flow: row;
+  justify-content: space-between;
+  width: 98%;
+}
+
+.flexButton {
+  align-self: flex-end;
+}
+
+.margins {
+  margin: 20px;
+}
+
+.flex {
+  display: flex;
+  justify-content: center;
+}
+
+.searchMore {
+  align-self: center;
+  margin: auto;
+}
+
