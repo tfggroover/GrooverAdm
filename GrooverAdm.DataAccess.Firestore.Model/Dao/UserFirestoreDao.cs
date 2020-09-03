@@ -25,12 +25,23 @@ namespace GrooverAdm.DataAccess.Firestore.Dao
 
         public async Task<User> CreateOrUpdateUser(User user)
         {
-            var reference = _db.Collection(COLLECTION_REF).Document(user.Reference.Id);
-            if (!(await reference.GetSnapshotAsync()).Exists)
+            var reference = user.Reference;
+            var snap = await reference.GetSnapshotAsync();
+            if (!snap.Exists)
                 await reference.CreateAsync(user);
             else
-                await reference.SetAsync(user);
-            var snap = await reference.GetSnapshotAsync();
+            {
+                var old = snap.ConvertTo<User>();
+                old.Born = user.Born;
+                old.CurrentToken = user.CurrentToken;
+                old.DisplayName = user.DisplayName;
+                old.Email = user.Email;
+                old.ExpiresIn = user.ExpiresIn;
+                old.TokenEmissionTime = user.TokenEmissionTime;
+                old.RefreshToken = string.IsNullOrEmpty(user.RefreshToken) ? old.RefreshToken : user.RefreshToken;
+                await reference.SetAsync(old);
+            }
+            snap = await reference.GetSnapshotAsync();
             return snap.ConvertTo<User>();
         }
 

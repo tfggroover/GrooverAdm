@@ -1,4 +1,5 @@
 ﻿using Google.Cloud.Firestore;
+using GrooverAdm.Common;
 using GrooverAdm.DataAccess.Dao;
 using GrooverAdm.DataAccess.Firestore.Exceptions;
 using GrooverAdm.DataAccess.Firestore.Model;
@@ -52,8 +53,8 @@ namespace GrooverAdm.DataAccess.Firestore.Dao
         public async Task<Playlist> UpdatePlaylist(Playlist playlist)
         {
             var reference = playlist.Reference;
-            if ((await reference.GetSnapshotAsync()).Exists)
-                throw new AlreadyExistingEntityException("There already exists a main Playlist. Perhaps you intended to update it?");
+            if (!(await reference.GetSnapshotAsync()).Exists)
+                throw new GrooverException("There isnt a main Playlist. Perhaps you intended to create it?");
             await reference.SetAsync(playlist);
             return (await reference.GetSnapshotAsync()).ConvertTo<Playlist>();
         }

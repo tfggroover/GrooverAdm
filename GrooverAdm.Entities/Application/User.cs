@@ -14,6 +14,7 @@ namespace GrooverAdm.Entities.Application
         {
             DisplayName = userInfo.Display_name;
             Id = userInfo.Id;
+            Email = userInfo.Email;
             CurrentToken = currentToken;
             ExpiresIn = expiresIn;
             TokenEmissionTime = dateTime;

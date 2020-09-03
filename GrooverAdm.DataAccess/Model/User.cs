@@ -6,5 +6,6 @@ namespace GrooverAdm.DataAccess.Model
 {
     public class User: IDbEntity
     {
+
     }
 }
