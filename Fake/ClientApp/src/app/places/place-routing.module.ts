@@ -5,11 +5,14 @@ import { PlaceListComponent } from './components/place-list/place-list.component
 import { PlaceAddComponent } from './components/place-add/place-add.component';
 import { AuthorizeGuard } from 'src/api-authorization/authorize.guard';
 import { PlaceEditComponent } from './components/place-edit/place-edit.component';
+import { OwnerGuard } from './services/owner.guard';
+import { PlaceDetailComponent } from './components/place-detail/place-detail.component';
 
 const routes: Routes = [
   {
     path: '',
-    component: PlaceListComponent
+    component: PlaceListComponent,
+    canActivate: [AuthorizeGuard]
   },
   {
     path: 'create',
@@ -17,9 +20,14 @@ const routes: Routes = [
     canActivate: [AuthorizeGuard]
   },
   {
+    path: 'detail/:id',
+    component: PlaceDetailComponent,
+    canActivate: [AuthorizeGuard]
+  },
+  {
     path: 'edit/:id',
     component: PlaceEditComponent,
-    canActivate: [AuthorizeGuard]
+    canActivate: [AuthorizeGuard, OwnerGuard]
   }
 ];
 
@@ -29,6 +37,7 @@ const routes: Routes = [
     CommonModule,
     RouterModule.forChild(routes)
   ],
-  exports: [RouterModule]
+  exports: [RouterModule],
+  providers: [OwnerGuard]
 })
 export class PlaceRoutingModule { }

@@ -7,9 +7,7 @@ import { Place } from 'src/app/services/services';
 import { map } from 'rxjs/operators';
 import { CompleteUser } from 'src/api-authorization/user-manager/userManagerService';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable()
 export class OwnerGuard implements CanActivate {
 
   constructor(public placeService: PlaceService, public auth: AuthorizeService) {}

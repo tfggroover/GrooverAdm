@@ -1,3 +1,3 @@
 <h3>Edit Place</h3>
 <hr/>
-<app-place-form [place]='this.place'></app-place-form>
+<app-place-form *ngIf="!!place" [place]='this.place' (placeUpdateListener)="updatePlace($event)"></app-place-form>

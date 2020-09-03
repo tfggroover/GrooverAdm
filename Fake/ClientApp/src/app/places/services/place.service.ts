@@ -1,8 +1,9 @@
 import { Injectable, Inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Place, PlaceClient } from 'src/app/services/services';
+import { Place, PlaceClient, PlaceReview } from 'src/app/services/services';
 import { Observable, BehaviorSubject, Subject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
+import { LoadingService } from 'src/app/services/loadingService';
 
 
 export class PlaceSearchStatus {
@@ -22,7 +23,7 @@ export class PlaceSearchStatusService {
   private _placeSearchStatus: BehaviorSubject<PlaceSearchStatus> = new BehaviorSubject<PlaceSearchStatus>(new PlaceSearchStatus());
   private readonly onPlaceSearchStatusChange$: Subject<PlaceSearchStatus>;
 
-  constructor(private placeService: PlaceService) {
+  constructor(private placeService: PlaceService, private loading: LoadingService) {
     this.placeSearchStatus = this._placeSearchStatus.asObservable();
 
     this.onPlaceSearchStatusChange$ = new Subject();
@@ -60,15 +61,25 @@ export class PlaceSearchStatusService {
 }
 
   public onPlaceSearchStatusChange(current: PlaceSearchStatus) {
-
-    this.placeService.getPlaces(current.page, current.pageSize, current.mineFilter, current.pendingReview)
+    this.loading.activate('search');
+    this.placeService.getPlaces(current.page, current.pageSize + 1, current.mineFilter, current.pendingReview)
       .toPromise().then(places => this.processResponse(places, current));
   }
 
   private processResponse(places: Place[], current: PlaceSearchStatus) {
+    this.loading.deactivate('search');
     const currentNow = current;
-    currentNow.places.push(...places);
-    currentNow.moreResults = places.length < current.pageSize;
+    let insert = places;
+    if (places.length > current.pageSize) {
+      insert = insert.splice(current.pageSize, 1);
+    }
+    if (currentNow.page === 1) {
+      currentNow.places = insert;
+    } else {
+      currentNow.places.push(...insert);
+    }
+    currentNow.places = [...new Set(currentNow.places)];
+    currentNow.moreResults = current.pageSize < places.length;
 
     this._placeSearchStatus.next(currentNow);
   }
@@ -92,6 +103,14 @@ export class PlaceService {
 
   public createPlace(place: Place) {
     return this.placeClient.createEstablishment(place);
+  }
+
+  public updatePlace(place: Place) {
+    return this.placeClient.updateEstablishment(place);
+  }
+
+  public reviewPlace(review: PlaceReview, id: string) {
+    return this.placeClient.reviewPlace(id, review);
   }
 
 }
