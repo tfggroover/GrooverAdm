@@ -111,6 +111,8 @@ namespace GrooverAdmSPA.Controllers
                         Firebase = token
                     };
 
+                    log.LogInformation($"Returned answer {JsonConvert.SerializeObject(result)}");
+
                 }
             }
 
