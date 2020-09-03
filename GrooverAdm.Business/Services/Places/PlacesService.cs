@@ -51,7 +51,7 @@ namespace GrooverAdm.Business.Services.Places
         {
             if (!place.Owners.Any())
                 place.Owners.Add(new Entities.Application.ListableUser { Id = user });
-            if(place.MainPlaylist.Id != null && string.IsNullOrEmpty(place.MainPlaylist.Name))
+            if(place.MainPlaylist != null && place.MainPlaylist.Id != null && string.IsNullOrEmpty(place.MainPlaylist.Name))
             {
                 var dbUser = await this.userService.GetUser(user);
                 var play = await this.playlistService.GetPlaylistFromSpotify(place.MainPlaylist.Id, dbUser.CurrentToken);
