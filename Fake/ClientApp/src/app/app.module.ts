@@ -1,7 +1,7 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule, APP_INITIALIZER, Injector } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { HttpClientModule, HTTP_INTERCEPTORS, HttpXhrBackend } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
 
 import { AppComponent } from './app.component';
@@ -18,6 +18,9 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { AuthorizeSpotifyInterceptor } from 'src/api-authorization/authorize-spotify.interceptor';
 import { MatButtonModule } from '@angular/material/button';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { BASE_URL } from './services/services';
+import { MatProgressBarModule } from '@angular/material';
+import { GrooverXHRBackend } from './services/grooverHttpXhrBackend';
 
 export const firebaseConfig = {
   apiKey: 'AIzaSyASCdn-XXWI2uQmRDvTHJauYN0Qca07-oE',
@@ -55,12 +58,18 @@ export const firebaseConfig = {
     AgmCoreModule.forRoot(),
     BrowserAnimationsModule,
     MatButtonModule,
-    FontAwesomeModule
+    MatProgressBarModule,
+    FontAwesomeModule,
   ],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: AuthorizeAPIInterceptor, multi: true },
-    { provide: HTTP_INTERCEPTORS, useClass: AuthorizeSpotifyInterceptor, multi: true }
+    { provide: HTTP_INTERCEPTORS, useClass: AuthorizeSpotifyInterceptor, multi: true },
+    { provide: BASE_URL, useExisting: 'BASE_URL' },
+    {
+      provide: HttpXhrBackend,
+      useClass: GrooverXHRBackend,
+    }
   ],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
 })
 export class AppModule { }

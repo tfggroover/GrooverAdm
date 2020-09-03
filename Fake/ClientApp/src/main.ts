@@ -5,7 +5,11 @@ import { AppModule } from './app/app.module';
 import { environment } from './environments/environment';
 
 export function getBaseUrl() {
-  return document.getElementsByTagName('base')[0].href;
+  let url = document.getElementsByTagName('base')[0].href;
+  if (url[url.length - 1] === '/') {
+    url = url.substr(0, url.length - 1);
+  }
+  return url;
 }
 
 const providers = [

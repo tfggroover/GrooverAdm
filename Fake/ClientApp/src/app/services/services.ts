@@ -22,7 +22,7 @@ export class HomeClient {
 
     constructor(@Inject(HttpClient) http: HttpClient, @Optional() @Inject(BASE_URL) baseUrl?: string) {
         this.http = http;
-        this.baseUrl = baseUrl ? baseUrl : "https://localhost:44335";
+        this.baseUrl = baseUrl ? baseUrl : "https://tfggroover.azurewebsites.net";
     }
 
     auth(refresh_token: string | null | undefined): Observable<AuthenticationResponse> {
@@ -190,7 +190,7 @@ export class PlaceClient {
 
     constructor(@Inject(HttpClient) http: HttpClient, @Optional() @Inject(BASE_URL) baseUrl?: string) {
         this.http = http;
-        this.baseUrl = baseUrl ? baseUrl : "https://localhost:44335";
+        this.baseUrl = baseUrl ? baseUrl : "https://tfggroover.azurewebsites.net/";
     }
 
     getEstablishmentsAll(page: number | undefined, pageSize: number | undefined, mine: boolean | undefined, pendingReview: boolean | undefined): Observable<Place[]> {
@@ -868,7 +868,7 @@ export class UserClient {
 
     constructor(@Inject(HttpClient) http: HttpClient, @Optional() @Inject(BASE_URL) baseUrl?: string) {
         this.http = http;
-        this.baseUrl = baseUrl ? baseUrl : "https://localhost:44335";
+        this.baseUrl = baseUrl ? baseUrl : "https://tfggroover.azurewebsites.net/";
     }
 
     getCurrentUser(): Observable<User> {
@@ -1119,7 +1119,7 @@ export class AuthenticationResponse implements IAuthenticationResponse {
         data["spotify"] = this.spotify ? this.spotify.toJSON() : <any>undefined;
         data["spotifyUserData"] = this.spotifyUserData ? this.spotifyUserData.toJSON() : <any>undefined;
         data["firebase"] = this.firebase;
-        return data; 
+        return data;
     }
 }
 
@@ -1167,7 +1167,7 @@ export abstract class IAuthResponse implements IIAuthResponse {
         data["expires_in"] = this.expires_in;
         data["scope"] = this.scope;
         data["refresh_Token"] = this.refresh_Token;
-        return data; 
+        return data;
     }
 }
 
@@ -1257,7 +1257,7 @@ export class UserInfo implements IUserInfo {
         data["product"] = this.product;
         data["type"] = this.type;
         data["uri"] = this.uri;
-        return data; 
+        return data;
     }
 }
 
@@ -1306,7 +1306,7 @@ export class ExplicitContentFilters implements IExplicitContentFilters {
         data = typeof data === 'object' ? data : {};
         data["filter_enabled"] = this.filter_enabled;
         data["filter_locked"] = this.filter_locked;
-        return data; 
+        return data;
     }
 }
 
@@ -1349,7 +1349,7 @@ export class Image implements IImage {
         data["height"] = this.height;
         data["width"] = this.width;
         data["url"] = this.url;
-        return data; 
+        return data;
     }
 }
 
@@ -1468,7 +1468,7 @@ export class Place implements IPlace {
         data["approved"] = this.approved;
         data["pendingReview"] = this.pendingReview;
         data["reviewComment"] = this.reviewComment;
-        return data; 
+        return data;
     }
 }
 
@@ -1522,7 +1522,7 @@ export class Geolocation implements IGeolocation {
         data = typeof data === 'object' ? data : {};
         data["latitude"] = this.latitude;
         data["longitude"] = this.longitude;
-        return data; 
+        return data;
     }
 }
 
@@ -1585,7 +1585,7 @@ export class Playlist implements IPlaylist {
         data["snapshotVersion"] = this.snapshotVersion;
         data["url"] = this.url;
         data["changed"] = this.changed;
-        return data; 
+        return data;
     }
 }
 
@@ -1641,7 +1641,7 @@ export class Song implements ISong {
             for (let item of this.artists)
                 data["artists"].push(item.toJSON());
         }
-        return data; 
+        return data;
     }
 }
 
@@ -1682,7 +1682,7 @@ export class Artist implements IArtist {
         data = typeof data === 'object' ? data : {};
         data["id"] = this.id;
         data["name"] = this.name;
-        return data; 
+        return data;
     }
 }
 
@@ -1731,7 +1731,7 @@ export class ListableUser implements IListableUser {
         data["id"] = this.id;
         data["email"] = this.email;
         data["admin"] = this.admin;
-        return data; 
+        return data;
     }
 }
 
@@ -1768,7 +1768,7 @@ export class RecognizedSong extends Song implements IRecognizedSong {
         data = typeof data === 'object' ? data : {};
         data["count"] = this.count;
         super.toJSON(data);
-        return data; 
+        return data;
     }
 }
 
@@ -1815,7 +1815,7 @@ export class Timetable implements ITimetable {
                 data["schedules"].push(item.toJSON());
         }
         data["day"] = this.day;
-        return data; 
+        return data;
     }
 }
 
@@ -1855,7 +1855,7 @@ export class Schedule implements ISchedule {
         data = typeof data === 'object' ? data : {};
         data["start"] = this.start ? this.start.toISOString() : <any>undefined;
         data["end"] = this.end ? this.end.toISOString() : <any>undefined;
-        return data; 
+        return data;
     }
 }
 
@@ -1899,7 +1899,7 @@ export class ComparedPlace extends Place implements IComparedPlace {
         data = typeof data === 'object' ? data : {};
         data["similitude"] = this.similitude;
         super.toJSON(data);
-        return data; 
+        return data;
     }
 }
 
@@ -1962,7 +1962,7 @@ export class ProblemDetails implements IProblemDetails {
                     data["extensions"][key] = this.extensions[key];
             }
         }
-        return data; 
+        return data;
     }
 }
 
@@ -2006,7 +2006,7 @@ export class PlaceReview implements IPlaceReview {
         data = typeof data === 'object' ? data : {};
         data["approved"] = this.approved;
         data["reviewComment"] = this.reviewComment;
-        return data; 
+        return data;
     }
 }
 
@@ -2067,7 +2067,7 @@ export class User implements IUser {
         data["refreshToken"] = this.refreshToken;
         data["expiresIn"] = this.expiresIn;
         data["tokenEmissionTime"] = this.tokenEmissionTime ? this.tokenEmissionTime.toISOString() : <any>undefined;
-        return data; 
+        return data;
     }
 }
 

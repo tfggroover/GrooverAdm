@@ -41,7 +41,6 @@
     "jqwidgets-framework": "^10.0.2",
     "jqwidgets-ng": "^10.0.2",
     "jqwidgets-scripts": "^10.0.2",
-    "ng-pick-datetime": "^7.0.0",
     "oidc-client": "^1.9.1",
     "popper.js": "^1.16.0",
     "rxjs": "^6.5.3",
