@@ -118,7 +118,7 @@ namespace GrooverAdmSPA.Business.Services
         private static Tuple<string, string> GeohashQuery(string geohash, int bits)
         {
             ValidateGeohash(geohash);
-            var precision = (int) Math.Ceiling((double) bits / BITS_PER_CHAR);
+            var precision = (int)Math.Ceiling((double)bits / BITS_PER_CHAR);
             if (geohash.Length < precision)
             {
                 return new Tuple<string, string>(geohash, geohash + '~');
@@ -147,25 +147,23 @@ namespace GrooverAdmSPA.Business.Services
         /// <param name="geohash">The geohash to be Validated</param>
         public static void ValidateGeohash(string geohash)
         {
-            if(string.IsNullOrWhiteSpace(geohash))
-                throw new ArgumentException("Geohash cannot be an empty string");
-            else
-                foreach (char a in geohash)
-                {
-                    if (BASE32.IndexOf(a) == -1)
-                        throw new ArgumentException($"Geohash cannot contain {a}");
-                }
+
+            foreach (char a in geohash)
+            {
+                if (BASE32.IndexOf(a) == -1)
+                    throw new ArgumentException($"Geohash cannot contain {a}");
+            }
         }
 
         private static int BoundingBoxBits(Geolocation coordinate, double radius)
         {
-            var latDeltaDegrees = radius/ METERS_PER_DEGREE_LATITUDE;
+            var latDeltaDegrees = radius / METERS_PER_DEGREE_LATITUDE;
             var latitudeNorth = Math.Min(90, coordinate.Latitude + latDeltaDegrees);
             var latitudeSouth = Math.Max(-90, coordinate.Latitude - latDeltaDegrees);
             var bitsLat = Math.Floor(LatitudeBitsForResolution(radius)) * 2;
             var bitsLongNorth = Math.Floor(LongitudeBitsForResolution(radius, latitudeNorth)) * 2 - 1;
             var bitsLongSouth = Math.Floor(LongitudeBitsForResolution(radius, latitudeSouth)) * 2 - 1;
-            return (int) Math.Min(Math.Min(bitsLat, bitsLongNorth), Math.Min(bitsLongSouth, MAXIMUM_BITS_PRECISION));
+            return (int)Math.Min(Math.Min(bitsLat, bitsLongNorth), Math.Min(bitsLongSouth, MAXIMUM_BITS_PRECISION));
         }
 
         /// <summary>
@@ -178,7 +176,7 @@ namespace GrooverAdmSPA.Business.Services
         private static double LongitudeBitsForResolution(double radius, double latitudeNorth)
         {
             var degs = MetersToLongitudeDegrees(radius, latitudeNorth);
-            return Math.Abs(degs) > 0.000001 ? Math.Max(1, Log2(360/degs)) : 1 ;
+            return Math.Abs(degs) > 0.000001 ? Math.Max(1, Log2(360 / degs)) : 1;
         }
 
         private static double LatitudeBitsForResolution(double radius)
